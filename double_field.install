@@ -23,7 +23,6 @@ function double_field_field_schema($field) {
       'not null' => FALSE,
     ),
   );
-  
   $indexes = array(
     'first' => array('first'),
     'second' => array('second'),
