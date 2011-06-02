@@ -284,7 +284,6 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
 }
 
 
-
 /**
  * Implements hook_theme().
  */
