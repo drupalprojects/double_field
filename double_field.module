@@ -193,21 +193,21 @@ function double_field_field_formatter_info() {
     ),
   );
   return array(
-  'double_field_inline' => array(
-      'label' => t('Inline'),
-      'field types' => array('double_field'),
-      'settings' => $settings,
-    ),
-  'double_field_block' => array(
-      'label' => t('Block'),
-      'field types' => array('double_field'),
-      'settings' => $settings,
-    ),
-  'double_field_fieldset' => array(
-      'label' => t('Fieldset'),
-      'field types' => array('double_field'),
-      'settings' => $settings,
-    ),
+    'double_field_inline' => array(
+        'label' => t('Inline'),
+        'field types' => array('double_field'),
+        'settings' => $settings,
+      ),
+    'double_field_block' => array(
+        'label' => t('Block'),
+        'field types' => array('double_field'),
+        'settings' => $settings,
+      ),
+    'double_field_fieldset' => array(
+        'label' => t('Fieldset'),
+        'field types' => array('double_field'),
+        'settings' => $settings,
+      ),
   );
 }
 
