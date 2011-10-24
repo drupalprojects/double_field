@@ -193,20 +193,20 @@ function double_field_field_formatter_info() {
     ),
   );
   return array(
-  'double_field_inline' => array(
+    'double_field_inline' => array(
       'label' => t('Inline'),
       'field types' => array('double_field'),
       'settings' => $settings,
     ),
-  'double_field_block' => array(
+    'double_field_block' => array(
       'label' => t('Block'),
       'field types' => array('double_field'),
       'settings' => $settings,
     ),
-  'double_field_fieldset' => array(
+    'double_field_fieldset' => array(
       'label' => t('Fieldset'),
       'field types' => array('double_field'),
-      'settings' => $settings,
+      'settings' => $settings + array('collapsible' => TRUE, 'collapsed' => FALSE),
     ),
   );
 }
@@ -218,6 +218,19 @@ function double_field_field_formatter_info() {
 function double_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $settings = $instance['display'][$view_mode]['settings'];
   $element = array();
+
+  if ($instance['display'][$view_mode]['type'] == 'double_field_fieldset') {
+    $element['collapsible'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Collapsible'),
+      '#default_value' => $settings['collapsible'],
+    );
+    $element['collapsed'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Collapsed'),
+      '#default_value' => $settings['collapsed'],
+    );
+  }
   foreach (array('first', 'second') AS $subfield) {
     $element[$subfield] = array(
       '#title' => t('!subfield subfield', array('!subfield' => $subfield)),
@@ -249,10 +262,23 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
  */
 function double_field_field_formatter_settings_summary($field, $instance, $view_mode) {
   $settings = $instance['display'][$view_mode]['settings'];
-  $summary = '<div>First prefix: <em>' . check_plain($settings['first']['prefix']) .'</em></div>';
-  $summary .= '<div>First suffix: <em>' . check_plain($settings['first']['suffix']) .'</em></div>';
-  $summary .= '<div>Second prefix: <em>' . check_plain($settings['second']['prefix']) .'</em></div>';
-  $summary .= '<div>Second suffix: <em>' . check_plain($settings['second']['suffix']) .'</em></div>';
+  $summary = '';
+  if ($instance['display'][$view_mode]['type'] == 'double_field_fieldset') {
+    $summary .= '<div>Collapsible: <em>' . ($settings['collapsible'] ? 'Yes' : 'No') . '</em></div>';
+    $summary .= '<div>Collapsed: <em>' . ($settings['collapsed'] ? 'Yes' : 'No') . '</em></div>';
+  }
+  if ($settings['first']['prefix']) {
+    $summary .= '<div>First prefix: <em>' . $settings['first']['prefix'] . '</em></div>';
+  }
+  if ($settings['first']['suffix']) {
+    $summary .= '<div>First suffix: <em>' . $settings['first']['suffix'] . '</em></div>';
+  }
+  if ($settings['second']['prefix']) {
+    $summary .= '<div>Second prefix: <em>' . $settings['second']['prefix'] .'</em></div>';
+  }
+  if ($settings['second']['suffix']) {
+    $summary .= '<div>Second suffix: <em>' . $settings['second']['suffix'] .'</em></div>';
+  }
   return $summary;
 }
 
@@ -261,14 +287,30 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
  * Implements hook_field_formatter_view().
  */
 function double_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $settings = $display['settings'];
   $element = array();
   if ($display['type'] == 'double_field_fieldset') {
     foreach ($items as $delta => $item) {
       $element[$delta] = array(
-        '#title' => check_plain($item['first']),
-        '#value' => check_plain($item['second']),
+        '#title' => check_plain($settings['first']['prefix'] . $item['first'] . $settings['first']['suffix']),
+        '#value' => check_plain($settings['second']['prefix'] . $item['second'] . $settings['second']['suffix']),
         '#theme' => 'fieldset',
+        '#collapsible' => $settings['collapsible'],
+        '#collapsed' => $settings['collapsed'],
       );
+      // theme_fieldset() doesn't handle '#collapsible', '#collapsed' arguments as claimed
+      // see http://drupal.org/node/1099132
+      if ($settings['collapsible']) {
+        $element[$delta]['#attached'] = array(
+          'js' => array(
+            'misc/form.js',
+            'misc/collapse.js',
+          ),
+        );
+        $element[$delta]['#attributes'] = array(
+          'class' => $settings['collapsed'] ? array('collapsible', 'collapsed') : array('collapsible'),
+        );
+      }
     }
   }
   else {
