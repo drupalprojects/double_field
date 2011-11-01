@@ -268,16 +268,16 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
     $summary .= '<div>Collapsed: <em>' . ($settings['collapsed'] ? 'Yes' : 'No') . '</em></div>';
   }
   if ($settings['first']['prefix']) {
-    $summary .= '<div>First prefix: <em>' . $settings['first']['prefix'] . '</em></div>';
+    $summary .= '<div>First prefix: <em>' . check_plain($settings['first']['prefix']) . '</em></div>';
   }
   if ($settings['first']['suffix']) {
-    $summary .= '<div>First suffix: <em>' . $settings['first']['suffix'] . '</em></div>';
+    $summary .= '<div>First suffix: <em>' . check_plain($settings['first']['suffix']) . '</em></div>';
   }
   if ($settings['second']['prefix']) {
-    $summary .= '<div>Second prefix: <em>' . $settings['second']['prefix'] .'</em></div>';
+    $summary .= '<div>Second prefix: <em>' . check_plain($settings['second']['prefix']) . '</em></div>';
   }
   if ($settings['second']['suffix']) {
-    $summary .= '<div>Second suffix: <em>' . $settings['second']['suffix'] .'</em></div>';
+    $summary .= '<div>Second suffix: <em>' . check_plain($settings['second']['suffix']) . '</em></div>';
   }
   return $summary;
 }
