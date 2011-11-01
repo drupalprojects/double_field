@@ -109,7 +109,7 @@ function double_field_field_widget_settings_form($field, $instance) {
     '#title' => t('Display as inline element'),
     '#default_value' => $settings['inline'],
   );
-  foreach (array('first', 'second') AS $subfield) {
+  foreach (array('first', 'second') as $subfield) {
     $form[$subfield] = array(
       '#title' => t('!subfield subfield', array('!subfield' => $subfield)),
       '#type' => 'fieldset',
@@ -148,7 +148,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   $double_field = array(
     '#theme_wrappers' => array('form_element'),
   );
-  foreach (array('first', 'second') AS $subfield) {
+  foreach (array('first', 'second') as $subfield) {
     $double_field[$subfield] = array (
       '#type' => 'textfield',
       '#prefix' => $settings[$subfield]['prefix'],
@@ -217,8 +217,8 @@ function double_field_field_formatter_info() {
  */
 function double_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $settings = $instance['display'][$view_mode]['settings'];
-  $element = array();
 
+  $element = array('#tree' => TRUE);
   if ($instance['display'][$view_mode]['type'] == 'double_field_fieldset') {
     $element['collapsible'] = array(
       '#type' => 'checkbox',
@@ -231,7 +231,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       '#default_value' => $settings['collapsed'],
     );
   }
-  foreach (array('first', 'second') AS $subfield) {
+  foreach (array('first', 'second') as $subfield) {
     $element[$subfield] = array(
       '#title' => t('!subfield subfield', array('!subfield' => $subfield)),
       '#type' => 'fieldset',
