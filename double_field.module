@@ -17,6 +17,9 @@ function double_field_field_info() {
       'default_widget' => 'double_field',
       'default_formatter' => 'double_field_inline',
       'settings' => array('first_maxlength' => 255, 'second_maxlength' => 255),
+      // Integrate with the Entity Metadata module.
+      'property_type' => 'double_field',
+      'property_callbacks' => array('double_field_property_callback'),
     ),
   );
 }
@@ -347,4 +350,25 @@ function theme_double_field($vars) {
   $output .= '<div class="double-field-second">' . $element['#display']['settings']['second']['prefix'] . check_plain($element['#item']['second']) . $element['#display']['settings']['second']['suffix'] . '</div>';
   $output .= '</div>';
   return $output;
+}
+
+
+/**
+ * Callback to alter the property info of date fields.
+ */
+function double_field_property_callback(&$info, $entity_type, $field, $instance, $field_type) {
+  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
+  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+  $property['property info']['first'] = array(
+    'type' => 'text',
+    'label' => t('First subfield'),
+    'setter callback' => 'entity_property_verbatim_set',
+  );
+  $property['property info']['second'] = array(
+    'type' => 'text',
+    'label' => t('Second subfield'),
+    'setter callback' => 'entity_property_verbatim_set',
+  );
+  unset($property['query callback']);
 }
