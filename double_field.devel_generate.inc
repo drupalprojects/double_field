@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Functions needed for devel_generate integration.
+ */
 
 /**
  * Implements hook_devel_generate().
