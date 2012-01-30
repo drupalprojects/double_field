@@ -9,6 +9,12 @@
 // See http://drupal.org/node/977052
 require 'double_field.field.inc';
 
+function double_field_hook_info() {
+  $hooks['field_feeds_processor_targets_alter'] = array(
+    'group' => 'feeds',
+  );
+  return $hooks;
+}
 
 /**
  * Implements hook_theme().

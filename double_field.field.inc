@@ -4,7 +4,7 @@
  * @file
  *
  */
-
+ 
 /**
  * Implements hook_field_info().
  */
@@ -411,3 +411,4 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
   );
   unset($property['query callback']);
 }
+
