@@ -245,7 +245,7 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
         '#header' => $header,
       );
       break;
-
+    
     case 'double_field_accordion':
       $element[0] = array(
         '#theme' => 'double_field_accordion',
@@ -268,7 +268,6 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
  * Implements theme_double_field().
  */
 function theme_double_field($vars) {
-
   $element = $vars['element'];
   $settings = $element['#display']['settings'];
 

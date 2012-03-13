@@ -101,6 +101,7 @@ function double_field_field_widget_settings_form($field, $instance) {
   );
   $subfield_types = explode('_&_', $instance['widget']['type']);
   foreach (array('first', 'second') as $key => $subfield) {
+
     $form[$subfield] = array(
       '#title' => t('@subfield subfield – @subwidget', array('@subfield' => $subfield, '@subwidget' => $subfield_types[$key])),
       '#type' => 'fieldset',
@@ -108,6 +109,7 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#collapsed' => TRUE,
     );
 
+    $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
     switch ($subfield_types[$key]) {
       case 'textfield':
         $form[$subfield]['size'] = array(
@@ -162,8 +164,8 @@ function double_field_field_widget_settings_form($field, $instance) {
         );
         break;
     }
+  
 
-    // Common settings.
     $form[$subfield]['general'] = array(
       '#title' => t('Common settings'),
       '#type' => 'fieldset',
@@ -192,8 +194,6 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#maxlength' => 50,
       '#default_value' => $settings[$subfield]['general']['suffix'],
     );
-
-    $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
 
   }
   return $form;
