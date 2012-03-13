@@ -23,6 +23,8 @@ function double_field_theme() {
   return array(
     'double_field' => array('render element' => 'element'),
     'double_field_accordion' => array('render element' => 'element'),
+    'double_field_tabs' => array('render element' => 'element'),
+    'double_field_dialog' => array('render element' => 'element'),
   );
 }
 
@@ -185,8 +187,7 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
       }
       break;
 
-    case 'double_field_inline':
-    case 'double_field_block':
+    case 'double_field_unformatted_list':
       foreach ($items as $delta => $item) {
         $element[$delta] = array(
           '#display' => $display,
@@ -208,6 +209,13 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
         '#theme' => 'item_list',
         '#type' => $settings['list_type'],
         '#items' => $list_items,
+      );
+      break;
+
+    case 'double_field_dialog':
+      $element[0] = array(
+        '#theme' => 'double_field_dialog',
+        '#items' => $items,
       );
       break;
 
@@ -237,10 +245,16 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
         '#header' => $header,
       );
       break;
-    
+
     case 'double_field_accordion':
       $element[0] = array(
         '#theme' => 'double_field_accordion',
+        '#items' => $items,
+      );
+      break;
+    case 'double_field_tabs':
+      $element[0] = array(
+        '#theme' => 'double_field_tabs',
         '#items' => $items,
       );
       break;
@@ -251,22 +265,28 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
 }
 
 /**
- *
+ * Implements theme_double_field().
  */
 function theme_double_field($vars) {
+
   $element = $vars['element'];
-  $attributes = drupal_attributes(
-    array('class' => array('double-field', $element['#display']['type'] == 'double_field_block' ? 'clearfix' : 'container-inline'))
-  );
-  $output = '<div' . $attributes . '>';
-  $output .= '<div class="double-field-first">' . $element['#item']['first'] . '</div>';
-  $output .= '<div class="double-field-second">' . $element['#item']['second'] . '</div>';
-  $output .= '</div>';
+  $settings = $element['#display']['settings'];
+
+  if ($settings['style'] == 'link') {
+    $output = l($element['#item']['first'], $element['#item']['second']);
+  }
+  else {
+    $class = $settings['style'] == 'block' ? 'clearfix' : 'container-inline';
+    $output = '<div class="' . $class . '">';
+    $output .= '<div class="double-field-first">' . $element['#item']['first'] . '</div>';
+    $output .= '<div class="double-field-second">' . $element['#item']['second'] . '</div>';
+    $output .= '</div>';
+  }
   return $output;
 }
 
 /**
- * 
+ * Implements theme_double_field_accordion().
  */
 function theme_double_field_accordion($vars) {
   $output = '<div class="double-field-accordion">';
@@ -277,5 +297,34 @@ function theme_double_field_accordion($vars) {
   $output .= '</div>';
   drupal_add_library('system', 'ui.accordion');
   drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-accordion").accordion({ collapsible: true, active: false });});', 'inline');
+  return $output;
+}
+
+/**
+ * Implements theme_double_field_tabs().
+ */
+function theme_double_field_tabs($vars) {
+  $output = '';
+  foreach ($vars['element']['#items'] as $delta => $item) {
+    $vars['items'][] = '<a href="#tabs-' . $delta . '">' . $item['first'] . '</a>';
+    $output .= '<div id="tabs-' . $delta . '">' . $item['second'] . '</div>';
+  }
+  $output = '<div class="double-field-tabs">' . theme('item_list', $vars) . $output . '</div>';
+  
+  drupal_add_library('system', 'ui.tabs');
+  drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-tabs").tabs();});', 'inline');
+  return $output;
+}
+
+/**
+ * Implements theme_double_field_dialog().
+ */
+function theme_double_field_dialog($vars) {
+  $output = '';
+  foreach (array_reverse($vars['element']['#items']) as $delta => $item) {
+    $output .= '<div class="double-field-dialog" title="' . $item['first'] . '">' . $item['second'] . '</div>';
+  }
+  drupal_add_library('system', 'ui.dialog');
+  drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-dialog").dialog();});', 'inline');
   return $output;
 }

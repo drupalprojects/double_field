@@ -14,7 +14,7 @@ function double_field_field_info() {
       'label' => t('Double field'),
       'description' => t('Double text field'),
       'default_widget' => 'double_field',
-      'default_formatter' => 'double_field_inline',
+      'default_formatter' => 'double_field_unformatted list',
       'settings' => array(
         'first' => array('maxlength' => 255),
         'second' => array('maxlength' => 255),
@@ -107,36 +107,7 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
-    $form[$subfield]['general'] = array(
-      '#title' => t('Common settings'),
-      '#type' => 'fieldset',
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    );
-    $form[$subfield]['general']['required'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Required'),
-      '#default_value' => $settings[$subfield]['general']['required'],
-      '#states' => array(
-        'visible' => array(
-          ':input[name="instance[required]"]' => array('checked' => TRUE),
-        ),
-      ),
-    );
-    $form[$subfield]['general']['prefix'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Prefix'),
-      '#maxlength' => 50,
-      '#default_value' => $settings[$subfield]['general']['prefix'],
-    );
-    $form[$subfield]['general']['suffix'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Suffix'),
-      '#maxlength' => 50,
-      '#default_value' => $settings[$subfield]['general']['suffix'],
-    );
 
-    $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
     switch ($subfield_types[$key]) {
       case 'textfield':
         $form[$subfield]['size'] = array(
@@ -191,6 +162,39 @@ function double_field_field_widget_settings_form($field, $instance) {
         );
         break;
     }
+
+    // Common settings.
+    $form[$subfield]['general'] = array(
+      '#title' => t('Common settings'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form[$subfield]['general']['required'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Required'),
+      '#default_value' => $settings[$subfield]['general']['required'],
+      '#states' => array(
+        'visible' => array(
+          ':input[name="instance[required]"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+    $form[$subfield]['general']['prefix'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Prefix'),
+      '#maxlength' => 50,
+      '#default_value' => $settings[$subfield]['general']['prefix'],
+    );
+    $form[$subfield]['general']['suffix'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Suffix'),
+      '#maxlength' => 50,
+      '#default_value' => $settings[$subfield]['general']['suffix'],
+    );
+
+    $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
+
   }
   return $form;
 }
@@ -228,15 +232,10 @@ function double_field_field_formatter_info() {
     ),
   );
   return array(
-    'double_field_inline' => array(
-      'label' => t('Inline'),
+    'double_field_unformatted_list' => array(
+      'label' => t('Unformatted list'),
       'field types' => array('double_field'),
-      'settings' => $settings,
-    ),
-    'double_field_block' => array(
-      'label' => t('Block'),
-      'field types' => array('double_field'),
-      'settings' => $settings,
+      'settings' => $settings + array('style' => 'inline'),
     ),
     'double_field_fieldset' => array(
       'label' => t('Fieldset'),
@@ -246,7 +245,7 @@ function double_field_field_formatter_info() {
     'double_field_html_list' => array(
       'label' => t('HTML list'),
       'field types' => array('double_field'),
-      'settings' => $settings + array('list_type' => 'ul'),
+      'settings' => $settings + array('style' => 'inline', 'list_type' => 'ul'),
     ),
     'double_field_table' => array(
       'label' => t('Table'),
@@ -265,6 +264,16 @@ function double_field_field_formatter_info() {
       'field types' => array('double_field'),
       'settings' => $settings,
     ),
+    'double_field_tabs' => array(
+      'label' => t('Tabs'),
+      'field types' => array('double_field'),
+      'settings' => $settings,
+    ),
+    'double_field_dialog' => array(
+      'label' => t('Dialog'),
+      'field types' => array('double_field'),
+      'settings' => $settings,
+    ),
   );
 }
 
@@ -275,6 +284,17 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
 
   $settings = $instance['display'][$view_mode]['settings'];
   $element = array('#tree' => TRUE);
+
+  $style_settings = array(
+    '#type' => 'select',
+    '#title' => t('Style'),
+    '#options' => array(
+      'inline' => t('Inline'),
+      'block' => t('Block'),
+      'link' => t('Link'),
+    ),
+    '#default_value' => $settings['style'],
+  );
 
   switch ($instance['display'][$view_mode]['type']) {
     case 'double_field_fieldset':
@@ -290,7 +310,12 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       );
       break;
 
+    case 'double_field_unformatted_list':
+      $element['style'] = $style_settings;
+      break;
+
     case 'double_field_html_list':
+      $element['style'] = $style_settings;
       $element['list_type'] = array(
         '#type' => 'radios',
         '#title' => t('List type'),
@@ -368,15 +393,20 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
  */
 function double_field_field_formatter_settings_summary($field, $instance, $view_mode) {
   $settings = $instance['display'][$view_mode]['settings'];
+  $type = $instance['display'][$view_mode]['type'];
 
   $summary = '';
-  switch ($instance['display'][$view_mode]['type']) {
+  switch ($type) {
     case 'double_field_fieldset':
       $summary .= '<div>' . t('Collapsible: <em>@value</em>', array('@value' => $settings['collapsible'] ? 'Yes' : 'No')) . '</div>';
       $summary .= '<div>' . t('Collapsed: <em>@value</em>', array('@value' => $settings['collapsed'] ? 'Yes' : 'No')) . '</div>';
       break;
+    case 'double_field_unformatted_list':
     case 'double_field_html_list':
-      $summary .= '<div>' . t('List type: <em>@value</em>', array('@value' => $settings['list_type'] == 'ul' ? t('Unordered') : t('Ordered'))) . '</div>';
+      $summary .= '<div>' . t('Display style: <em>@value</em>', array('@value' => t(ucfirst($settings['style'])))) . '</div>';
+      if ($type == 'double_field_html_list') {
+        $summary .= '<div>' . t('List type: <em>@value</em>', array('@value' => $settings['list_type'] == 'ul' ? t('Unordered') : t('Ordered'))) . '</div>';
+      }
       break;
     case 'double_field_table':
       $summary .= '<div>' . t('Row number column: <em>@value</em>', array('@value' => $settings['table']['number_column'] ? 'Yes' : 'No')) . '</div>';
@@ -411,4 +441,3 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
   );
   unset($property['query callback']);
 }
-
