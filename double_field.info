@@ -2,4 +2,5 @@ name = Double field
 description = Provides a field with two text widgets
 package = Fields
 core = 7.x
-files[] = tests/double_field.test
+; TODO reroll the tests against 2.x version.
+;files[] = tests/double_field.test
