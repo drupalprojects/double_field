@@ -14,7 +14,7 @@ function double_field_field_info() {
       'label' => t('Double field'),
       'description' => t('Double text field'),
       'default_widget' => 'double_field',
-      'default_formatter' => 'double_field_unformatted list',
+      'default_formatter' => 'double_field_unformatted_list',
       'settings' => array(
         'first' => array('maxlength' => 255),
         'second' => array('maxlength' => 255),
@@ -164,7 +164,6 @@ function double_field_field_widget_settings_form($field, $instance) {
         );
         break;
     }
-  
 
     $form[$subfield]['general'] = array(
       '#title' => t('Common settings'),
@@ -194,7 +193,6 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#maxlength' => 50,
       '#default_value' => $settings[$subfield]['general']['suffix'],
     );
-
   }
   return $form;
 }
@@ -221,16 +219,15 @@ function double_field_allowed_values_setting_validate($element, &$form_state) {
  * Implements hook_field_formatter_info().
  */
 function double_field_field_formatter_info() {
-  $settings = array(
-    'first' => array(
-      'prefix' => '',
-      'suffix' => '&nbsp;',
-    ),
-    'second' => array(
+  foreach (array('first', 'second') as $subfield) {
+    $settings[$subfield] = array(
+      'format' => '_none',
       'prefix' => '',
       'suffix' => '',
-    ),
-  );
+    );
+  }
+  $settings['first']['suffix'] = '&nbsp;';
+
   return array(
     'double_field_unformatted_list' => array(
       'label' => t('Unformatted list'),
@@ -295,7 +292,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
     ),
     '#default_value' => $settings['style'],
   );
-
+  
   switch ($instance['display'][$view_mode]['type']) {
     case 'double_field_fieldset':
       $element['collapsible'] = array(
@@ -362,13 +359,27 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       break;
   }
 
-  // Commons settings.
+  // Get a list of formats.
+  $options['_none'] = t('- None -');
+  foreach (filter_formats() as $format) {
+    $options[$format->format] = $format->name;
+  }
+  
+  // Common settings.
   foreach (array('first', 'second') as $subfield) {
     $element[$subfield] = array(
       '#title' => t('@subfield subfield', array('@subfield' => $subfield)),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
+    );
+    $element[$subfield]['format'] = array(
+      '#type' => 'select',
+      '#title' => t('Text format'),
+      '#options' => $options,
+      '#default_value' => $settings[$subfield]['format'],
+      '#description' => t('Warning: This setting may have security implications.'),
+      '#element_validate' => array('double_field_format_validate'),
     );
     $element[$subfield]['prefix'] = array(
       '#type' => 'textfield',
@@ -389,6 +400,15 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
 }
 
 /**
+ * Element validate callback.
+ */
+function double_field_format_validate($element, &$form_state, $form) {
+  if ($element['#value'] == 'full_html') {
+    drupal_set_message(t('Using the "Full HTML" format allows HTML to be posted unfiltered. This could represent a severe security risk.<br/>See !link for further information.', array('!link' => '<a href="http://drupal.org/documentation/modules/filter">http://drupal.org/documentation/modules/filter</a>')), 'warning', FALSE);  
+  }
+}
+
+/**
  * Implements hook_field_formatter_settings_summary().
  */
 function double_field_field_formatter_settings_summary($field, $instance, $view_mode) {
@@ -397,10 +417,12 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
 
   $summary = '';
   switch ($type) {
+
     case 'double_field_fieldset':
       $summary .= '<div>' . t('Collapsible: <em>@value</em>', array('@value' => $settings['collapsible'] ? 'Yes' : 'No')) . '</div>';
       $summary .= '<div>' . t('Collapsed: <em>@value</em>', array('@value' => $settings['collapsed'] ? 'Yes' : 'No')) . '</div>';
       break;
+
     case 'double_field_unformatted_list':
     case 'double_field_html_list':
       $summary .= '<div>' . t('Display style: <em>@value</em>', array('@value' => t(ucfirst($settings['style'])))) . '</div>';
@@ -408,16 +430,24 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
         $summary .= '<div>' . t('List type: <em>@value</em>', array('@value' => $settings['list_type'] == 'ul' ? t('Unordered') : t('Ordered'))) . '</div>';
       }
       break;
+
     case 'double_field_table':
       $summary .= '<div>' . t('Row number column: <em>@value</em>', array('@value' => $settings['table']['number_column'] ? 'Yes' : 'No')) . '</div>';
       $summary .= '<div>' . t('First column label: <em>@value</em>', array('@value' => $settings['table']['first']['column_label'])) . '</div>';
       $summary .= '<div>' . t('Second column label: <em>@value</em>', array('@value' => $settings['table']['second']['column_label'])) . '</div>';
       break;
+
   }
-  $summary .= '<div>' . t('First prefix: <em>@value</em>', array('@value' => $settings['first']['prefix'])) . '</div>';
-  $summary .= '<div>' . t('Second prefix: <em>@value</em>', array('@value' => $settings['second']['prefix'])) . '</div>';
-  $summary .= '<div>' . t('First suffix: <em>@value</em>', array('@value' => $settings['first']['suffix'])) . '</div>';
-  $summary .= '<div>' . t('Second suffix: <em>@value</em>', array('@value' => $settings['second']['suffix'])) . '</div>';
+
+  $filter_formats = filter_formats();
+  foreach (array('first', 'second') as $subfield) {
+    $summary .= '<div><h5>' . t(ucfirst($subfield) . '&nbsp;subfield') . '</h5>';
+    $format = isset($filter_formats[$settings[$subfield]['format']]) ? $filter_formats[$settings[$subfield]['format']]->name : '';
+    $summary .= '<div style="color: ' . ($settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto') . '">' . t('Format: <em>@value</em>', array('@value' => $format)) . '</div>';
+    $summary .= '<div>' . t('Prefix: <em>@value</em>', array('@value' => $settings[$subfield]['prefix'])) . '</div>';
+    $summary .= '<div>' . t('Suffix: <em>@value</em>', array('@value' => $settings[$subfield]['suffix'])) . '</div>';
+    $summary .= '</div>';
+  }
 
   return $summary;
 }
