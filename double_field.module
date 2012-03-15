@@ -99,31 +99,41 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   $double_field = array(
     '#theme_wrappers' => array('form_element'),
   );
+
   foreach (array('first', 'second') as $key => $subfield) {
     $double_field[$subfield] = array(
       '#type' => $subfield_types[$key],
       '#prefix' => $settings[$subfield]['general']['prefix'],
       '#suffix' => $settings[$subfield]['general']['suffix'],
       '#default_value' => isset($items[$delta][$subfield]) ? $items[$delta][$subfield] : NULL,
+      // Avoid PDOException: String data, right truncated.
+      '#maxlength' => $field['settings'][$subfield]['maxlength'],
+      '#title' => $instance['label'],
+      '#title_display' => 'invisible',
     );
     $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
+
     switch ($subfield_types[$key]) {
+
       case 'textfield':
         $double_field[$subfield]['#size'] = $settings[$subfield]['size'];
-        $double_field[$subfield]['#maxlength'] = $field['settings'][$subfield]['maxlength'];
         break;
+
       case 'checkbox':
-          $double_field[$subfield]['#title'] = $settings[$subfield]['title'];
+        $double_field[$subfield]['#title'] = $settings[$subfield]['title'];
         break;
+
       case 'select':
         $label = $settings[$subfield]['general']['required'] ? t('- None -') : t('- Select a value -');
         $double_field[$subfield]['#options'] = array('' => $label) + $settings[$subfield]['allowed_values'];
         break;
+
       case 'textarea':
         $double_field[$subfield]['#cols'] = $settings[$subfield]['cols'];
         $double_field[$subfield]['#rows'] = $settings[$subfield]['rows'];
         $double_field[$subfield]['#resizable'] = $settings[$subfield]['resizable'];
         break;
+
     }
   }
   if ($settings['inline']) {
@@ -132,6 +142,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   }
   return $element + $double_field;
 }
+
 
 /**
  * Implements hook_field_widget_error().

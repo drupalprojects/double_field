@@ -37,7 +37,7 @@ function double_field_field_settings_form($field, $instance, $has_data) {
     '#default_value' => $settings['first']['maxlength'],
     '#required' => TRUE,
     '#description' => t('The maximum length of the second textfield in characters.'),
-    '#element_validate' => array('_element_validate_integer_positive'),
+    '#element_validate' => array('element_validate_integer_positive'),
     '#disabled' => $has_data,
   );
   $form['second']['maxlength'] = array(
@@ -46,7 +46,7 @@ function double_field_field_settings_form($field, $instance, $has_data) {
     '#default_value' => $settings['second']['maxlength'],
     '#required' => TRUE,
     '#description' => t('The maximum length of the second field in characters.'),
-    '#element_validate' => array('_element_validate_integer_positive'),
+    '#element_validate' => array('element_validate_integer_positive'),
     '#disabled' => $has_data,
   );
   return $form;
@@ -116,7 +116,7 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#type' => 'textfield',
           '#title' => t('Size'),
           '#default_value' => $settings[$subfield]['size'],
-          '#element_validate' => array('_element_validate_integer_positive'),
+          '#element_validate' => array('element_validate_integer_positive'),
           '#size' => 3,
         );
         break;
@@ -144,7 +144,7 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#type' => 'textfield',
           '#title' => t('Columns'),
           '#default_value' => $settings[$subfield]['cols'],
-          '#element_validate' => array('_element_validate_integer_positive'),
+          '#element_validate' => array('element_validate_integer_positive'),
           '#size' => 3,
           '#description' => t('How many columns wide the textarea should be'),
         );
@@ -152,7 +152,7 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#type' => 'textfield',
           '#title' => t('Rows'),
           '#default_value' => $settings[$subfield]['rows'],
-          '#element_validate' => array('_element_validate_integer_positive'),
+          '#element_validate' => array('element_validate_integer_positive'),
           '#size' => 3,
           '#description' => t('How many rows high the textarea should be.'),
         );
