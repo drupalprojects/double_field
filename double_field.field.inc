@@ -175,11 +175,6 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#type' => 'checkbox',
       '#title' => t('Required'),
       '#default_value' => $settings[$subfield]['general']['required'],
-      '#states' => array(
-        'visible' => array(
-          ':input[name="instance[required]"]' => array('checked' => TRUE),
-        ),
-      ),
     );
     $form[$subfield]['general']['prefix'] = array(
       '#type' => 'textfield',

@@ -40,15 +40,20 @@ function double_field_field_is_empty($item, $field) {
  */
 function double_field_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   $settings = $instance['widget']['settings'];
-  if ($entity_type && $instance['required']) {
+
+  if ($entity_type) {
     $error = array(
       'error' => 'double_field_required', 
       'error_element' => array('first' => TRUE, 'second' => TRUE), 
       'message' => t('%name field is required.', array('%name' => $instance['label'])),
     );
+
     $field_is_empty = TRUE;
+    list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
     foreach ($items as $delta => $item) {
-      // Checkbox.
+      // Unchecked checkbox value is 0.
+      $item['first'] = ($item['first'] == 0 && $widget['first'] == 'checkbox') ? '' : $item['first'];
+      $item['second'] = ($item['second'] == 0 && $widget['second'] == 'checkbox') ? '' : $item['second'];
       if ($item['first'] !== '' || $item['second'] !== '') {
         $field_is_empty = FALSE;
         $error['error_element']['first'] = $settings['first']['general']['required'] && $item['first'] === '';
@@ -58,10 +63,14 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
         }
       }
     }
-    if ($field_is_empty) {
+    // Mark only required subfields.
+    if ($field_is_empty && $instance['required']) {
+      $error['error_element']['first'] = $settings['first']['general']['required'] && $items[0]['first'] === '';
+      $error['error_element']['second'] = $settings['second']['general']['required'] && $items[0]['second'] === '';
       $errors[$field['field_name']][$langcode][0][] = $error;
     }
   }
+
 }
 
 /**
@@ -124,7 +133,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
         break;
 
       case 'select':
-        $label = $settings[$subfield]['general']['required'] ? t('- None -') : t('- Select a value -');
+        $label = $settings[$subfield]['general']['required'] ? t('- Select a value -') : t('- None -');
         $double_field[$subfield]['#options'] = array('' => $label) + $settings[$subfield]['allowed_values'];
         break;
 
@@ -169,6 +178,10 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
     foreach (array('first', 'second') as $subfield) {
       $items[$delta][$subfield] = $settings[$subfield]['format'] == '_none' ?
       check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
+      // Do not display prefix and suffix for empty subfields.
+      if ($items[$delta][$subfield]) {
+        $items[$delta][$subfield] = $settings[$subfield]['prefix'] . $items[$delta][$subfield] . $settings[$subfield]['suffix'];
+      }
     }
   }
 
