@@ -31,24 +31,17 @@ function double_field_field_info() {
  */
 function double_field_field_settings_form($field, $instance, $has_data) {
   $settings = $field['settings'];
-  $form['first']['maxlength'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Maximum length of the first textfield'),
-    '#default_value' => $settings['first']['maxlength'],
-    '#required' => TRUE,
-    '#description' => t('The maximum length of the second textfield in characters.'),
-    '#element_validate' => array('element_validate_integer_positive'),
-    '#disabled' => $has_data,
-  );
-  $form['second']['maxlength'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Maximum length of the second textfield'),
-    '#default_value' => $settings['second']['maxlength'],
-    '#required' => TRUE,
-    '#description' => t('The maximum length of the second field in characters.'),
-    '#element_validate' => array('element_validate_integer_positive'),
-    '#disabled' => $has_data,
-  );
+  foreach (array('first', 'second') as $subfield) {
+    $form[$subfield]['maxlength'] = array(
+      '#type' => 'textfield',
+      '#title' => t("Maximum length of the $subfield textfield"),
+      '#default_value' => $settings[$subfield]['maxlength'],
+      '#required' => TRUE,
+      '#description' => t("The maximum length of the $subfield textfield in characters."),
+      '#element_validate' => array('element_validate_integer_positive'),
+      '#disabled' => $has_data,
+    );
+  }
   return $form;
 }
 
@@ -103,7 +96,7 @@ function double_field_field_widget_settings_form($field, $instance) {
   foreach (array('first', 'second') as $key => $subfield) {
 
     $form[$subfield] = array(
-      '#title' => t('@subfield subfield – @subwidget', array('@subfield' => $subfield, '@subwidget' => $subfield_types[$key])),
+      '#title' => t($subfield . ' subfield – ' . $subfield_types[$key]),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
@@ -344,7 +337,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       foreach (array('first', 'second') as $subfield) {
         $element['table'][$subfield]['column_label'] = array(
           '#type' => 'textfield',
-          '#title' => t('@subfield column label', array('@subfield' => ucfirst($subfield))),
+          '#title' => t(ucfirst($subfield) . ' column label'),
           '#size' => 30,
           '#maxlength' => 50,
           '#default_value' => $settings['table'][$subfield]['column_label'],
@@ -363,7 +356,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
   // Common settings.
   foreach (array('first', 'second') as $subfield) {
     $element[$subfield] = array(
-      '#title' => t('@subfield subfield', array('@subfield' => $subfield)),
+      '#title' => t(ucfirst($subfield) . ' subfield'),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
