@@ -33,7 +33,7 @@ function double_field_field_settings_form($field, $instance, $has_data) {
     '#title' => t('Maximum length of the first textfield'),
     '#default_value' => $settings['first_maxlength'],
     '#required' => TRUE,
-    '#description' => t('The maximum length of the second textfield in characters.'),
+    '#description' => t('The maximum length of the first textfield in characters.'),
     '#element_validate' => array('_element_validate_integer_positive'),
     '#disabled' => $has_data,
   );
