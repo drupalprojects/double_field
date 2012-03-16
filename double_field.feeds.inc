@@ -13,7 +13,7 @@ function double_field_feeds_processor_targets_alter(&$targets, $entity_type, $bu
         $targets["$name:$subfield"] = array(
           'name' => $instance['label'] . ':' . $subfield,
           'callback' => 'double_field_feeds_set_target',
-          'description' => t('@subfield subfield of the @name field.', array('@subfield' => ucfirst($subfield), '@name' => $instance['label'])),
+          'description' => t(ucfirst($subfield) . ' subfield of the @name field.', array('@name' => $instance['label'])),
           'real_target' => $name,
         );
       }

@@ -104,6 +104,7 @@ function double_field_field_widget_settings_form($field, $instance) {
 
     $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
     switch ($subfield_types[$key]) {
+
       case 'textfield':
         $form[$subfield]['size'] = array(
           '#type' => 'textfield',
@@ -113,6 +114,7 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#size' => 3,
         );
         break;
+
       case 'checkbox':
         $form[$subfield]['title'] = array(
           '#type' => 'textfield',
@@ -120,6 +122,7 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#default_value' => $settings[$subfield]['title'],
         );
         break;
+
       case 'select':
         $form[$subfield]['allowed_values'] = array(
           '#type' => 'textarea',
@@ -132,6 +135,7 @@ function double_field_field_widget_settings_form($field, $instance) {
         $form[$subfield]['allowed_values']['#description'] .= '<br/>' . t('The key is the stored value. The label will be used in displayed values and edit forms.');
         $form[$subfield]['allowed_values']['#description'] .= '<br/>' . t('The label is optional: if a line contains a single string, it will be used as key and label.') . '</p>';
         break;
+
       case 'textarea':
         $form[$subfield]['cols'] = array(
           '#type' => 'textfield',
@@ -156,6 +160,7 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#description' => t('Whether users should be allowed to resize the text area.'),
         );
         break;
+
     }
 
     $form[$subfield]['general'] = array(
@@ -181,7 +186,9 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#maxlength' => 50,
       '#default_value' => $settings[$subfield]['general']['suffix'],
     );
+
   }
+
   return $form;
 }
 
@@ -447,15 +454,12 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
   $property['getter callback'] = 'entity_metadata_field_verbatim_get';
   $property['setter callback'] = 'entity_metadata_field_verbatim_set';
-  $property['property info']['first'] = array(
-    'type' => 'text',
-    'label' => t('First subfield'),
-    'setter callback' => 'entity_property_verbatim_set',
-  );
-  $property['property info']['second'] = array(
-    'type' => 'text',
-    'label' => t('Second subfield'),
-    'setter callback' => 'entity_property_verbatim_set',
-  );
+  foreach (array('first', 'second') as $subfield) {
+    $property['property info'][$subfield] = array(
+      'type' => 'text',
+      'label' => t(ucfirst($subfield) . ' subfield'),
+      'setter callback' => 'entity_property_verbatim_set',
+    );
+  }
   unset($property['query callback']);
 }

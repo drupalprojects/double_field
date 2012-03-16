@@ -21,10 +21,10 @@ function double_field_hook_info() {
  */
 function double_field_theme() {
   return array(
-    'double_field' => array('render element' => 'element'),
+    'double_field'           => array('render element' => 'element'),
     'double_field_accordion' => array('render element' => 'element'),
-    'double_field_tabs' => array('render element' => 'element'),
-    'double_field_dialog' => array('render element' => 'element'),
+    'double_field_tabs'      => array('render element' => 'element'),
+    'double_field_dialog'    => array('render element' => 'element'),
   );
 }
 
@@ -103,6 +103,7 @@ function double_field_widget_default_settings($key = FALSE) {
  * Implements hook_field_widget_form().
  */
 function double_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
   $settings = $instance['widget']['settings'];
   $subfield_types = explode('_&_', $instance['widget']['type']);
   $double_field = array(
@@ -144,11 +145,14 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
         break;
 
     }
+
   }
+
   if ($settings['inline']) {
     $double_field['first']['#prefix']  = '<div class="container-inline">' . $double_field['first']['#prefix'];
     $double_field['second']['#suffix'] .= '</div>';
   }
+
   return $element + $double_field;
 }
 
