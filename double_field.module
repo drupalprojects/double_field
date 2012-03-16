@@ -119,7 +119,7 @@ function double_field_field_widget_settings_form($field, $instance) {
   );
   foreach (array('first', 'second') as $subfield) {
     $form[$subfield] = array(
-      '#title' => t('@subfield subfield', array('@subfield' => $subfield)),
+      '#title' => t('@subfield subfield', array('@subfield' => t($subfield))),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
@@ -246,7 +246,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
   }
   foreach (array('first', 'second') as $subfield) {
     $element[$subfield] = array(
-      '#title' => t('@subfield subfield', array('@subfield' => $subfield)),
+      '#title' => t('@subfield subfield', array('@subfield' => t($subfield))),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
