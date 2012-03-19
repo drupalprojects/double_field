@@ -116,10 +116,15 @@ function double_field_field_widget_settings_form($field, $instance) {
         break;
 
       case 'checkbox':
-        $form[$subfield]['title'] = array(
+        $form[$subfield]['on_value'] = array(
           '#type' => 'textfield',
-          '#title' => t('Title'),
-          '#default_value' => $settings[$subfield]['title'],
+          '#title' => t('On value'),
+          '#default_value' => $settings[$subfield]['on_value'],
+        );
+        $form[$subfield]['off_value'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Off value'),
+          '#default_value' => $settings[$subfield]['off_value'],
         );
         break;
 
@@ -216,6 +221,7 @@ function double_field_allowed_values_setting_validate($element, &$form_state) {
 function double_field_field_formatter_info() {
   foreach (array('first', 'second') as $subfield) {
     $settings[$subfield] = array(
+      'hidden' => 0,
       'format' => '_none',
       'prefix' => '',
       'suffix' => '',
@@ -368,6 +374,11 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
+    $element[$subfield]['hidden'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Hidden'),
+      '#default_value' => $settings[$subfield]['hidden'],
+    );
     $element[$subfield]['format'] = array(
       '#type' => 'select',
       '#title' => t('Text format'),
@@ -437,6 +448,7 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
   $filter_formats = filter_formats();
   foreach (array('first', 'second') as $subfield) {
     $summary .= '<div><h5>' . t(ucfirst($subfield) . '&nbsp;subfield') . '</h5>';
+    $summary .= '<div>' . t('Hidden: <em>@value</em>', array('@value' => $settings[$subfield]['hidden'] ? t('Yes') : t('No') )) . '</div>';
     $format = isset($filter_formats[$settings[$subfield]['format']]) ? $filter_formats[$settings[$subfield]['format']]->name : '';
     $summary .= '<div style="color: ' . ($settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto') . '">' . t('Format: <em>@value</em>', array('@value' => $format)) . '</div>';
     $summary .= '<div>' . t('Prefix: <em>@value</em>', array('@value' => $settings[$subfield]['prefix'])) . '</div>';

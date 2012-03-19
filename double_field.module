@@ -32,6 +32,7 @@ function double_field_theme() {
  * Implements hook_field_is_empty().
  */
 function double_field_field_is_empty($item, $field) {
+  // Checkbox has own "off value" but there are not any ways to get it.
   return $item['first'] === '' && $item['second'] === '';
 }
 
@@ -52,8 +53,8 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
     list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
     foreach ($items as $delta => $item) {
       // Unchecked checkbox value is 0.
-      $item['first'] = ($item['first'] == 0 && $widget['first'] == 'checkbox') ? '' : $item['first'];
-      $item['second'] = ($item['second'] == 0 && $widget['second'] == 'checkbox') ? '' : $item['second'];
+      $item['first'] = ($widget['first'] == 'checkbox' && $item['first'] == $settings['first']['off_value']) ? '' : $item['first'];
+      $item['second'] = ($widget['second'] == 'checkbox' && $item['second'] == $settings['second']['off_value']) ? '' : $item['second'];
       if ($item['first'] !== '' || $item['second'] !== '') {
         $field_is_empty = FALSE;
         $error['error_element']['first'] = $settings['first']['general']['required'] && $item['first'] === '';
@@ -85,7 +86,8 @@ function double_field_widget_default_settings($key = FALSE) {
       'size' => 10,
     ),
     'checkbox' => array(
-      'title' => t('On'),
+      'on_value' => t('On'),
+      'off_value' => t('Off'),
     ),
     'select' => array(
       'allowed_values' => array(),
@@ -124,13 +126,14 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
     $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
 
     switch ($subfield_types[$key]) {
-
       case 'textfield':
         $double_field[$subfield]['#size'] = $settings[$subfield]['size'];
         break;
 
       case 'checkbox':
-        $double_field[$subfield]['#title'] = $settings[$subfield]['title'];
+        $double_field[$subfield]['#element_validate'] = array('double_field_checkbox_to_storage');
+        $double_field[$subfield]['#on_value'] = $settings[$subfield]['on_value'];
+        $double_field[$subfield]['#off_value'] = $settings[$subfield]['off_value'];
         break;
 
       case 'select':
@@ -143,9 +146,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
         $double_field[$subfield]['#rows'] = $settings[$subfield]['rows'];
         $double_field[$subfield]['#resizable'] = $settings[$subfield]['resizable'];
         break;
-
     }
-
   }
 
   if ($settings['inline']) {
@@ -156,6 +157,13 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   return $element + $double_field;
 }
 
+/**
+ * Transforms submitted checkbox values into field storage format.
+ */
+function double_field_checkbox_to_storage($element, &$form_state) {
+  $value = $element['#value'] ? $element['#on_value'] : $element['#off_value'];
+  form_set_value($element, $value, $form_state);
+}
 
 /**
  * Implements hook_field_widget_error().
@@ -180,8 +188,13 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
 
   foreach ($items as $delta => $item) {
     foreach (array('first', 'second') as $subfield) {
-      $items[$delta][$subfield] = $settings[$subfield]['format'] == '_none' ?
-      check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
+      if ($settings[$subfield]['hidden']) {
+        $items[$delta][$subfield] = FALSE;
+      }
+      else {
+        $items[$delta][$subfield] = $settings[$subfield]['format'] == '_none' ?
+        check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
+      }
       // Do not display prefix and suffix for empty subfields.
       if ($items[$delta][$subfield]) {
         $items[$delta][$subfield] = $settings[$subfield]['prefix'] . $items[$delta][$subfield] . $settings[$subfield]['suffix'];
