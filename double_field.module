@@ -103,8 +103,11 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
     $field_is_empty = TRUE;
     list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
     foreach ($items as $delta => $item) {
-      // Checkboxs get value from widget settigns.
-      $item['first'] = ($widget['first'] == 'checkbox' && $item['first'] == $settings['first']['off_value']) ? '' : $item['first'];
+      foreach (array('first', 'second') as $subfield) {
+        // Checkboxes get value from widget settigns.
+        $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item['first'] == $settings[$subfield]['off_value']) ? '' : $item[$subfield];
+      }
+      
       $item['second'] = ($widget['second'] == 'checkbox' && $item['second'] == $settings['second']['off_value']) ? '' : $item['second'];
       if ($item['first'] !== '' || $item['second'] !== '') {
         $field_is_empty = FALSE;
@@ -140,9 +143,9 @@ function double_field_field_widget_info() {
   );
   $subwidgets = array(
     'textfield' => t('Text field'),
-    'checkbox' => t('Checkbox'),
-    'select' => t('Select list'),
-    'textarea' => t('Textarea'),
+    'checkbox'  => t('Checkbox'),
+    'select'    => t('Select list'),
+    'textarea'  => t('Textarea'),
   );
   foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
     foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
@@ -151,8 +154,8 @@ function double_field_field_widget_info() {
         'field types' => array('double_field'),
         'settings' => array(
           'inline' => TRUE,
-          'first' => $settings,
-          'second' => $settings,
+          'first' => $settings + double_field_widget_default_settings($first_subwidget),
+          'second' => $settings + double_field_widget_default_settings($second_subwidget),
         ),
       );
     }
@@ -245,7 +248,6 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#description' => t('Whether users should be allowed to resize the text area.'),
         );
         break;
-
     }
 
     $form[$subfield]['general'] = array(
@@ -307,8 +309,8 @@ function double_field_widget_default_settings($key = FALSE) {
       'size' => 10,
     ),
     'checkbox' => array(
-      'on_value' => t('On'),
-      'off_value' => t('Off'),
+      'on_value' => t('Ok'),
+      'off_value' => '',
     ),
     'select' => array(
       'allowed_values' => array(),
@@ -356,7 +358,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
         $double_field[$subfield]['#element_validate'] = array('double_field_checkbox_to_storage');
         $double_field[$subfield]['#on_value'] = $settings[$subfield]['on_value'];
         $double_field[$subfield]['#off_value'] = $settings[$subfield]['off_value'];
-        $double_field[$subfield]['#default_value'] = (bool) $double_field[$subfield]['#default_value'];
+        $double_field[$subfield]['#default_value'] = $double_field[$subfield]['#default_value'] == $double_field[$subfield]['#on_value'];
         break;
 
       case 'select':
