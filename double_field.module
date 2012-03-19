@@ -123,6 +123,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
       '#title' => $instance['label'],
       '#title_display' => 'invisible',
     );
+
     $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
 
     switch ($subfield_types[$key]) {
@@ -133,7 +134,8 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
       case 'checkbox':
         $double_field[$subfield]['#element_validate'] = array('double_field_checkbox_to_storage');
         $double_field[$subfield]['#on_value'] = $settings[$subfield]['on_value'];
-        $double_field[$subfield]['#off_value'] = $settings[$subfield]['off_value'];
+        $double_field[$subfield]['#off_value'] = $settings[$subfield]['off  _value'];
+        $double_field[$subfield]['#default_value'] = (bool) $double_field[$subfield]['#default_value'];
         break;
 
       case 'select':
@@ -189,17 +191,23 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
   foreach ($items as $delta => $item) {
     foreach (array('first', 'second') as $subfield) {
       if ($settings[$subfield]['hidden']) {
-        $items[$delta][$subfield] = FALSE;
+        $item[$subfield] = FALSE;
       }
       else {
-        $items[$delta][$subfield] = $settings[$subfield]['format'] == '_none' ?
+        // Show value pair of allowed values on instead of their key value.
+        if (isset($instance['widget']['settings'][$subfield]['allowed_values'])) {
+          $allowed_values = $instance['widget']['settings'][$subfield]['allowed_values'];
+          $item[$subfield] = empty($allowed_values[$item[$subfield]]) ?
+          $item[$subfield] : $allowed_values[$item[$subfield]];
+        } 
+        $item[$subfield] = $settings[$subfield]['format'] == '_none' ?
         check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
+
+        // Do not display prefix and suffix for empty subfields.
+        $item[$subfield] = $settings[$subfield]['prefix'] . $item[$subfield] . $settings[$subfield]['suffix'];
+        }
       }
-      // Do not display prefix and suffix for empty subfields.
-      if ($items[$delta][$subfield]) {
-        $items[$delta][$subfield] = $settings[$subfield]['prefix'] . $items[$delta][$subfield] . $settings[$subfield]['suffix'];
-      }
-    }
+    $items[$delta] = $item;
   }
 
   switch ($display['type']) {
