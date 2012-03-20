@@ -39,3 +39,76 @@ function double_field_field_schema($field) {
 
   return array('columns' => $columns);
 }
+
+/**
+ * Fix fields settings.
+ */
+function double_field_update_7201() {
+
+  $query = db_select('field_config', 'fc', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('fc')
+    ->condition('type', 'double_field');
+  foreach ($query->execute() as $field) {
+
+    $field_data = unserialize($field['data']);
+    foreach(array('first', 'second') as $subfield) {
+      $field_data['settings'][$subfield]['maxlength'] = $field_data['settings'][$subfield . '_maxlength'];
+      unset($field_data['settings'][$subfield . '_maxlength']);
+    }
+    $field_data['indexes'] = array();
+
+    // Save the field data.
+    $query = db_update('field_config')
+      ->condition('id', $field['id'])
+      ->fields(array('data' => serialize($field_data)))
+      ->execute();
+
+    $query = db_select('field_config_instance', 'fc', array('fetch' => PDO::FETCH_ASSOC))
+      ->fields('fc')
+      ->condition('field_id', $field['id']);
+    foreach ($query->execute() as $instance) {
+      $instance_data = unserialize($instance['data']);
+
+      // Update widget type and widget settings.
+      $instance_data['widget']['type'] = 'textfield_&_textfield';
+      foreach(array('first', 'second') as $subfield) {
+        $instance_data['widget']['settings'][$subfield] = array(
+          'general' => $instance_data['widget']['settings'][$subfield],
+          'size' => $instance_data['widget']['settings'][$subfield]['size'],
+        );
+        unset($instance_data['widget']['settings'][$subfield]['general']['size']);
+      }
+
+      // Update formatter type and formatter settings.
+      $formatters = double_field_field_formatter_info();
+      foreach ($instance_data['display'] as &$display) {
+        switch($display['type']) {
+          case  'double_field_inline':
+            $display['type'] = 'double_field_unformatted_list';
+            $display['settings']['style'] = 'inline';
+            break;
+          case  'double_field_block':
+            $display['type'] = 'double_field_unformatted_list';
+            $display['settings']['style'] = 'block';
+            break;
+          case  'double_field_fieldset':
+            $display['type'] = 'double_field_fieldset';
+            break;
+        }
+        foreach(array('first', 'second') as $subfield) {
+          $display['settings'][$subfield] = array_merge(
+            $formatters[$display['type']]['settings'][$subfield],
+            $display['settings'][$subfield]
+          );
+        }
+      }
+
+      // Save the instance data.
+      $query = db_update('field_config_instance')
+        ->condition('id', $instance['id'])
+        ->fields(array('data' => serialize($instance_data)))
+        ->execute();
+    }
+  }
+
+}
