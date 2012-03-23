@@ -95,8 +95,8 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
   if ($entity_type) {
     $error = array(
-      'error' => 'double_field_required', 
-      'error_element' => array('first' => TRUE, 'second' => TRUE), 
+      'error' => 'double_field_required',
+      'error_element' => array('first' => TRUE, 'second' => TRUE),
       'message' => t('%name field is required.', array('%name' => $instance['label'])),
     );
 
@@ -144,7 +144,7 @@ function double_field_field_widget_info() {
     'select'    => t('Select list'),
     'textarea'  => t('Textarea'),
   );
-  
+
   foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
     foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
       $widgets[$first_subwidget . '_&_' . $second_subwidget] = array(
@@ -196,7 +196,6 @@ function double_field_default_subwidget_settings() {
  * Implements hook_field_widget_settings_form().
  */
 function double_field_field_widget_settings_form($field, $instance) {
-
   $settings = $instance['widget']['settings'];
 
   $form['inline'] = array(
@@ -204,8 +203,9 @@ function double_field_field_widget_settings_form($field, $instance) {
     '#title' => t('Display as inline element'),
     '#default_value' => $settings['inline'],
   );
+
   $subfield_types = explode('_&_', $instance['widget']['type']);
-  
+
   foreach (array('first', 'second') as $key => $subfield) {
     $settings[$subfield] += double_field_default_subwidget_settings();
     $form[$subfield] = array(
@@ -373,7 +373,6 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
         $double_field[$subfield]['#resizable'] = $settings[$subfield]['textarea']['resizable'];
         break;
     }
-
   }
 
   if ($settings['inline']) {
@@ -483,7 +482,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
     ),
     '#default_value' => $settings['style'],
   );
-  
+
   switch ($instance['display'][$view_mode]['type']) {
     case 'double_field_fieldset':
       $element['collapsible'] = array(
@@ -600,7 +599,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
  */
 function double_field_format_validate($element, &$form_state, $form) {
   if ($element['#value'] == 'full_html') {
-    drupal_set_message(t('Using the "Full HTML" format allows HTML to be posted unfiltered. This could represent a severe security risk.<br/>See !link for further information.', array('!link' => '<a href="http://drupal.org/documentation/modules/filter">http://drupal.org/documentation/modules/filter</a>')), 'warning', FALSE);  
+    drupal_set_message(t('Using the "Full HTML" format allows HTML to be posted unfiltered. This could represent a severe security risk.<br/>See !link for further information.', array('!link' => '<a href="http://drupal.org/documentation/modules/filter">http://drupal.org/documentation/modules/filter</a>')), 'warning', FALSE);
   }
 }
 
@@ -671,7 +670,7 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
           $allowed_values = $instance['widget']['settings'][$subfield]['allowed_values'];
           $item[$subfield] = empty($allowed_values[$item[$subfield]]) ?
           $item[$subfield] : $allowed_values[$item[$subfield]];
-        } 
+        }
         $item[$subfield] = $settings[$subfield]['format'] == '_none' ?
         check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
 

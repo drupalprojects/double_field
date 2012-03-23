@@ -20,6 +20,13 @@ function double_field_field_schema($field) {
   // Accept 16 kB as safe value of length.
   $limit = 16384;
   foreach (array('first', 'second') as $subfield) {
+
+    // Before 7.x-2.x maxlength was stored as "$subfield_maxlength".
+    // This might lead to "Notice: Undefined index" while running update.php.
+    if(empty($field['settings'][$subfield]['maxlength'])) {
+      $field['settings'][$subfield]['maxlength'] = 255;
+    }
+
     // UTF8 string takes 3 bytes.
     if ($field['settings'][$subfield]['maxlength'] < $limit/3) {
       $columns[$subfield] = array(
