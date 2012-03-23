@@ -39,3 +39,4 @@ function double_field_field_schema($field) {
 
   return array('columns' => $columns);
 }
+
