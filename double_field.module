@@ -103,12 +103,13 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
     $field_is_empty = TRUE;
     list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
     foreach ($items as $delta => $item) {
+
+      // Checkboxes get value from widget settigns.
       foreach (array('first', 'second') as $subfield) {
-        // Checkboxes get value from widget settigns.
-        $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item['first'] == $settings[$subfield]['off_value']) ? '' : $item[$subfield];
+        $settings[$subfield] += double_field_default_subwidget_settings();
+        $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
       }
-      
-      $item['second'] = ($widget['second'] == 'checkbox' && $item['second'] == $settings['second']['off_value']) ? '' : $item['second'];
+
       if ($item['first'] !== '' || $item['second'] !== '') {
         $field_is_empty = FALSE;
         $error['error_element']['first'] = $settings['first']['general']['required'] && $item['first'] === '';
@@ -118,6 +119,7 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
         }
       }
     }
+
     // Mark only required subfields.
     if ($field_is_empty && $instance['required']) {
       $error['error_element']['first'] = $settings['first']['general']['required'] && $items[0]['first'] === '';
@@ -134,19 +136,15 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
  * Implements hook_field_widget_info().
  */
 function double_field_field_widget_info() {
-  $settings = array(
-    'general' => array(
-      'required' => TRUE,
-      'prefix' => '',
-      'suffix' => '',
-    ),
-  );
+  $settings = double_field_default_subwidget_settings();
+
   $subwidgets = array(
     'textfield' => t('Text field'),
     'checkbox'  => t('Checkbox'),
     'select'    => t('Select list'),
     'textarea'  => t('Textarea'),
   );
+  
   foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
     foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
       $widgets[$first_subwidget . '_&_' . $second_subwidget] = array(
@@ -154,14 +152,45 @@ function double_field_field_widget_info() {
         'field types' => array('double_field'),
         'settings' => array(
           'inline' => TRUE,
-          'first' => $settings + double_field_widget_default_settings($first_subwidget),
-          'second' => $settings + double_field_widget_default_settings($second_subwidget),
+          'first' => $settings,
+          'second' => $settings,
         ),
       );
     }
   }
+
   return $widgets;
 }
+
+/**
+ * Default subwidget settings.
+ */
+function double_field_default_subwidget_settings() {
+  $settings = array(
+    'general' => array(
+      'required' => TRUE,
+      'prefix' => '',
+      'suffix' => '',
+    ),
+    'textfield' => array(
+      'size' => 10,
+    ),
+    'checkbox' => array(
+      'on_value' => t('Ok'),
+      'off_value' => '',
+    ),
+    'select' => array(
+      'allowed_values' => array(),
+    ),
+    'textarea' => array(
+      'cols' => 10,
+      'rows' => 5,
+      'resizable' => TRUE,
+    )
+  );
+  return $settings;
+}
+
 
 /**
  * Implements hook_field_widget_settings_form().
@@ -176,8 +205,9 @@ function double_field_field_widget_settings_form($field, $instance) {
     '#default_value' => $settings['inline'],
   );
   $subfield_types = explode('_&_', $instance['widget']['type']);
+  
   foreach (array('first', 'second') as $key => $subfield) {
-
+    $settings[$subfield] += double_field_default_subwidget_settings();
     $form[$subfield] = array(
       '#title' => t($subfield . ' subfield – ' . $subfield_types[$key]),
       '#type' => 'fieldset',
@@ -185,38 +215,37 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#collapsed' => TRUE,
     );
 
-    $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
     switch ($subfield_types[$key]) {
 
       case 'textfield':
-        $form[$subfield]['size'] = array(
+        $form[$subfield]['textfield']['size'] = array(
           '#type' => 'textfield',
           '#title' => t('Size'),
-          '#default_value' => $settings[$subfield]['size'],
+          '#default_value' => $settings[$subfield]['textfield']['size'],
           '#element_validate' => array('element_validate_integer_positive'),
           '#size' => 3,
         );
         break;
 
       case 'checkbox':
-        $form[$subfield]['on_value'] = array(
+        $form[$subfield]['checkbox']['on_value'] = array(
           '#type' => 'textfield',
           '#title' => t('On value'),
-          '#default_value' => $settings[$subfield]['on_value'],
+          '#default_value' => $settings[$subfield]['checkbox']['on_value'],
         );
-        $form[$subfield]['off_value'] = array(
-          '#type' => 'textfield',
+        $form[$subfield]['checkbox']['off_value'] = array(
+          '#type' => 'hidden', // '#type' => 'textfield',
           '#title' => t('Off value'),
-          '#default_value' => $settings[$subfield]['off_value'],
+          '#default_value' => $settings[$subfield]['checkbox']['off_value'],
         );
         break;
 
       case 'select':
-        $form[$subfield]['allowed_values'] = array(
+        $form[$subfield]['select']['allowed_values'] = array(
           '#type' => 'textarea',
           '#subfield' => $subfield,
           '#title' => t('Allowed values list'),
-          '#default_value' => list_allowed_values_string(empty($settings[$subfield]['allowed_values']) ? array() : $settings[$subfield]['allowed_values']),
+          '#default_value' => list_allowed_values_string(empty($settings[$subfield]['select']['allowed_values']) ? array() : $settings[$subfield]['select']['allowed_values']),
           '#element_validate' => array('double_field_allowed_values_setting_validate'),
         );
         $form[$subfield]['allowed_values']['#description'] = '<p>' . t('The possible values this field can contain. Enter one value per line, in the format key|label.');
@@ -225,26 +254,26 @@ function double_field_field_widget_settings_form($field, $instance) {
         break;
 
       case 'textarea':
-        $form[$subfield]['cols'] = array(
+        $form[$subfield]['textarea']['cols'] = array(
           '#type' => 'textfield',
           '#title' => t('Columns'),
-          '#default_value' => $settings[$subfield]['cols'],
+          '#default_value' => $settings[$subfield]['textarea']['cols'],
           '#element_validate' => array('element_validate_integer_positive'),
           '#size' => 3,
           '#description' => t('How many columns wide the textarea should be'),
         );
-        $form[$subfield]['rows'] = array(
+        $form[$subfield]['textarea']['rows'] = array(
           '#type' => 'textfield',
           '#title' => t('Rows'),
-          '#default_value' => $settings[$subfield]['rows'],
+          '#default_value' => $settings[$subfield]['textarea']['rows'],
           '#element_validate' => array('element_validate_integer_positive'),
           '#size' => 3,
           '#description' => t('How many rows high the textarea should be.'),
         );
-        $form[$subfield]['resizable'] = array(
+        $form[$subfield]['textarea']['resizable'] = array(
           '#type' => 'checkbox',
           '#title' => t('Resizable'),
-          '#default_value' => $settings[$subfield]['resizable'],
+          '#default_value' => $settings[$subfield]['textarea']['resizable'],
           '#description' => t('Whether users should be allowed to resize the text area.'),
         );
         break;
@@ -298,33 +327,6 @@ function double_field_allowed_values_setting_validate($element, &$form_state) {
 }
 
 /**
- * Default widget settings. 
- *
- * Subwidgets has deferent settings.
- * We need initialize default values when widget is changed.
- */
-function double_field_widget_default_settings($key = FALSE) {
-  $settings = array(
-    'textfield' => array(
-      'size' => 10,
-    ),
-    'checkbox' => array(
-      'on_value' => t('Ok'),
-      'off_value' => '',
-    ),
-    'select' => array(
-      'allowed_values' => array(),
-    ),
-    'textarea' => array(
-      'cols' => 10,
-      'rows' => 5,
-      'resizable' => TRUE,
-    )
-  );
-  return $key ? $settings[$key] : $settings;
-}
-
-/**
  * Implements hook_field_widget_form().
  */
 function double_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
@@ -336,6 +338,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   );
 
   foreach (array('first', 'second') as $key => $subfield) {
+    $settings[$subfield] += double_field_default_subwidget_settings();
     $double_field[$subfield] = array(
       '#type' => $subfield_types[$key],
       '#prefix' => $settings[$subfield]['general']['prefix'],
@@ -347,31 +350,30 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
       '#title_display' => 'invisible',
     );
 
-    $settings[$subfield] += double_field_widget_default_settings($subfield_types[$key]);
-
     switch ($subfield_types[$key]) {
       case 'textfield':
-        $double_field[$subfield]['#size'] = $settings[$subfield]['size'];
+        $double_field[$subfield]['#size'] = $settings[$subfield]['textfield']['size'];
         break;
 
       case 'checkbox':
         $double_field[$subfield]['#element_validate'] = array('double_field_checkbox_to_storage');
-        $double_field[$subfield]['#on_value'] = $settings[$subfield]['on_value'];
-        $double_field[$subfield]['#off_value'] = $settings[$subfield]['off_value'];
+        $double_field[$subfield]['#on_value'] = $settings[$subfield]['checkbox']['on_value'];
+        $double_field[$subfield]['#off_value'] = $settings[$subfield]['checkbox']['off_value'];
         $double_field[$subfield]['#default_value'] = $double_field[$subfield]['#default_value'] == $double_field[$subfield]['#on_value'];
         break;
 
       case 'select':
         $label = $settings[$subfield]['general']['required'] ? t('- Select a value -') : t('- None -');
-        $double_field[$subfield]['#options'] = array('' => $label) + $settings[$subfield]['allowed_values'];
+        $double_field[$subfield]['#options'] = array('' => $label) + $settings[$subfield]['select']['allowed_values'];
         break;
 
       case 'textarea':
-        $double_field[$subfield]['#cols'] = $settings[$subfield]['cols'];
-        $double_field[$subfield]['#rows'] = $settings[$subfield]['rows'];
-        $double_field[$subfield]['#resizable'] = $settings[$subfield]['resizable'];
+        $double_field[$subfield]['#cols'] = $settings[$subfield]['textarea']['cols'];
+        $double_field[$subfield]['#rows'] = $settings[$subfield]['textarea']['rows'];
+        $double_field[$subfield]['#resizable'] = $settings[$subfield]['textarea']['resizable'];
         break;
     }
+
   }
 
   if ($settings['inline']) {
@@ -651,6 +653,7 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
  * Implements hook_field_formatter_view().
  */
 function double_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+
   if (!$items) {
     return;
   }
@@ -764,13 +767,14 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
         '#header' => $header,
       );
       break;
-    
+
     case 'double_field_accordion':
       $element[0] = array(
         '#theme' => 'double_field_accordion',
         '#items' => $items,
       );
       break;
+
     case 'double_field_tabs':
       $element[0] = array(
         '#theme' => 'double_field_tabs',
