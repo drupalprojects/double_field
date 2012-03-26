@@ -429,7 +429,7 @@ function double_field_field_formatter_info() {
       'suffix' => '',
     );
   }
-  $settings['first']['suffix'] = '&nbsp;';
+  $settings['first']['suffix'] = ':&nbsp;';
 
   return array(
     'double_field_unformatted_list' => array(
