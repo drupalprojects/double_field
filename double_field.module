@@ -242,11 +242,13 @@ function double_field_field_widget_settings_form($field, $instance) {
         $form[$subfield]['checkbox']['on_value'] = array(
           '#type' => 'textfield',
           '#title' => t('On value'),
+          '#maxlength' => $field['settings'][$subfield]['maxlength'],
           '#default_value' => $settings[$subfield]['checkbox']['on_value'],
         );
         $form[$subfield]['checkbox']['off_value'] = array(
           '#type' => 'hidden', // '#type' => 'textfield',
           '#title' => t('Off value'),
+          '#maxlength' => $field['settings'][$subfield]['maxlength'],
           '#default_value' => $settings[$subfield]['checkbox']['off_value'],
         );
         break;
