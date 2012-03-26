@@ -106,7 +106,7 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
       // Checkboxes get value from widget settigns.
       foreach (array('first', 'second') as $subfield) {
-        $settings[$subfield] += double_field_default_subwidget_settings();
+        //$settings[$subfield] += double_field_default_subwidget_settings();
         $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
       }
 
@@ -130,42 +130,26 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
 }
 
+//-- Instance.
+
+/**
+ * Implements hook_field_field_update_instance().
+ */
+function double_field_field_update_instance($instance, $prior_instance) {
+  // Update widget settings when widget type has been changed.
+  if ($instance['widget']['type'] != $prior_instance['widget']['type']) {
+    $instance['widget']['settings'] = field_info_widget_settings($instance['widget']['type']);
+    field_update_instance($instance);
+  }
+}
+
 //-- Widget.
 
 /**
  * Implements hook_field_widget_info().
  */
 function double_field_field_widget_info() {
-  $settings = double_field_default_subwidget_settings();
 
-  $subwidgets = array(
-    'textfield' => t('Text field'),
-    'checkbox'  => t('Checkbox'),
-    'select'    => t('Select list'),
-    'textarea'  => t('Textarea'),
-  );
-
-  foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
-    foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
-      $widgets[$first_subwidget . '_&_' . $second_subwidget] = array(
-        'label' => $first_subwidget_label . ' & ' . $second_subwidget_label,
-        'field types' => array('double_field'),
-        'settings' => array(
-          'inline' => TRUE,
-          'first' => $settings,
-          'second' => $settings,
-        ),
-      );
-    }
-  }
-
-  return $widgets;
-}
-
-/**
- * Default subwidget settings.
- */
-function double_field_default_subwidget_settings() {
   $settings = array(
     'general' => array(
       'required' => TRUE,
@@ -188,9 +172,36 @@ function double_field_default_subwidget_settings() {
       'resizable' => TRUE,
     )
   );
-  return $settings;
-}
 
+  $subwidgets = array(
+    'textfield' => t('Text field'),
+    'checkbox'  => t('Checkbox'),
+    'select'    => t('Select list'),
+    'textarea'  => t('Textarea'),
+  );
+
+  foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
+    foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
+      $widgets[$first_subwidget . '_&_' . $second_subwidget] = array(
+        'label' => $first_subwidget_label . ' & ' . $second_subwidget_label,
+        'field types' => array('double_field'),
+        'settings' => array(
+          'inline' => TRUE,
+          'first' => array(
+            'general' => $settings['general'],
+            $first_subwidget => $settings[$first_subwidget],
+          ),
+          'second' => array(
+            'general' => $settings['general'],
+            $second_subwidget => $settings[$second_subwidget],
+          ),
+        ),
+      );
+    }
+  }
+
+  return $widgets;
+}
 
 /**
  * Implements hook_field_widget_settings_form().
@@ -207,7 +218,7 @@ function double_field_field_widget_settings_form($field, $instance) {
   $subfield_types = explode('_&_', $instance['widget']['type']);
 
   foreach (array('first', 'second') as $key => $subfield) {
-    $settings[$subfield] += double_field_default_subwidget_settings();
+    //$settings[$subfield] += double_field_default_subwidget_settings();
     $form[$subfield] = array(
       '#title' => t($subfield . ' subfield – ' . $subfield_types[$key]),
       '#type' => 'fieldset',
@@ -338,7 +349,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   );
 
   foreach (array('first', 'second') as $key => $subfield) {
-    $settings[$subfield] += double_field_default_subwidget_settings();
+    //$settings[$subfield] += double_field_default_subwidget_settings();
     $double_field[$subfield] = array(
       '#type' => $subfield_types[$key],
       '#prefix' => $settings[$subfield]['general']['prefix'],

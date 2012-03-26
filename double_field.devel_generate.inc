@@ -12,14 +12,13 @@ function double_field_devel_generate($object, $field, $instance, $bundle) {
   list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
 
   foreach (array('first', 'second') as $subfield) {
-    $widget_settings[$subfield] = $instance['widget']['settings'][$subfield] + double_field_default_subwidget_settings();
     switch ($widget[$subfield]) {
       case 'checkbox':
-        $object_field[$subfield] = $widget_settings[$subfield]['checkbox'][mt_rand(0, 1) ? 'on_value' : 'off_value'];
+        $object_field[$subfield] = $instance['widget']['settings'][$subfield]['checkbox'][mt_rand(0, 1) ? 'on_value' : 'off_value'];
         break;
 
       case 'select':
-        if ($allowed_values = array_keys($widget_settings[$subfield]['select']['allowed_values'])) {
+        if ($allowed_values = array_keys($instance['widget']['settings'][$subfield]['select']['allowed_values'])) {
           $object_field[$subfield] = $allowed_values[mt_rand(0, count($allowed_values) -1)];
         }
         break;
