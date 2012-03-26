@@ -8,8 +8,26 @@
  * Implements hook_devel_generate().
  */
 function double_field_devel_generate($object, $field, $instance, $bundle) {
-  return array(
-    'first' => user_password($field['settings']['first_maxlength']),
-    'second' => user_password($field['settings']['second_maxlength']),
-  );
+
+  list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
+
+  foreach (array('first', 'second') as $subfield) {
+    $widget_settings[$subfield] = $instance['widget']['settings'][$subfield] + double_field_default_subwidget_settings();
+    switch ($widget[$subfield]) {
+      case 'checkbox':
+        $object_field[$subfield] = $widget_settings[$subfield]['checkbox'][mt_rand(0, 1) ? 'on_value' : 'off_value'];
+        break;
+
+      case 'select':
+        if ($allowed_values = array_keys($widget_settings[$subfield]['select']['allowed_values'])) {
+          $object_field[$subfield] = $allowed_values[mt_rand(0, count($allowed_values) -1)];
+        }
+        break;
+
+      default:
+        $object_field[$subfield] = user_password($field['settings'][$subfield]['maxlength']);
+    }
+  }
+
+  return $object_field;
 }
