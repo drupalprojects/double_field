@@ -24,7 +24,15 @@ function double_field_devel_generate($object, $field, $instance, $bundle) {
         break;
 
       default:
-        $object_field[$subfield] = user_password($field['settings'][$subfield]['maxlength']);
+      $maxlength = $field['settings'][$subfield]['maxlength'];
+        if ($maxlength > 64) {
+          // Average length of a word in devel_create_greeking() is about 7 charaters.
+          $word_count = (int)($maxlength/7);
+          $object_field[$subfield] = rtrim(substr(devel_create_greeking($word_count), 0, $maxlength - 1), ' .') . '.';
+        }
+        else {
+          $object_field[$subfield] = user_password($field['settings'][$subfield]['maxlength']);
+        }
     }
   }
 
