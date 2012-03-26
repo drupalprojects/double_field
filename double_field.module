@@ -186,7 +186,7 @@ function double_field_field_widget_info() {
         'label' => $first_subwidget_label . ' & ' . $second_subwidget_label,
         'field types' => array('double_field'),
         'settings' => array(
-          'inline' => TRUE,
+          'inline' => $first_subwidget != 'textarea' && $second_subwidget != 'textarea',
           'first' => array(
             'general' => $settings['general'],
             $first_subwidget => $settings[$first_subwidget],
