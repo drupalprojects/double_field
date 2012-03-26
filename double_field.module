@@ -666,8 +666,8 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
       }
       else {
         // Show value pair of allowed values on instead of their key value.
-        if (isset($instance['widget']['settings'][$subfield]['allowed_values'])) {
-          $allowed_values = $instance['widget']['settings'][$subfield]['allowed_values'];
+        if (isset($instance['widget']['settings'][$subfield]['select']['allowed_values'])) {
+          $allowed_values = $instance['widget']['settings'][$subfield]['select']['allowed_values'];
           $item[$subfield] = empty($allowed_values[$item[$subfield]]) ?
           $item[$subfield] : $allowed_values[$item[$subfield]];
         }
