@@ -137,7 +137,7 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
  */
 function double_field_field_update_instance($instance, $prior_instance) {
   // Update widget settings when widget type has been changed.
-  if ($instance['widget']['type'] != $prior_instance['widget']['type']) {
+  if ($instance['widget']['module'] == 'double_field' && $instance['widget']['type'] != $prior_instance['widget']['type']) {
     $instance['widget']['settings'] = field_info_widget_settings($instance['widget']['type']);
     field_update_instance($instance);
   }
