@@ -78,12 +78,13 @@ function double_field_update_7201() {
 
       // Update widget type and widget settings.
       $instance_data['widget']['type'] = 'textfield_&_textfield';
+      $widget_info = double_field_field_widget_info();
       foreach(array('first', 'second') as $subfield) {
-        $old_widget_settings = $instance_data['widget']['settings'][$subfield];
-        $instance_data['widget']['settings'][$subfield] = double_field_default_subwidget_settings();
-        $instance_data['widget']['settings'][$subfield]['textfield']['size'] = $old_widget_settings['size'];
-        unset($old_widget_settings['size']);
-        $instance_data['widget']['settings'][$subfield]['general'] = $old_widget_settings;
+        $old_settings = $instance_data['widget']['settings'][$subfield];
+        $instance_data['widget']['settings'][$subfield] = $widget_info['textfield_&_textfield']['settings'][$subfield];
+        $instance_data['widget']['settings'][$subfield]['textfield']['size'] = $old_settings['size'];
+        unset($old_settings['size']);
+        $instance_data['widget']['settings'][$subfield]['general'] = $old_settings;
       }
 
       // Update formatter type and formatter settings.
