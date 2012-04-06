@@ -218,7 +218,6 @@ function double_field_field_widget_settings_form($field, $instance) {
   $subfield_types = explode('_&_', $instance['widget']['type']);
 
   foreach (array('first', 'second') as $key => $subfield) {
-    //$settings[$subfield] += double_field_default_subwidget_settings();
     $form[$subfield] = array(
       '#title' => t($subfield . ' subfield – ' . $subfield_types[$key]),
       '#type' => 'fieldset',
@@ -351,7 +350,6 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   );
 
   foreach (array('first', 'second') as $key => $subfield) {
-    //$settings[$subfield] += double_field_default_subwidget_settings();
     $double_field[$subfield] = array(
       '#type' => $subfield_types[$key],
       '#prefix' => $settings[$subfield]['general']['prefix'],
@@ -669,6 +667,7 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
   if (!$items) {
     return;
   }
+
   $settings = $display['settings'];
   $element = array();
 
@@ -689,8 +688,8 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
 
         // Do not display prefix and suffix for empty subfields.
         $item[$subfield] = $settings[$subfield]['prefix'] . $item[$subfield] . $settings[$subfield]['suffix'];
-        }
       }
+    }
     $items[$delta] = $item;
   }
 
