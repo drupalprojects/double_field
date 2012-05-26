@@ -305,13 +305,11 @@ function double_field_field_widget_settings_form($field, $instance) {
     $form[$subfield]['general']['prefix'] = array(
       '#type' => 'textfield',
       '#title' => t('Prefix'),
-      '#maxlength' => 50,
       '#default_value' => $settings[$subfield]['general']['prefix'],
     );
     $form[$subfield]['general']['suffix'] = array(
       '#type' => 'textfield',
       '#title' => t('Suffix'),
-      '#maxlength' => 50,
       '#default_value' => $settings[$subfield]['general']['suffix'],
     );
 
@@ -539,7 +537,6 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
         '#type' => 'textfield',
         '#title' => t('Number column label'),
         '#size' => 30,
-        '#maxlength' => 50,
         '#default_value' => $settings['table']['number_column_label'],
         '#states' => array(
           'visible' => array(
@@ -552,7 +549,6 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
           '#type' => 'textfield',
           '#title' => t(ucfirst($subfield) . ' column label'),
           '#size' => 30,
-          '#maxlength' => 50,
           '#default_value' => $settings['table'][$subfield]['column_label'],
           '#tree' => TRUE,
         );
@@ -591,14 +587,12 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       '#type' => 'textfield',
       '#title' => t('Prefix'),
       '#size' => 30,
-      '#maxlength' => 50,
       '#default_value' => $settings[$subfield]['prefix'],
     );
     $element[$subfield]['suffix'] = array(
       '#type' => 'textfield',
       '#title' => t('Suffix'),
       '#size' => 30,
-      '#maxlength' => 50,
       '#default_value' => $settings[$subfield]['suffix'],
     );
   }
