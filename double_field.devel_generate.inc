@@ -19,15 +19,16 @@ function double_field_devel_generate($object, $field, $instance, $bundle) {
 
       case 'select':
         if ($allowed_values = array_keys($instance['widget']['settings'][$subfield]['select']['allowed_values'])) {
-          $object_field[$subfield] = $allowed_values[mt_rand(0, count($allowed_values) -1)];
+          $object_field[$subfield] = $allowed_values[mt_rand(0, count($allowed_values) - 1)];
         }
         break;
 
       default:
-      $maxlength = $field['settings'][$subfield]['maxlength'];
+        $maxlength = $field['settings'][$subfield]['maxlength'];
         if ($maxlength > 64) {
-          // Average length of a word in devel_create_greeking() is about 7 charaters.
-          $word_count = (int)($maxlength/7);
+          // Average length of a word in devel_create_greeking()
+          // is about 7 charaters.
+          $word_count = (int) ($maxlength / 7);
           $object_field[$subfield] = rtrim(substr(devel_create_greeking($word_count), 0, $maxlength - 1), ' .') . '.';
         }
         else {

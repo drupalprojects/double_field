@@ -1,9 +1,14 @@
 <?php
 
 /**
+ * @file
+ * Feeds integration for Double Field module.
+ */
+
+/**
  * Implements hook_feeds_processor_targets_alter().
  *
- * @see FeedsNodeProcessor::getMappingTargets().
+ * @see FeedsNodeProcessor::getMappingTargets()
  */
 function double_field_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
   foreach (field_info_instances($entity_type, $bundle_name) as $name => $instance) {
@@ -29,7 +34,7 @@ function double_field_feeds_set_target($source, $entity, $target, $value) {
     return;
   }
   // Handle non-multiple value fields.
-  $value = is_array($value) ? $value : array ($value);
+  $value = is_array($value) ? $value : array($value);
   list($field_name, $subfield) = explode(':', $target);
   $info = field_info_field($field_name);
   // Iterate over all values.

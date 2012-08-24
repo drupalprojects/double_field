@@ -37,8 +37,6 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
   unset($property['query callback']);
 }
 
-//-- Field.
-
 /**
  * Implements hook_field_info().
  */
@@ -106,7 +104,7 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
       // Checkboxes get value from widget settigns.
       foreach (array('first', 'second') as $subfield) {
-        //$settings[$subfield] += double_field_default_subwidget_settings();
+        // $settings[$subfield] += double_field_default_subwidget_settings();
         $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
       }
 
@@ -130,8 +128,6 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
 }
 
-//-- Instance.
-
 /**
  * Implements hook_field_field_update_instance().
  */
@@ -142,8 +138,6 @@ function double_field_field_update_instance($instance, $prior_instance) {
     field_update_instance($instance);
   }
 }
-
-//-- Widget.
 
 /**
  * Implements hook_field_widget_info().
@@ -170,7 +164,7 @@ function double_field_field_widget_info() {
       'cols' => 10,
       'rows' => 5,
       'resizable' => TRUE,
-    )
+    ),
   );
 
   $subwidgets = array(
@@ -245,7 +239,8 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#default_value' => $settings[$subfield]['checkbox']['on_value'],
         );
         $form[$subfield]['checkbox']['off_value'] = array(
-          '#type' => 'hidden', // '#type' => 'textfield',
+          // '#type' => 'textfield',
+          '#type' => 'hidden',
           '#title' => t('Off value'),
           '#maxlength' => $field['settings'][$subfield]['maxlength'],
           '#default_value' => $settings[$subfield]['checkbox']['off_value'],
@@ -410,8 +405,6 @@ function double_field_field_widget_error($element, $error, $form, &$form_state) 
     }
   }
 }
-
-//-- Formatter.
 
 /**
  * Implements hook_field_formatter_info().
@@ -642,7 +635,7 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
   $filter_formats = filter_formats();
   foreach (array('first', 'second') as $subfield) {
     $summary .= '<div><h5>' . t(ucfirst($subfield) . '&nbsp;subfield') . '</h5>';
-    $summary .= '<div>' . t('Hidden: <em>@value</em>', array('@value' => $settings[$subfield]['hidden'] ? t('Yes') : t('No') )) . '</div>';
+    $summary .= '<div>' . t('Hidden: <em>@value</em>', array('@value' => $settings[$subfield]['hidden'] ? t('Yes') : t('No'))) . '</div>';
     $format = isset($filter_formats[$settings[$subfield]['format']]) ? $filter_formats[$settings[$subfield]['format']]->name : '';
     $summary .= '<div style="color: ' . ($settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto') . '">' . t('Format: <em>@value</em>', array('@value' => $format)) . '</div>';
     $summary .= '<div>' . t('Prefix: <em>@value</em>', array('@value' => $settings[$subfield]['prefix'])) . '</div>';
@@ -698,7 +691,8 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
           '#collapsible' => $settings['collapsible'],
           '#collapsed' => $settings['collapsed'],
         );
-        // theme_fieldset() doesn't handle '#collapsible', '#collapsed' arguments as claimed.
+        // theme_fieldset() doesn't handle '#collapsible'
+        // and  '#collapsed' arguments as claimed.
         // see http://drupal.org/node/1099132
         if ($settings['collapsible']) {
           $element[$delta]['#attached'] = array(
@@ -791,8 +785,6 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
 
   return $element;
 }
-
-//-- Theming.
 
 /**
  * Implements hook_theme().
