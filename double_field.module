@@ -674,7 +674,9 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
         check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
 
         // Do not display prefix and suffix for empty subfields.
-        $item[$subfield] = $settings[$subfield]['prefix'] . $item[$subfield] . $settings[$subfield]['suffix'];
+        if ($item[$subfield]) {
+          $item[$subfield] = $settings[$subfield]['prefix'] . $item[$subfield] . $settings[$subfield]['suffix'];
+        }
       }
     }
     $items[$delta] = $item;
