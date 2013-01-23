@@ -339,7 +339,8 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   $settings = $instance['widget']['settings'];
   $subfield_types = explode('_&_', $instance['widget']['type']);
   $double_field = array(
-    '#theme_wrappers' => array('form_element'),
+    '#theme_wrappers' => array('container', 'form_element'),
+    '#attributes' => array('class' => array('double-field-elements')),
   );
 
   foreach (array('first', 'second') as $key => $subfield) {
@@ -380,8 +381,9 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   }
 
   if ($settings['inline']) {
-    $double_field['first']['#prefix']  = '<div class="container-inline">' . $double_field['first']['#prefix'];
-    $double_field['second']['#suffix'] .= '</div>';
+    $double_field ['#attributes']['class'][] = 'container-inline';
+    //$double_field['first']['#prefix']  = '<div class="container-inline">' . $double_field['first']['#prefix'];
+    //$double_field['second']['#suffix'] .= '</div>';
   }
 
   return $element + $double_field;
@@ -426,15 +428,15 @@ function double_field_field_formatter_info() {
       'field types' => array('double_field'),
       'settings' => $settings + array('style' => 'inline'),
     ),
-    'double_field_fieldset' => array(
-      'label' => t('Fieldset'),
-      'field types' => array('double_field'),
-      'settings' => $settings + array('collapsible' => TRUE, 'collapsed' => FALSE),
-    ),
     'double_field_html_list' => array(
       'label' => t('HTML list'),
       'field types' => array('double_field'),
       'settings' => $settings + array('style' => 'inline', 'list_type' => 'ul'),
+    ),
+    'double_field_fieldset' => array(
+      'label' => t('Fieldset'),
+      'field types' => array('double_field'),
+      'settings' => $settings + array('collapsible' => TRUE, 'collapsed' => FALSE),
     ),
     'double_field_table' => array(
       'label' => t('Table'),
@@ -482,7 +484,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       'block' => t('Block'),
       'link' => t('Link'),
     ),
-    '#default_value' => $settings['style'],
+    '#default_value' =>  isset($settings['style']) ? $settings['style'] : 'inline',
   );
 
   switch ($instance['display'][$view_mode]['type']) {
@@ -755,7 +757,7 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
       $header = array();
       if ($settings['table']['first']['column_label'] || $settings['table']['second']['column_label']) {
         if ($settings['table']['number_column']) {
-          $header[] = t('№');
+          $header[] = $settings['table']['number_column_label'];
         }
         $header[] = $settings['table']['first']['column_label'];
         $header[] = $settings['table']['second']['column_label'];
