@@ -30,7 +30,7 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
   foreach (array('first', 'second') as $subfield) {
     $property['property info'][$subfield] = array(
       'type' => 'text',
-      'label' => t(ucfirst($subfield) . ' subfield'),
+      'label' => $subfield == 'first' ? t('First subfield') : t('Second subfield'),
       'setter callback' => 'entity_property_verbatim_set',
     );
   }
@@ -66,10 +66,11 @@ function double_field_field_settings_form($field, $instance, $has_data) {
   foreach (array('first', 'second') as $subfield) {
     $form[$subfield]['maxlength'] = array(
       '#type' => 'textfield',
-      '#title' => t("Maximum length of the $subfield textfield"),
+      '#title' => $subfield == 'first' ? t('Maximum length of the first subfield') : t('Maximum length of the second subfield'),
       '#default_value' => $settings[$subfield]['maxlength'],
       '#required' => TRUE,
-      '#description' => t("The maximum length of the $subfield textfield in characters."),
+      '#description' => $subfield == 'first' ?
+      t('The maximum length of the first subfield in characters.') : t('The maximum length of the second subfield in characters.'),
       '#element_validate' => array('element_validate_integer_positive'),
       '#disabled' => $has_data,
     );
@@ -79,6 +80,8 @@ function double_field_field_settings_form($field, $instance, $has_data) {
 
 /**
  * Implements hook_field_is_empty().
+ * 
+ * @see http://drupal.org/node/1489484
  */
 function double_field_field_is_empty($item, $field) {
   // Checkbox has own "off value" but there are not any ways to get it.
@@ -89,9 +92,10 @@ function double_field_field_is_empty($item, $field) {
  * Implements hook_field_validate().
  */
 function double_field_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-  $settings = $instance['widget']['settings'];
 
-  if ($entity_type) {
+  // Do not validate widgets provided by other modules.
+  if ($instance['widget']['module'] == 'double_field') {
+    $settings = $instance['widget']['settings'];
     $error = array(
       'error' => 'double_field_required',
       'error_element' => array('first' => TRUE, 'second' => TRUE),
@@ -104,7 +108,6 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
       // Checkboxes get value from widget settigns.
       foreach (array('first', 'second') as $subfield) {
-        // $settings[$subfield] += double_field_default_subwidget_settings();
         $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
       }
 
@@ -167,13 +170,8 @@ function double_field_field_widget_info() {
     ),
   );
 
-  $subwidgets = array(
-    'textfield' => t('Text field'),
-    'checkbox'  => t('Checkbox'),
-    'select'    => t('Select list'),
-    'textarea'  => t('Textarea'),
-  );
-
+  $subwidgets = double_field_get_subwidgets();
+  $weight = 0;
   foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
     foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
       $widgets[$first_subwidget . '_&_' . $second_subwidget] = array(
@@ -190,11 +188,24 @@ function double_field_field_widget_info() {
             $second_subwidget => $settings[$second_subwidget],
           ),
         ),
+        'weight' => $weight++,
       );
     }
   }
-
   return $widgets;
+}
+
+/**
+ * Return all Double Field subwidgets.
+ */
+function double_field_get_subwidgets($subwidget = FALSE) {
+  $subwidgets = array(
+    'textfield' => t('Text field'),
+    'checkbox'  => t('Checkbox'),
+    'select'    => t('Select list'),
+    'textarea'  => t('Textarea'),
+  );
+  return $subwidget ? $subwidgets[$subwidget] : $subwidgets;
 }
 
 /**
@@ -210,10 +221,9 @@ function double_field_field_widget_settings_form($field, $instance) {
   );
 
   $subfield_types = explode('_&_', $instance['widget']['type']);
-
   foreach (array('first', 'second') as $key => $subfield) {
     $form[$subfield] = array(
-      '#title' => t($subfield . ' subfield – ' . $subfield_types[$key]),
+      '#title' => ($subfield == 'first' ? t('First subfield') : t('Second subfield')) . ' (' . double_field_get_subwidgets($subfield_types[$key]) . ')',
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
@@ -248,16 +258,18 @@ function double_field_field_widget_settings_form($field, $instance) {
         break;
 
       case 'select':
+        // List isn't a required module and can be disabled.
+        module_load_include('module', 'list');
         $form[$subfield]['select']['allowed_values'] = array(
           '#type' => 'textarea',
           '#subfield' => $subfield,
           '#title' => t('Allowed values list'),
-          '#default_value' => list_allowed_values_string(empty($settings[$subfield]['select']['allowed_values']) ? array() : $settings[$subfield]['select']['allowed_values']),
+          '#default_value' => list_allowed_values_string($settings[$subfield]['select']['allowed_values']),
           '#element_validate' => array('double_field_allowed_values_setting_validate'),
         );
-        $form[$subfield]['allowed_values']['#description'] = '<p>' . t('The possible values this field can contain. Enter one value per line, in the format key|label.');
-        $form[$subfield]['allowed_values']['#description'] .= '<br/>' . t('The key is the stored value. The label will be used in displayed values and edit forms.');
-        $form[$subfield]['allowed_values']['#description'] .= '<br/>' . t('The label is optional: if a line contains a single string, it will be used as key and label.') . '</p>';
+        $form[$subfield]['select']['allowed_values']['#description'] = '<p>' . t('The possible values this field can contain. Enter one value per line, in the format key|label.');
+        $form[$subfield]['select']['allowed_values']['#description'] .= '<br/>' . t('The key is the stored value. The label will be used in displayed values and edit forms.');
+        $form[$subfield]['select']['allowed_values']['#description'] .= '<br/>' . t('The label is optional: if a line contains a single string, it will be used as key and label.') . '</p>';
         break;
 
       case 'textarea':
@@ -320,7 +332,7 @@ function double_field_allowed_values_setting_validate($element, &$form_state) {
   $values = list_extract_allowed_values($element['#value'], 'list_text', FALSE);
   $maxlength = $form_state['values']['field']['settings'][$element['#subfield']]['maxlength'];
 
-  // Bytes not characters.
+  // Count bytes not characters.
   $options_length = array_map('strlen', array_keys($values));
   if ($options_length && max($options_length) > $maxlength) {
     form_error($element, t('Possible values of subfield cannot be greater maximum length of the subfield. '));
@@ -381,9 +393,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   }
 
   if ($settings['inline']) {
-    $double_field ['#attributes']['class'][] = 'container-inline';
-    //$double_field['first']['#prefix']  = '<div class="container-inline">' . $double_field['first']['#prefix'];
-    //$double_field['second']['#suffix'] .= '</div>';
+    $double_field['#attributes']['class'][] = 'container-inline';
   }
 
   return $element + $double_field;
@@ -414,12 +424,14 @@ function double_field_field_widget_error($element, $error, $form, &$form_state) 
 function double_field_field_formatter_info() {
   foreach (array('first', 'second') as $subfield) {
     $settings[$subfield] = array(
+      // Hidden option especially useful to display data with views module.
       'hidden' => 0,
       'format' => '_none',
       'prefix' => '',
       'suffix' => '',
     );
   }
+  // Append non-breaking space to separate subfields.
   $settings['first']['suffix'] = ':&nbsp;';
 
   return array(
@@ -484,7 +496,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       'block' => t('Block'),
       'link' => t('Link'),
     ),
-    '#default_value' =>  isset($settings['style']) ? $settings['style'] : 'inline',
+    '#default_value' => isset($settings['style']) ? $settings['style'] : 'inline',
   );
 
   switch ($instance['display'][$view_mode]['type']) {
@@ -542,7 +554,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       foreach (array('first', 'second') as $subfield) {
         $element['table'][$subfield]['column_label'] = array(
           '#type' => 'textfield',
-          '#title' => t(ucfirst($subfield) . ' column label'),
+          '#title' => $subfield == 'first' ? t('First column label') : t('Second column label'),
           '#size' => 30,
           '#default_value' => $settings['table'][$subfield]['column_label'],
           '#tree' => TRUE,
@@ -560,7 +572,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
   // Common settings.
   foreach (array('first', 'second') as $subfield) {
     $element[$subfield] = array(
-      '#title' => t(ucfirst($subfield) . ' subfield'),
+      '#title' => $subfield == 'first' ? t('First subfield') : t('Second subfield'),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
@@ -610,42 +622,44 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
   $settings = $instance['display'][$view_mode]['settings'];
   $type = $instance['display'][$view_mode]['type'];
 
-  $summary = '';
+  $summary = array();
   switch ($type) {
 
     case 'double_field_fieldset':
-      $summary .= '<div>' . t('Collapsible: <em>@value</em>', array('@value' => $settings['collapsible'] ? 'Yes' : 'No')) . '</div>';
-      $summary .= '<div>' . t('Collapsed: <em>@value</em>', array('@value' => $settings['collapsed'] ? 'Yes' : 'No')) . '</div>';
+      $summary[] = t('Collapsible: %value', array('@value' => $settings['collapsible'] ? 'Yes' : 'No'));
+      $summary[] = t('Collapsed: %value', array('@value' => $settings['collapsed'] ? 'Yes' : 'No'));
       break;
 
     case 'double_field_unformatted_list':
     case 'double_field_html_list':
-      $summary .= '<div>' . t('Display style: <em>@value</em>', array('@value' => t(ucfirst($settings['style'])))) . '</div>';
+      $display_style = $settings['style'] == 'inline' ? t('inline') : t('block');
+      $summary[] = t('Display style: %value', array('%value' => $display_style));
       if ($type == 'double_field_html_list') {
-        $summary .= '<div>' . t('List type: <em>@value</em>', array('@value' => $settings['list_type'] == 'ul' ? t('Unordered') : t('Ordered'))) . '</div>';
+        $summary[] = t('List type: %value', array('%value' => $settings['list_type'] == 'ul' ? t('Unordered') : t('Ordered')));
       }
       break;
 
     case 'double_field_table':
-      $summary .= '<div>' . t('Row number column: <em>@value</em>', array('@value' => $settings['table']['number_column'] ? 'Yes' : 'No')) . '</div>';
-      $summary .= '<div>' . t('First column label: <em>@value</em>', array('@value' => $settings['table']['first']['column_label'])) . '</div>';
-      $summary .= '<div>' . t('Second column label: <em>@value</em>', array('@value' => $settings['table']['second']['column_label'])) . '</div>';
+      $summary[] = t('Row number column: %value', array('%value' => $settings['table']['number_column'] ? 'Yes' : 'No'));
+      $summary[] = t('First column label: %value', array('%value' => $settings['table']['first']['column_label']));
+      $summary[] = t('Second column label: %value', array('%value' => $settings['table']['second']['column_label']));
       break;
 
   }
 
   $filter_formats = filter_formats();
+  // Summary of general settings.
   foreach (array('first', 'second') as $subfield) {
-    $summary .= '<div><h5>' . t(ucfirst($subfield) . '&nbsp;subfield') . '</h5>';
-    $summary .= '<div>' . t('Hidden: <em>@value</em>', array('@value' => $settings[$subfield]['hidden'] ? t('Yes') : t('No'))) . '</div>';
+    $summary[] = '<br/><strong>' . ($subfield == 'first' ? t('First subfield') : t('Second subfield')) . '</strong>';
+    $summary[] = t('Hidden: %value', array('%value' => $settings[$subfield]['hidden'] ? t('Yes') : t('No')));
     $format = isset($filter_formats[$settings[$subfield]['format']]) ? $filter_formats[$settings[$subfield]['format']]->name : '';
-    $summary .= '<div style="color: ' . ($settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto') . '">' . t('Format: <em>@value</em>', array('@value' => $format)) . '</div>';
-    $summary .= '<div>' . t('Prefix: <em>@value</em>', array('@value' => $settings[$subfield]['prefix'])) . '</div>';
-    $summary .= '<div>' . t('Suffix: <em>@value</em>', array('@value' => $settings[$subfield]['suffix'])) . '</div>';
-    $summary .= '</div>';
+    $format_color = $settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto';
+    $summary[] = '<span style="color: ' . $format_color . '">' . t('Format: %value', array('%value' => $format)) . '</span>';
+    $summary[] = t('Prefix: %value', array('%value' => $settings[$subfield]['prefix']));
+    $summary[] = t('Suffix: %value', array('%value' => $settings[$subfield]['suffix']));
   }
 
-  return $summary;
+  return implode('<br/>', $summary);
 }
 
 /**
@@ -737,13 +751,6 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
       );
       break;
 
-    case 'double_field_dialog':
-      $element[0] = array(
-        '#theme' => 'double_field_dialog',
-        '#items' => $items,
-      );
-      break;
-
     case 'double_field_table':
       foreach ($items as $delta => $item) {
         $row = array();
@@ -772,15 +779,10 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
       break;
 
     case 'double_field_accordion':
-      $element[0] = array(
-        '#theme' => 'double_field_accordion',
-        '#items' => $items,
-      );
-      break;
-
     case 'double_field_tabs':
+    case 'double_field_dialog':
       $element[0] = array(
-        '#theme' => 'double_field_tabs',
+        '#theme' => $display['type'],
         '#items' => $items,
       );
       break;
@@ -826,14 +828,14 @@ function theme_double_field($vars) {
  * Implements theme_double_field_accordion().
  */
 function theme_double_field_accordion($vars) {
+  drupal_add_library('system', 'ui.accordion');
+  drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-accordion").accordion({ collapsible: true, active: false });});', 'inline');
   $output = '<div class="double-field-accordion">';
   foreach ($vars['element']['#items'] as $item) {
     $output .= '<h3><a href="#">' . $item['first'] . '</a></h3>';
     $output .= '<div>' . $item['second'] . '</div>';
   }
   $output .= '</div>';
-  drupal_add_library('system', 'ui.accordion');
-  drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-accordion").accordion({ collapsible: true, active: false });});', 'inline');
   return $output;
 }
 
@@ -841,14 +843,19 @@ function theme_double_field_accordion($vars) {
  * Implements theme_double_field_tabs().
  */
 function theme_double_field_tabs($vars) {
-  $output = '';
-  foreach ($vars['element']['#items'] as $delta => $item) {
-    $vars['items'][] = '<a href="#tabs-' . $delta . '">' . $item['first'] . '</a>';
-    $output .= '<div id="tabs-' . $delta . '">' . $item['second'] . '</div>';
-  }
-  $output = '<div class="double-field-tabs">' . theme('item_list', $vars) . $output . '</div>';
+  // Ensure that each passed HTML ID value only exists once on the page.
+  static $instance = 0;
+  $instance++;
+
   drupal_add_library('system', 'ui.tabs');
   drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-tabs").tabs();});', 'inline');
+  $output = '';
+  foreach ($vars['element']['#items'] as $delta => $item) {
+    $id = 'tabs-' . $instance . '-' . $delta;
+    $vars['items'][] = '<a href="#' . $id . '">' . $item['first'] . '</a>';
+    $output .= '<div id="' . $id . '">' . $item['second'] . '</div>';
+  }
+  $output = '<div class="double-field-tabs">' . theme('item_list', $vars) . $output . '</div>';
   return $output;
 }
 
@@ -856,11 +863,11 @@ function theme_double_field_tabs($vars) {
  * Implements theme_double_field_dialog().
  */
 function theme_double_field_dialog($vars) {
+  drupal_add_library('system', 'ui.dialog');
+  drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-dialog").dialog();});', 'inline');
   $output = '';
   foreach (array_reverse($vars['element']['#items']) as $delta => $item) {
     $output .= '<div class="double-field-dialog" title="' . $item['first'] . '">' . $item['second'] . '</div>';
   }
-  drupal_add_library('system', 'ui.dialog');
-  drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-dialog").dialog();});', 'inline');
   return $output;
 }

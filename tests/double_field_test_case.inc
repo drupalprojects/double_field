@@ -4,7 +4,7 @@
  * @file
  * Tests for Double field module.
  * 
- * Some field settings initializated by random values.
+ * Some field settings are initializated by random values.
  * So it is recommended to run these tests several times.
  * @code
  * for i in {1..10};
@@ -98,7 +98,6 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
   protected function validate($validators, $success_message) {
     foreach ($validators as $xpath) {
       if (!$this->xpath($xpath)) {
-        // $this->fail($xpath);
         $this->fail($success_message);
         return;
       }

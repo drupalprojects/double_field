@@ -54,6 +54,7 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
       );
       $this->drupalPostAJAX(NULL, $edit, array('op' => t('Refresh')));
 
+      // TODO Check formater summary here.
       $this->assertFieldByName("fields[{$this->field_name}][type]", $formatter->getType(), t('The expected formatter is selected.'));
 
       $this->drupalPostAJAX(NULL, array(), $this->field_name . '_formatter_settings_edit');
@@ -113,7 +114,7 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
     $this->drupalPost(NULL, array(), t('Save'));
 
     $this->assertText(t('Using the "Full HTML" format allows HTML to be posted unfiltered. This could represent a severe security risk.'), 'Warning message was found.');
-    $this->assertTrue($this->xpath("//div[@style='color: red']//em[text()=:text]", array(':text' => 'Full HTML')));
+    $this->assertTrue($this->xpath("//span[@style='color: red']//em[text()=:text]", array(':text' => 'Full HTML')), 'Full HTML format was highlighted');
 
     // Add some unsecure text to the node.
     $text = '<em>text</em><span style="color: red">text</span>';

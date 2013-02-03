@@ -5,7 +5,7 @@ SUMMARY:
 
   This is a small module written to provide extensions to Drupal's core Fields.
   By this module you can divide your fields into two seporate parts.
-  Example: key/value, first name/last name etc.
+  Example: key/value, name/email etc.
 
 INSTALLATION:
 

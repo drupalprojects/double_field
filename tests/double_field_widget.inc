@@ -122,7 +122,8 @@ class DoubleFieldWidget {
 
     foreach ($this->subwidgets as $index => $subwidget) {
       $prefix = "$form_xpath//fieldset[@id='edit-instance-widget-settings-$index']";
-      $validators[] = "$prefix//legend//span[text()='$index subfield – $subwidget']";
+      $text = ($index == 'first' ? t('First subfield') : t('Second subfield')) . ' (' . double_field_get_subwidgets($subwidget) . ')';
+      $validators[] = "$prefix//legend//span[text()='$text']";
 
       // Check subwidget related elements.
       switch ($subwidget) {
@@ -168,7 +169,6 @@ class DoubleFieldWidget {
 
     return $validators;
   }
-
 
   /**
    * Create widget fornm validators.

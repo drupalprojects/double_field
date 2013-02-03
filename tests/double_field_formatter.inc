@@ -226,7 +226,7 @@ class DoubleFieldFormatter {
         $prefix .= "//div[contains(@class, 'double-field-tabs')]";
         $label_prefix = "//div[contains(@class, 'item-list')]/ul";
         for ($delta = 0; $delta < $cardinality; $delta++) {
-          $id = "tabs-$delta";
+          $id = "tabs-1-$delta";
           $tab_label = $this->settings['first']['prefix'] . $items[$delta]['first'] . $this->settings['first']['suffix'];
           $validators[] = "$label_prefix/li/a[@href='#$id' and text()='$tab_label']";
           $tab_value = $this->settings['second']['prefix'] . $items[$delta]['second'] . $this->settings['second']['suffix'];
