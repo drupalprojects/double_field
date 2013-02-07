@@ -83,10 +83,11 @@ class DoubleFieldWidget {
 
       case 'textfield':
         $settings['size'] = mt_rand(1, 50);
+        $settings['placeholder'] = DrupalTestCase::randomName(mt_rand(0, 50));
         break;
 
       case 'checkbox':
-        $settings['on_value'] = DrupalTestCase::randomName(mt_rand(0, 25));;
+        $settings['on_value'] = DrupalTestCase::randomName(mt_rand(0, 25));
         break;
 
       case 'select':
@@ -101,6 +102,7 @@ class DoubleFieldWidget {
         $settings['cols'] = mt_rand(1, 25);
         $settings['rows'] = mt_rand(1, 25);
         $settings['resizable'] = (bool) mt_rand(0, 1);
+        $settings['placeholder'] = DrupalTestCase::randomName(mt_rand(0, 50));
         break;
 
       default:
@@ -131,6 +133,8 @@ class DoubleFieldWidget {
         case 'textfield':
           $value = $this->settings[$index][$subwidget]['size'];
           $validators[] = "$prefix//input[@name='instance[widget][settings][$index][$subwidget][size]' and @value='$value']";
+          $value = $this->settings[$index][$subwidget]['placeholder'];
+          $validators[] = "$prefix//input[@name='instance[widget][settings][$index][$subwidget][placeholder]' and @value='$value']";
           break;
 
         case 'textarea':
@@ -140,6 +144,8 @@ class DoubleFieldWidget {
           $validators[] = "$prefix//input[@name='instance[widget][settings][$index][$subwidget][rows]' and @value='$value']";
           $checked = $this->settings[$index][$subwidget]['resizable'] ? '@checked' : 'not(@checked)';
           $validators[] = "$prefix//input[@name='instance[widget][settings][$index][$subwidget][resizable]' and $checked]";
+          $value = $this->settings[$index][$subwidget]['placeholder'];
+          $validators[] = "$prefix//input[@name='instance[widget][settings][$index][$subwidget][placeholder]' and @value='$value']";
           break;
 
         case 'select':
@@ -195,14 +201,18 @@ class DoubleFieldWidget {
       switch ($subwidget) {
         case 'textfield':
           $size = $this->settings[$index][$subwidget]['size'];
-          $validators[] = "$prefix//input[@name='$name' and @type='text' and @size='$size' and @value='$value']";
+          $placeholder_value = $this->settings[$index][$subwidget]['placeholder'];
+          $placeholder = $placeholder_value ? "@placeholder='$placeholder_value'" : 'not(@checked)';
+          $validators[] = "$prefix//input[@name='$name' and @type='text' and @size='$size' and @value='$value' and $placeholder]";
           break;
 
         case 'textarea':
           $cols = $this->settings[$index][$subwidget]['cols'];
           $rows = $this->settings[$index][$subwidget]['rows'];
           $wrapper_class = $this->settings[$index][$subwidget]['resizable'] ? 'form-textarea-wrapper resizable' : 'form-textarea-wrapper';
-          $validators[] = "$prefix//div[@class='$wrapper_class']//textarea[@name='$name' and @cols='$cols' and @rows='$rows' and text()='$value']";
+          $placeholder_value = $this->settings[$index][$subwidget]['placeholder'];
+          $placeholder = $placeholder_value ? "@placeholder='$placeholder_value'" : 'not(@checked)';
+          $validators[] = "$prefix//div[@class='$wrapper_class']//textarea[@name='$name' and @cols='$cols' and @rows='$rows' and text()='$value' and $placeholder]";
           break;
 
         case 'select':

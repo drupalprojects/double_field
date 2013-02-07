@@ -155,6 +155,7 @@ function double_field_field_widget_info() {
     ),
     'textfield' => array(
       'size' => 10,
+      'placeholder' => '',
     ),
     'checkbox' => array(
       'on_value' => t('Ok'),
@@ -167,6 +168,7 @@ function double_field_field_widget_info() {
       'cols' => 10,
       'rows' => 5,
       'resizable' => TRUE,
+      'placeholder' => '',
     ),
   );
 
@@ -239,6 +241,12 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#element_validate' => array('element_validate_integer_positive'),
           '#size' => 3,
         );
+        $form[$subfield]['textfield']['placeholder'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Placeholder attribute'),
+          '#description' => t('Pre-filled value that serves as a hint for the user regarding what to type.'),
+          '#default_value' => $settings[$subfield]['textfield']['placeholder'],
+        );
         break;
 
       case 'checkbox':
@@ -294,6 +302,12 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#title' => t('Resizable'),
           '#default_value' => $settings[$subfield]['textarea']['resizable'],
           '#description' => t('Whether users should be allowed to resize the text area.'),
+        );
+        $form[$subfield]['textarea']['placeholder'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Placeholder attribute'),
+          '#description' => t('Pre-filled value that serves as a hint for the user regarding what to type.'),
+          '#default_value' => $settings[$subfield]['textarea']['placeholder'],
         );
         break;
     }
@@ -370,6 +384,9 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
     switch ($subfield_types[$key]) {
       case 'textfield':
         $double_field[$subfield]['#size'] = $settings[$subfield]['textfield']['size'];
+        if ($settings[$subfield]['textfield']['placeholder']) {
+          $double_field[$subfield]['#attributes']['placeholder'] = $settings[$subfield]['textfield']['placeholder'];
+        }
         break;
 
       case 'checkbox':
@@ -388,6 +405,9 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
         $double_field[$subfield]['#cols'] = $settings[$subfield]['textarea']['cols'];
         $double_field[$subfield]['#rows'] = $settings[$subfield]['textarea']['rows'];
         $double_field[$subfield]['#resizable'] = $settings[$subfield]['textarea']['resizable'];
+        if ($settings[$subfield]['textarea']['placeholder']) {
+          $double_field[$subfield]['#attributes']['placeholder'] = $settings[$subfield]['textarea']['placeholder'];
+        }
         break;
     }
   }
