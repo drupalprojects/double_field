@@ -80,7 +80,7 @@ function double_field_field_settings_form($field, $instance, $has_data) {
 
 /**
  * Implements hook_field_is_empty().
- * 
+ *
  * @see http://drupal.org/node/1489484
  */
 function double_field_field_is_empty($item, $field) {
@@ -95,6 +95,14 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
   // Do not validate widgets provided by other modules.
   if ($instance['widget']['module'] == 'double_field') {
+
+    if (!isset($entity)) {
+      // This validation is performed after submit the widget configuration
+      // form. Avoid validations here related to required items to be able to
+      // submit an empy field.
+      return;
+    }
+
     $settings = $instance['widget']['settings'];
     $error = array(
       'error' => 'double_field_required',
