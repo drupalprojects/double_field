@@ -5,6 +5,10 @@
  * Tests for Double field schema.
  */
 
+// Drupal testbot starts with all modules disabled
+// so we cannot autoload the class.
+require_once 'double_field_test_case.inc';
+
 /**
  * Test case for Double field schema.
  */

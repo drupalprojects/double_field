@@ -93,48 +93,60 @@ function double_field_field_is_empty($item, $field) {
  */
 function double_field_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 
-  // Do not validate widgets provided by other modules.
-  if ($instance['widget']['module'] == 'double_field') {
+  // This validation is performed after submit the widget configuration
+  // form. Avoid validations here related to required items to be able to
+  // submit an empy field.
+  // We also should not validate widgets provided by other modules.
+  if (!isset($entity) || $instance['widget']['module'] != 'double_field') {
+    return;
+  }
 
-    if (!isset($entity)) {
-      // This validation is performed after submit the widget configuration
-      // form. Avoid validations here related to required items to be able to
-      // submit an empy field.
-      return;
+  $settings = $instance['widget']['settings'];
+  $error = array(
+    'error' => 'double_field_required',
+    'message' => t('%name field is required.', array('%name' => $instance['label'])),
+    'error_element' => array('first' => FALSE, 'second' => FALSE),
+  );
+
+  $field_is_empty = TRUE;
+  list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
+  foreach ($items as $delta => $item) {
+
+    // Checkboxes get value from widget settigns.
+    foreach (array('first', 'second') as $subfield) {
+      $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
     }
 
-    $settings = $instance['widget']['settings'];
-    $error = array(
-      'error' => 'double_field_required',
-      'error_element' => array('first' => TRUE, 'second' => TRUE),
-      'message' => t('%name field is required.', array('%name' => $instance['label'])),
-    );
+    if ($item['first'] !== '' || $item['second'] !== '') {
+      $field_is_empty = FALSE;
+      $error['error_element']['first'] = $settings['first']['general']['required'] && $item['first'] === '';
+      $error['error_element']['second'] = $settings['second']['general']['required'] && $item['second'] === '';
 
-    $field_is_empty = TRUE;
-    list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
-    foreach ($items as $delta => $item) {
-
-      // Checkboxes get value from widget settigns.
-      foreach (array('first', 'second') as $subfield) {
-        $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
-      }
-
-      if ($item['first'] !== '' || $item['second'] !== '') {
-        $field_is_empty = FALSE;
-        $error['error_element']['first'] = $settings['first']['general']['required'] && $item['first'] === '';
-        $error['error_element']['second'] = $settings['second']['general']['required'] && $item['second'] === '';
-        if ($error['error_element']['first'] || $error['error_element']['second']) {
-          $errors[$field['field_name']][$langcode][$delta][] = $error;
+      if ($error['error_element']['first'] || $error['error_element']['second']) {
+        // Do not repeat the error message.
+        if (isset($errors[$field['field_name']][$langcode])) {
+          $error['message'] = FALSE;
         }
+        $errors[$field['field_name']][$langcode][$delta][] = $error;
       }
     }
 
-    // Mark only required subfields.
-    if ($field_is_empty && $instance['required']) {
-      $error['error_element']['first'] = $settings['first']['general']['required'] && $items[0]['first'] === '';
-      $error['error_element']['second'] = $settings['second']['general']['required'] && $items[0]['second'] === '';
-      $errors[$field['field_name']][$langcode][0][] = $error;
+  }
+
+  // If the instance is required we should mark only first required element.
+  if ($field_is_empty && $instance['required']) {
+
+    // If there are required subfields mark them as invalid.
+    if ($settings['first']['general']['required'] ||  $settings['second']['general']['required']) {
+      $error['error_element']['first'] = $settings['first']['general']['required'];
+      $error['error_element']['second'] = $settings['second']['general']['required'];
     }
+    // Otherwise mark both subfields.
+    else {
+      $error['error_element']['first'] = $error['error_element']['second'] = TRUE;
+    }
+
+    $errors[$field['field_name']][$langcode][0][] = $error;
   }
 
 }
@@ -180,8 +192,8 @@ function double_field_field_widget_info() {
     ),
   );
 
-  $subwidgets = double_field_get_subwidgets();
   $weight = 0;
+  $subwidgets = double_field_get_subwidgets();
   foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
     foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
       $widgets[$first_subwidget . '_&_' . $second_subwidget] = array(
@@ -439,9 +451,12 @@ function double_field_checkbox_to_storage($element, &$form_state) {
  * Implements hook_field_widget_error().
  */
 function double_field_field_widget_error($element, $error, $form, &$form_state) {
+  $display_message = TRUE;
   foreach (array('first', 'second') as $subfield) {
     if ($error['error_element'][$subfield]) {
-      form_error($element[$subfield], $error['message']);
+      form_error($element[$subfield], $display_message ? $error['message'] : '');
+      // Display the message only once.
+      $display_message = FALSE;
     }
   }
 }
@@ -574,9 +589,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
         '#size' => 30,
         '#default_value' => $settings['table']['number_column_label'],
         '#states' => array(
-          'visible' => array(
-            '#number_column' => array('checked' => TRUE),
-          ),
+          'visible' => array('#number_column' => array('checked' => TRUE)),
         ),
       );
       foreach (array('first', 'second') as $subfield) {
@@ -654,14 +667,18 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
   switch ($type) {
 
     case 'double_field_fieldset':
-      $summary[] = t('Collapsible: %value', array('@value' => $settings['collapsible'] ? 'Yes' : 'No'));
-      $summary[] = t('Collapsed: %value', array('@value' => $settings['collapsed'] ? 'Yes' : 'No'));
+      $summary[] = t('Collapsible: %value', array('%value' => $settings['collapsible'] ? 'Yes' : 'No'));
+      $summary[] = t('Collapsed: %value', array('%value' => $settings['collapsed'] ? 'Yes' : 'No'));
       break;
 
     case 'double_field_unformatted_list':
     case 'double_field_html_list':
-      $display_style = $settings['style'] == 'inline' ? t('inline') : t('block');
-      $summary[] = t('Display style: %value', array('%value' => $display_style));
+      $display_styles = array(
+        'inline' => t('Inline'),
+        'block' => t('Block'),
+        'link' => t('Link'),
+      );
+      $summary[] = t('Display style: %value', array('%value' => $display_styles[$settings['style']]));
       if ($type == 'double_field_html_list') {
         $summary[] = t('List type: %value', array('%value' => $settings['list_type'] == 'ul' ? t('Unordered') : t('Ordered')));
       }
@@ -669,8 +686,12 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
 
     case 'double_field_table':
       $summary[] = t('Row number column: %value', array('%value' => $settings['table']['number_column'] ? 'Yes' : 'No'));
-      $summary[] = t('First column label: %value', array('%value' => $settings['table']['first']['column_label']));
-      $summary[] = t('Second column label: %value', array('%value' => $settings['table']['second']['column_label']));
+      if ($settings['table']['first']['column_label']) {
+        $summary[] = t('First column label: %value', array('%value' => $settings['table']['first']['column_label']));
+      }
+      if ($settings['table']['second']['column_label']) {
+        $summary[] = t('Second column label: %value', array('%value' => $settings['table']['second']['column_label']));
+      }
       break;
 
   }
@@ -682,9 +703,15 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
     $summary[] = t('Hidden: %value', array('%value' => $settings[$subfield]['hidden'] ? t('Yes') : t('No')));
     $format = isset($filter_formats[$settings[$subfield]['format']]) ? $filter_formats[$settings[$subfield]['format']]->name : '';
     $format_color = $settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto';
-    $summary[] = '<span style="color: ' . $format_color . '">' . t('Format: %value', array('%value' => $format)) . '</span>';
-    $summary[] = t('Prefix: %value', array('%value' => $settings[$subfield]['prefix']));
-    $summary[] = t('Suffix: %value', array('%value' => $settings[$subfield]['suffix']));
+    if ($format) {
+      $summary[] = '<span style="color: ' . $format_color . '">' . t('Format: %value', array('%value' => $format)) . '</span>';
+    }
+    if ($settings[$subfield]['prefix']) {
+      $summary[] = t('Prefix: %value', array('%value' => $settings[$subfield]['prefix']));
+    }
+    if ($settings[$subfield]['suffix']) {
+      $summary[] = t('Suffix: %value', array('%value' => $settings[$subfield]['suffix']));
+    }
   }
 
   return implode('<br/>', $summary);

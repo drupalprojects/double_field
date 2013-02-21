@@ -3,9 +3,10 @@ description = Provides a field with two text widgets
 package = Fields
 core = 7.x
 
-files[] = tests/double_field_test_case.inc
 files[] = tests/double_field_field.test
-files[] = tests/double_field_widget.inc
 files[] = tests/double_field_widgets.test
-files[] = tests/double_field_formatter.inc
 files[] = tests/double_field_formatters.test
+files[] = tests/double_field_contrib.test
+files[] = tests/double_field_test_case.inc
+files[] = tests/double_field_widget.inc
+files[] = tests/double_field_formatter.inc

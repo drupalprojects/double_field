@@ -12,6 +12,7 @@ function double_field_devel_generate($object, $field, $instance, $bundle) {
   list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
 
   foreach (array('first', 'second') as $subfield) {
+
     switch ($widget[$subfield]) {
       case 'checkbox':
         $object_field[$subfield] = $instance['widget']['settings'][$subfield]['checkbox'][mt_rand(0, 1) ? 'on_value' : 'off_value'];
@@ -35,6 +36,7 @@ function double_field_devel_generate($object, $field, $instance, $bundle) {
           $object_field[$subfield] = user_password($field['settings'][$subfield]['maxlength']);
         }
     }
+
   }
 
   return $object_field;

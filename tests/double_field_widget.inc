@@ -59,6 +59,13 @@ class DoubleFieldWidget {
     return $this->settings;
   }
 
+  /**
+   * Set widget settings.
+   */
+  public function setSettings($settings) {
+    $this->settings = $settings;
+  }
+
 
   /**
    * Get field value.
@@ -88,6 +95,7 @@ class DoubleFieldWidget {
 
       case 'checkbox':
         $settings['on_value'] = DrupalTestCase::randomName(mt_rand(0, 25));
+        $settings['off_value'] = '';
         break;
 
       case 'select':
@@ -263,6 +271,14 @@ class DoubleFieldWidget {
       $field_name . '[' . LANGUAGE_NONE . '][' . $delta . '][first]' => $this->value[$delta]['first'],
       $field_name . '[' . LANGUAGE_NONE . '][' . $delta . '][second]' => $this->value[$delta]['second'],
     );
+  }
+
+  /**
+   * Set 'required' widget settings.
+   */
+  public function setRequiredOptions($first, $second) {
+    $this->settings['first']['general']['required'] = $first;
+    $this->settings['second']['general']['required'] = $second;
   }
 
   /**

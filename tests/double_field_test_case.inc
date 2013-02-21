@@ -28,7 +28,12 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
    * Prepare environment.
    */
   public function setUp() {
-    parent::setUp('double_field');
+
+    $modules = func_get_args();
+    if (isset($modules[0]) && is_array($modules[0])) {
+      $modules = $modules[0];
+    }
+    parent::setUp($modules ? $modules : 'double_field');
 
     // Create content type.
     $this->type_name = strtolower($this->randomName(8));
@@ -64,8 +69,11 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
       array(
         'access administration pages',
         'administer content types',
+        'administer nodes',
+        'access content overview',
+        'administer site configuration',
         'create ' . $this->type_name . ' content',
-        'edit own ' . $this->type_name . ' content',
+        'edit any ' . $this->type_name . ' content',
       )
     );
     $this->drupalLogin($this->user);
@@ -98,6 +106,7 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
   protected function validate($validators, $success_message) {
     foreach ($validators as $xpath) {
       if (!$this->xpath($xpath)) {
+        debug($xpath);
         $this->fail($success_message);
         return;
       }

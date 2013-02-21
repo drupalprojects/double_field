@@ -77,39 +77,137 @@ class DoubleFieldFormatter {
    */
   public function getSettingsFormValidators($field_name) {
     $prefix = "//div[contains(@class, 'field-formatter-settings-edit-form')]";
-    $validators["Formatter settings form: formatter label was found"] = "$prefix//span[@class='formatter-name' and text()='{$this->label}']";
+    $validators[] = "$prefix//span[@class='formatter-name' and text()='{$this->label}']";
+
+    switch ($this->type) {
+
+      case 'double_field_fieldset':
+        $name = "fields[$field_name][settings_edit_form][settings][collapsible]";
+        $checked = $this->settings['collapsible'] ? '@checked' : 'not(@checked)';
+        $validators[] = "$prefix//input[@type='checkbox' and @name='$name' and $checked]";
+        $name = "fields[$field_name][settings_edit_form][settings][collapsed]";
+        $checked = $this->settings['collapsed'] ? '@checked' : 'not(@checked)';
+        $validators[] = "$prefix//input[@type='checkbox' and @name='$name' and $checked]";
+        break;
+
+      case 'double_field_unformatted_list':
+      case 'double_field_html_list':
+        $name = "fields[$field_name][settings_edit_form][settings][style]";
+        $value = $this->settings['style'];
+        $validators[] = "$prefix//select[@name='$name']/option[@value='$value' and @selected]";
+        if ($this->type == 'double_field_html_list') {
+          $name = "fields[$field_name][settings_edit_form][settings][list_type]";
+          $value = $this->settings['list_type'];
+          $checked = $value == 'ul' ? '@checked' : 'not(@checked)';
+          $validators[] = "$prefix//input[@type='radio' and @name='$name' and @value='ul' and $checked]";
+          $checked = $value == 'ol' ? '@checked' : 'not(@checked)';
+          $validators[] = "$prefix//input[@type='radio' and @name='$name' and @value='ol' and $checked]";
+        }
+        break;
+
+      case 'double_field_table':
+        $table_prefix = "//fieldset[contains(@class, 'collapsible') and contains(@class, 'collapsed')]";
+        $name = "fields[$field_name][settings_edit_form][settings][table][number_column]";
+        $checked = $this->settings['table']['number_column'] ? '@checked' : 'not(@checked)';
+        $validators[] = "$prefix$table_prefix//input[@type='checkbox' and @name='$name' and $checked]";
+
+        $name = "fields[$field_name][settings_edit_form][settings][table][number_column_label]";
+        $value = $this->settings['table']['number_column_label'];
+        $validators[] = "$prefix$table_prefix//input[@type='text' and @name='$name' and @value='$value']";
+
+        foreach (array('first', 'second') as $subfield) {
+          $name = "fields[$field_name][settings_edit_form][settings][table][$subfield][column_label]";
+          $value = $this->settings['table'][$subfield]['column_label'];
+          $validators[] = "$prefix$table_prefix//input[@type='text' and @name='$name' and @value='$value']";
+        }
+        break;
+
+    }
 
     foreach (array('first', 'second') as $subfield) {
       $subfield_prefix = "/fieldset[contains(@class, 'collapsible') and contains(@class, 'collapsed')]";
       $text = ucfirst("$subfield subfield");
-      $validators["Formatter settings form: fieldset legend was found"] = "$prefix$subfield_prefix/legend//span[text()='$text']";
+      $validators[] = "$prefix$subfield_prefix/legend//span[text()='$text']";
 
       $name = "fields[$field_name][settings_edit_form][settings][$subfield][hidden]";
       $checked = $this->settings[$subfield]['hidden'] ? '@checked' : 'not(@checked)';
-      $validators["Formatter settings form: «hidden» value was found"] = "$prefix$subfield_prefix//input[@type='checkbox' and @name='$name' and $checked]";
+      $validators[] = "$prefix$subfield_prefix//input[@type='checkbox' and @name='$name' and $checked]";
 
       $name = "fields[$field_name][settings_edit_form][settings][$subfield][format]";
-      $validators["Formatter settings form: «- None -» option was found"] = "$prefix$subfield_prefix//select[@name='$name']/option[@value='_none' and text()='- None -']";
+      $validators[] = "$prefix$subfield_prefix//select[@name='$name']/option[@value='_none' and text()='- None -']";
       foreach (filter_formats() as $format) {
-        $validators["Formatter settings form: «{$format->name}» option was found"] = "$prefix$subfield_prefix//select[@name='$name']/option[@value='$format->format' and text()='$format->name']";
+        $validators[] = "$prefix$subfield_prefix//select[@name='$name']/option[@value='$format->format' and text()='$format->name']";
       }
 
       $value = $this->settings[$subfield]['format'];
-      $selected = $this->settings[$subfield]['format'] ? '@selected' : 'not(@selected)';
-      $validators["Formatter settings form: «format» value was found"] = "$prefix$subfield_prefix//select[@name='$name']/option[@value='$value' and $selected]";
+      $validators[] = "$prefix$subfield_prefix//select[@name='$name']/option[@value='$value' and @selected]";
 
       $name = "fields[$field_name][settings_edit_form][settings][$subfield][prefix]";
       $value = $this->settings[$subfield]['prefix'];
-      $validators["Formatter settings form: «prefix» value was found"] = "$prefix$subfield_prefix//input[@type='text' and @name='$name' and @value='$value']";
+      $validators[] = "$prefix$subfield_prefix//input[@type='text' and @name='$name' and @value='$value']";
 
       $name = "fields[$field_name][settings_edit_form][settings][$subfield][suffix]";
       $value = $this->settings[$subfield]['suffix'];
-      $validators["Formatter settings form: «suffix» value was found"] = "$prefix$subfield_prefix//input[@type='text' and @name='$name' and @value='$value']";
+      $validators[] = "$prefix$subfield_prefix//input[@type='text' and @name='$name' and @value='$value']";
     }
 
     return $validators;
   }
 
+  /**
+   * Confirm that the formatter summary is being displayed.
+   */
+  public function getSummary() {
+
+    $summary = array();
+    switch ($this->type) {
+
+      case 'double_field_fieldset':
+        $summary[] = t('Collapsible: %value', array('%value' => $this->settings['collapsible'] ? 'Yes' : 'No'));
+        $summary[] = t('Collapsed: %value', array('%value' => $this->settings['collapsed'] ? 'Yes' : 'No'));
+        break;
+
+      case 'double_field_unformatted_list':
+      case 'double_field_html_list':
+        $display_styles = array(
+          'inline' => t('Inline'),
+          'block' => t('Block'),
+          'link' => t('Link'),
+        );
+        $summary[] = t('Display style: %value', array('%value' => $display_styles[$this->settings['style']]));
+        if ($this->type == 'double_field_html_list') {
+          $summary[] = t('List type: %value', array('%value' => $this->settings['list_type'] == 'ul' ? t('Unordered') : t('Ordered')));
+        }
+        break;
+
+      case 'double_field_table':
+        $summary[] = t('Row number column: %value', array('%value' => $this->settings['table']['number_column'] ? 'Yes' : 'No'));
+        if ($this->settings['table']['first']['column_label']) {
+          $summary[] = t('First column label: %value', array('%value' => $this->settings['table']['first']['column_label']));
+        }
+        if ($this->settings['table']['second']['column_label']) {
+          $summary[] = t('Second column label: %value', array('%value' => $this->settings['table']['second']['column_label']));
+        }
+        break;
+
+    }
+
+    // Summary of general settings.
+    // We test formats later.
+    foreach (array('first', 'second') as $subfield) {
+      $summary[] = '<br/><strong>' . ($subfield == 'first' ? t('First subfield') : t('Second subfield')) . '</strong>';
+      $summary[] = t('Hidden: %value', array('%value' => $this->settings[$subfield]['hidden'] ? t('Yes') : t('No')));
+      if ($this->settings[$subfield]['prefix']) {
+        $summary[] = t('Prefix: %value', array('%value' => $this->settings[$subfield]['prefix']));
+      }
+      if ($this->settings[$subfield]['suffix']) {
+        $summary[] = t('Suffix: %value', array('%value' => $this->settings[$subfield]['suffix']));
+      }
+    }
+
+    return '<div class="field-formatter-summary">' . implode('<br/>', $summary) . '</div>';
+
+  }
 
   /**
    * Confirm that the formatter is being displayed.

@@ -5,6 +5,10 @@
  * Tests for Double field formatters.
  */
 
+// Drupal testbot starts with all modules disabled
+// so we cannot autoload the class.
+require_once 'double_field_test_case.inc';
+
 /**
  * Test case for Double field formatters.
  */
@@ -16,7 +20,7 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
   public static function getInfo() {
     return array(
       'name'  => 'Formatters',
-      'description' => 'Formatters tests',
+      'description' => 'Test formatters',
       'group' => DoubleFieldTestCase::GROUP,
     );
   }
@@ -43,6 +47,7 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
 
     // Iterate through all supported formatter types.
     foreach ($formatters as $formatter_type => $label) {
+
       $this->drupalGet("admin/structure/types/manage/{$this->type_name}/display");
 
       $formatter = new DoubleFieldFormatter($formatter_type);
@@ -54,7 +59,6 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
       );
       $this->drupalPostAJAX(NULL, $edit, array('op' => t('Refresh')));
 
-      // TODO Check formater summary here.
       $this->assertFieldByName("fields[{$this->field_name}][type]", $formatter->getType(), t('The expected formatter is selected.'));
 
       $this->drupalPostAJAX(NULL, array(), $this->field_name . '_formatter_settings_edit');
@@ -70,6 +74,8 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
 
       $this->drupalPost(NULL, array(), t('Save'));
       $this->assertRaw('Your settings have been saved.');
+
+      $this->assertRaw($formatter->getSummary(), "«{$label}» formatter summary is valid.");
 
       $this->drupalGet('node/' . $this->node->nid);
 

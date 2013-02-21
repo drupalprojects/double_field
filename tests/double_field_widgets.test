@@ -5,6 +5,10 @@
  * Widgets tests for double field module.
  */
 
+// Drupal testbot starts with all modules disabled
+// so we cannot autoload the class.
+require_once 'double_field_test_case.inc';
+
 /**
  * Tests double field widgets.
  */
@@ -16,7 +20,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
   public static function getInfo() {
     return array(
       'name'  => 'Widgets',
-      'description' => 'Widgets tests',
+      'description' => 'Test widgets',
       'group' => DoubleFieldTestCase::GROUP,
     );
   }
@@ -58,31 +62,36 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
       // with actual widget settings values.
       $validators = $widget->getFormValidators($this->field_name);
       $this->validate($validators, 'Widget form is valid');
-
     }
 
   }
 
   /**
-   * Test required functionality.
+   * Test 'required' functionality.
    */
   public function testRequired() {
+    $field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
 
     $widget = new DoubleFieldWidget('textfield_&_select');
     $this->instance['widget'] = array(
       'module' => 'double_field',
       'type' => $widget->getType(),
     );
+    $this->instance['required'] = TRUE;
     field_update_instance($this->instance);
 
-    // Double field sets default widget settings after changing the widget type.
-    // So we have update these settings separately.
-    // See double_field_field_update_instance().
-    $this->instance['widget']['settings'] = $widget->getSettings();
-    $this->instance['widget']['settings']['first']['general']['required'] = 1;
-    $this->instance['widget']['settings']['second']['general']['required'] = 0;
-    field_update_instance($this->instance);
+    $widget->setRequiredOptions(TRUE, FALSE);
 
+    $input = $widget->getSettingsFormInput();
+    $this->drupalPost($field_settings_page, $input, t('Save settings'));
+
+    // This is a regression test for #1918064.
+    $this->assertNoRaw(
+      t('%field field is required.', array('%field' => $this->instance['label'])),
+      '"Field is required message" was not found.'
+    );
+
+    // Lets try to play with node form.
     $input = array('title' => 'Test') + $widget->getFormInput($this->field_name);
 
     $this->drupalPost('node/add/' . $this->type_name, $input, t('Save'));
@@ -121,9 +130,9 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
       'Second subfield has not error class.'
     );
 
-    $this->instance['widget']['settings']['first']['general']['required'] = 0;
-    $this->instance['widget']['settings']['second']['general']['required'] = 1;
-    field_update_instance($this->instance);
+    $widget->setRequiredOptions(FALSE, TRUE);
+    $input = $widget->getSettingsFormInput();
+    $this->drupalPost($field_settings_page, $input, t('Save settings'));
 
     $input = array('title' => 'Test') + $widget->getFormInput($this->field_name);
 
@@ -138,7 +147,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
 
     $this->assertRaw(
       t('%field field is required.', array('%field' => $this->instance['label'])),
-      'Field is required message found.'
+      '"Field is required message" was found.'
     );
 
     // A required field without any value has an empty option.
@@ -153,13 +162,42 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
     // Verify error maping.
     $this->assertFalse(
       $this->xpath('//input[@name=:name and contains(@class, "error")]', array(':name' => $this->getSubfieldName('first'))),
-      t('First subfield has not error class.')
+      t('First subfield has not the error class.')
     );
     $this->assertTrue(
       $this->xpath('//select[@name=:name and contains(@class, "error")]', array(':name' => $this->getSubfieldName('second'))),
-      t('Second subfield has error class.')
+      t('Second subfield has the error class.')
+    );
+
+    $widget->setRequiredOptions(FALSE, FALSE);
+    $input = $widget->getSettingsFormInput();
+    $this->drupalPost($field_settings_page, $input, t('Save settings'));
+
+    $input = array('title' => 'Test') + $widget->getFormInput($this->field_name);
+    unset($input[$this->getSubfieldName('first')]);
+    unset($input[$this->getSubfieldName('second')]);
+    $this->drupalPost('node/add/' . $this->type_name, $input, t('Save'));
+
+    // Verify error maping.
+    $this->assertTrue(
+      $this->xpath('//input[@name=:name and contains(@class, "error")]', array(':name' => $this->getSubfieldName('first'))),
+      t('First subfield has the error class.')
+    );
+    $this->assertTrue(
+      $this->xpath('//select[@name=:name and contains(@class, "error")]', array(':name' => $this->getSubfieldName('second'))),
+      t('Second subfield has the error class.')
+    );
+
+    // Disable global 'required' option.
+    $this->instance['required'] = FALSE;
+    field_update_instance($this->instance);
+    $this->drupalPost('node/add/' . $this->type_name, $input, t('Save'));
+    $this->assertRaw(
+      t('@type %title has been created.', array('@type' => $this->type_name, '%title' => $input['title'])),
+      'The node was created successfully.'
     );
 
   }
+
 
 }
