@@ -27,12 +27,29 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
   $property['getter callback'] = 'entity_metadata_field_verbatim_get';
   $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+
   foreach (array('first', 'second') as $subfield) {
     $property['property info'][$subfield] = array(
-      'type' => 'text',
       'label' => $subfield == 'first' ? t('First subfield') : t('Second subfield'),
       'setter callback' => 'entity_property_verbatim_set',
     );
+
+    switch ($field['settings'][$subfield]['type']) {
+      case 'varchar':
+      case 'text':
+        $property['property info'][$subfield]['type'] = 'text';
+        break;
+
+      case 'int':
+        $property['property info'][$subfield]['type'] = 'integer';
+        break;
+
+      case 'float':
+      case 'numeric':
+        $property['property info'][$subfield]['type'] = 'decimal';
+        break;
+
+    }
   }
   unset($property['query callback']);
 }
@@ -479,6 +496,14 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
       '#title_display' => 'invisible',
     );
 
+    $field_type = $field['settings'][$subfield]['type'];
+    if ($field_type == 'int') {
+      $double_field[$subfield]['#element_validate'][] = 'element_validate_integer';
+    }
+    if ($field_type == 'float' || $field_type == 'decimal') {
+      $double_field[$subfield]['#element_validate'][] = 'element_validate_number';
+    }
+
     switch ($subfield_types[$key]) {
       case 'textfield':
         $double_field[$subfield]['#size'] = $settings[$subfield]['textfield']['size'];
@@ -488,7 +513,7 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
         break;
 
       case 'checkbox':
-        $double_field[$subfield]['#element_validate'] = array('double_field_checkbox_to_storage');
+        $double_field[$subfield]['#element_validate'][] = 'double_field_checkbox_to_storage';
         $double_field[$subfield]['#on_value'] = $settings[$subfield]['checkbox']['on_value'];
         $double_field[$subfield]['#off_value'] = $settings[$subfield]['checkbox']['off_value'];
         $double_field[$subfield]['#default_value'] = $double_field[$subfield]['#default_value'] == $double_field[$subfield]['#on_value'];
