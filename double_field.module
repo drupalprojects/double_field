@@ -41,16 +41,22 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
  * Implements hook_field_info().
  */
 function double_field_field_info() {
+  foreach (array('first', 'second') as $subfield) {
+    $settings[$subfield] = array(
+      'type' => 'varchar',
+      'maxlength' => 255,
+      'size' => 'normal',
+      'precision' => 10,
+      'scale' => 2,
+    );
+  }
   return array(
     'double_field' => array(
       'label' => t('Double field'),
       'description' => t('Double text field'),
       'default_widget' => 'double_field',
       'default_formatter' => 'double_field_unformatted_list',
-      'settings' => array(
-        'first' => array('maxlength' => 255),
-        'second' => array('maxlength' => 255),
-      ),
+      'settings' => $settings,
       // Integrate with the Entity Metadata module.
       'property_type' => 'double_field',
       'property_callbacks' => array('double_field_property_callback'),
@@ -63,16 +69,88 @@ function double_field_field_info() {
  */
 function double_field_field_settings_form($field, $instance, $has_data) {
   $settings = $field['settings'];
+
+  $type_options = array(
+    'varchar' => t('Varchar'),
+    'text' => t('Text'),
+    'int' => t('Integer'),
+    'float' => t('Float'),
+    'numeric' => t('Decimal'),
+  );
+
+  $size_options = array(
+    'tiny' => t('Tiny'),
+    'small' => t('Small'),
+    'normal' => t('Normal'),
+    'medium' => t('Medium'),
+    'big' => t('Big'),
+  );
+
   foreach (array('first', 'second') as $subfield) {
+    $form[$subfield] = array(
+      '#type' => 'fieldset',
+      '#title' => $subfield == 'first' ? t('First subfield') : t('Second subfield'),
+      '#collapsible' => TRUE,
+    );
+    $form[$subfield]['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Field type'),
+      '#default_value' => $settings[$subfield]['type'],
+      '#required' => TRUE,
+      '#options' => $type_options ,
+      '#disabled' => $has_data,
+    );
     $form[$subfield]['maxlength'] = array(
       '#type' => 'textfield',
-      '#title' => $subfield == 'first' ? t('Maximum length of the first subfield') : t('Maximum length of the second subfield'),
+      '#title' => t('Maximum length'),
       '#default_value' => $settings[$subfield]['maxlength'],
       '#required' => TRUE,
-      '#description' => $subfield == 'first' ?
-      t('The maximum length of the first subfield in characters.') : t('The maximum length of the second subfield in characters.'),
+      '#description' => t('The maximum length of the subfield in characters.'),
       '#element_validate' => array('element_validate_integer_positive'),
       '#disabled' => $has_data,
+      '#size' => 10,
+      '#states' => array(
+        'visible' => array(":input[name='field[settings][$subfield][type]']" => array('value' => 'varchar')),
+      ),
+    );
+    $form[$subfield]['size'] = array(
+      '#type' => 'select',
+      '#title' => t('Size'),
+      '#default_value' => $settings[$subfield]['size'],
+      '#required' => TRUE,
+      '#options' => $size_options,
+      '#disabled' => $has_data,
+      '#states' => array(
+        'visible' => array(
+          ":input[name='field[settings][$subfield][type]']" => array(
+            array('value' => 'text'),
+            array('value' => 'int'),
+            array('value' => 'float'),
+          ),
+        ),
+      ),
+    );
+    $form[$subfield]['precision'] = array(
+      '#type' => 'select',
+      '#title' => t('Precision'),
+      '#options' => drupal_map_assoc(range(10, 32)),
+      '#default_value' => $settings[$subfield]['precision'],
+      '#description' => t('The total number of digits to store in the database, including those to the right of the decimal.'),
+      '#disabled' => $has_data,
+      '#states' => array(
+        'visible' => array(":input[name='field[settings][$subfield][type]']" => array('value' => 'numeric')),
+      ),
+    );
+    $form[$subfield]['scale'] = array(
+      '#type' => 'select',
+      '#title' => t('Scale'),
+      '#options' => drupal_map_assoc(range(0, 10)),
+      '#default_value' => $settings[$subfield]['scale'],
+      '#description' => t('The number of digits to the right of the decimal.'),
+      '#disabled' => $has_data,
+      '#states' => array(
+        'visible' => array(":input[name='field[settings][$subfield][type]']" => array('value' => 'numeric')),
+      ),
     );
   }
   return $form;
