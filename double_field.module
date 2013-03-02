@@ -21,7 +21,7 @@ function double_field_hook_info() {
 }
 
 /**
- * Alter the property info of date fields.
+ * Alter the property info of double field subfields.
  */
 function double_field_property_callback(&$info, $entity_type, $field, $instance, $field_type) {
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
@@ -45,7 +45,7 @@ function double_field_property_callback(&$info, $entity_type, $field, $instance,
         break;
 
       case 'float':
-      case 'numeric':
+      case 'decimal':
         $property['property info'][$subfield]['type'] = 'decimal';
         break;
 
@@ -92,14 +92,14 @@ function double_field_field_settings_form($field, $instance, $has_data) {
     'text' => t('Text'),
     'int' => t('Integer'),
     'float' => t('Float'),
-    'numeric' => t('Decimal'),
+    'decimal' => t('Decimal'),
   );
 
   $size_options = array(
     'tiny' => t('Tiny'),
     'small' => t('Small'),
-    'normal' => t('Normal'),
     'medium' => t('Medium'),
+    'normal' => t('Normal'),
     'big' => t('Big'),
   );
 
@@ -140,7 +140,6 @@ function double_field_field_settings_form($field, $instance, $has_data) {
       '#states' => array(
         'visible' => array(
           ":input[name='field[settings][$subfield][type]']" => array(
-            array('value' => 'text'),
             array('value' => 'int'),
             array('value' => 'float'),
           ),
@@ -155,7 +154,7 @@ function double_field_field_settings_form($field, $instance, $has_data) {
       '#description' => t('The total number of digits to store in the database, including those to the right of the decimal.'),
       '#disabled' => $has_data,
       '#states' => array(
-        'visible' => array(":input[name='field[settings][$subfield][type]']" => array('value' => 'numeric')),
+        'visible' => array(":input[name='field[settings][$subfield][type]']" => array('value' => 'decimal')),
       ),
     );
     $form[$subfield]['scale'] = array(
@@ -166,7 +165,7 @@ function double_field_field_settings_form($field, $instance, $has_data) {
       '#description' => t('The number of digits to the right of the decimal.'),
       '#disabled' => $has_data,
       '#states' => array(
-        'visible' => array(":input[name='field[settings][$subfield][type]']" => array('value' => 'numeric')),
+        'visible' => array(":input[name='field[settings][$subfield][type]']" => array('value' => 'decimal')),
       ),
     );
   }
@@ -188,6 +187,28 @@ function double_field_field_is_empty($item, $field) {
  */
 function double_field_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 
+  // Validate numeric subfield types.
+  $overflow_error = array(
+    'error' => 'double_field_out_of_range',
+    'message' => t('%name field value is out of range.', array('%name' => $instance['label'])),
+    'error_element' => array('first' => FALSE, 'second' => FALSE),
+  );
+
+  /*
+  foreach ($items as $delta => $item) {
+    foreach (array('first', 'second') as $subfield) {
+      $type = $field['settings'][$subfield]['type'];
+      $subfield_settings = $field['settings'][$subfield];
+      $int_error = $type == 'int' && !double_field_validate_integer_range($item[$subfield], $subfield_settings['size']);
+      $decimal_error = $type == 'decimal' && !double_field_validate_decimal_range($item[$subfield], $subfield_settings['precision'], $subfield_settings['scale']);
+      if ($int_error || $decimal_error) {
+        $overflow_error['error_element'][$subfield] = TRUE;
+        $errors[$field['field_name']][$langcode][$delta][] = $overflow_error;
+      }
+    }
+  }
+  */
+
   // This validation is performed after submit the widget configuration
   // form. Avoid validations here related to required items to be able to
   // submit an empy field.
@@ -197,7 +218,7 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
   }
 
   $settings = $instance['widget']['settings'];
-  $error = array(
+  $required_error = array(
     'error' => 'double_field_required',
     'message' => t('%name field is required.', array('%name' => $instance['label'])),
     'error_element' => array('first' => FALSE, 'second' => FALSE),
@@ -214,15 +235,15 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
 
     if ($item['first'] !== '' || $item['second'] !== '') {
       $field_is_empty = FALSE;
-      $error['error_element']['first'] = $settings['first']['general']['required'] && $item['first'] === '';
-      $error['error_element']['second'] = $settings['second']['general']['required'] && $item['second'] === '';
+      $required_error['error_element']['first'] = $settings['first']['general']['required'] && $item['first'] === '';
+      $required_error['error_element']['second'] = $settings['second']['general']['required'] && $item['second'] === '';
 
-      if ($error['error_element']['first'] || $error['error_element']['second']) {
+      if ($required_error['error_element']['first'] || $required_error['error_element']['second']) {
         // Do not repeat the error message.
         if (isset($errors[$field['field_name']][$langcode])) {
-          $error['message'] = FALSE;
+          $required_error['message'] = FALSE;
         }
-        $errors[$field['field_name']][$langcode][$delta][] = $error;
+        $errors[$field['field_name']][$langcode][$delta][] = $required_error;
       }
     }
 
@@ -232,18 +253,82 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
   if ($field_is_empty && $instance['required']) {
 
     // If there are required subfields mark them as invalid.
-    if ($settings['first']['general']['required'] ||  $settings['second']['general']['required']) {
-      $error['error_element']['first'] = $settings['first']['general']['required'];
-      $error['error_element']['second'] = $settings['second']['general']['required'];
+    if ($settings['first']['general']['required'] || $settings['second']['general']['required']) {
+      $required_error['error_element']['first'] = $settings['first']['general']['required'];
+      $required_error['error_element']['second'] = $settings['second']['general']['required'];
     }
     // Otherwise mark both subfields.
     else {
-      $error['error_element']['first'] = $error['error_element']['second'] = TRUE;
+      $required_error['error_element']['first'] = $required_error['error_element']['second'] = TRUE;
     }
 
-    $errors[$field['field_name']][$langcode][0][] = $error;
+    $errors[$field['field_name']][$langcode][0][] = $required_error;
   }
 
+}
+
+/**
+ * Ensure that the integer value is in a given range.
+ */
+function double_field_validate_integer_range($value, $size) {
+  $range = array(
+    'tiny' => 1,
+    'small' => 2,
+    'medium' => 3,
+    'normal' => 4,
+    'big' => 8,
+  );
+  $limit = pow(2, 8 * $range[$size] - 1);
+  return -$limit <= $value && $value < $limit;
+}
+
+/**
+ * Ensure that the decimal value is in a given range.
+ */
+function double_field_validate_decimal_range($value, $precision, $scale) {
+  return strlen(abs((int) $value)) <= $precision - $scale;
+}
+
+/**
+ * Form element validation handler for numeric elements.
+ */
+function double_field_validate_number($element, &$form_state) {
+  if ($element['#value']) {
+    $settings = $element['#subfield_settings'];
+    if ($settings['type'] == 'int' && !preg_match('/^-?\d+$/', $element['#value'])) {
+      form_error($element, t('%name must be an integer.', array('%name' => $element['#title'])));
+    }
+    elseif ($settings['type'] == 'int' && !double_field_validate_integer_range($element['#value'], $settings['size'])) {
+      form_error($element, t('%name out of range.', array('%name' => $element['#title'])));
+    }
+    elseif (($settings['type'] == 'float' || $settings['type'] == 'decimal') && !is_numeric($element['#value'])) {
+      form_error($element, t('%name must be a valid float or decimal.', array('%name' => $element['#title'])));
+    }
+    elseif ($settings['type'] == 'decimal' && !double_field_validate_decimal_range($element['#value'], $settings['precision'], $settings['scale'])) {
+      form_error($element, t('%name out of range.', array('%name' => $element['#title'])));
+    }
+  }
+}
+
+/**
+ * Implements hook_field_field_presave().
+ */
+function double_field_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as $delta => $item) {
+    foreach (array('first', 'second') as $subfield) {
+      $type = $field['settings'][$subfield]['type'];
+      // For numeric subfield types we should convert empty string to NULL.
+      $is_numeric = in_array($type, array('int', 'float', 'decimal'));
+      if ($is_numeric && $item[$subfield] === '') {
+        $items[$delta][$subfield] = NULL;
+      }
+      // Let PHP round the value to ensure consistent behavior across
+      // different storage backends.
+      if ($type == 'decimal') {
+        $items[$delta][$subfield] = round($items[$delta][$subfield], $field['settings'][$subfield]['scale']);
+      }
+    }
+  }
 }
 
 /**
@@ -368,20 +453,26 @@ function double_field_field_widget_settings_form($field, $instance) {
         $form[$subfield]['checkbox']['on_value'] = array(
           '#type' => 'textfield',
           '#title' => t('On value'),
-          '#maxlength' => $field['settings'][$subfield]['maxlength'],
           '#default_value' => $settings[$subfield]['checkbox']['on_value'],
+          '#required' => TRUE,
+          '#subfield_settings' => $field['settings'][$subfield],
+          '#element_validate' => array('double_field_validate_number'),
         );
         $form[$subfield]['checkbox']['off_value'] = array(
           // '#type' => 'textfield',
           '#type' => 'hidden',
           '#title' => t('Off value'),
-          '#maxlength' => $field['settings'][$subfield]['maxlength'],
           '#default_value' => $settings[$subfield]['checkbox']['off_value'],
+          '#subfield_settings' => $field['settings'][$subfield],
+          // '#element_validate' => array('double_field_validate_number'),
         );
+        if ($field['settings'][$subfield]['type'] == 'varchar') {
+          $form[$subfield]['checkbox']['on_value']['#maxlength'] = $field['settings'][$subfield]['maxlength'];
+        }
         break;
 
       case 'select':
-        // List isn't a required module and can be disabled.
+        // List is not a core required module.
         module_load_include('module', 'list');
         $form[$subfield]['select']['allowed_values'] = array(
           '#type' => 'textarea',
@@ -389,6 +480,7 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#title' => t('Allowed values list'),
           '#default_value' => list_allowed_values_string($settings[$subfield]['select']['allowed_values']),
           '#element_validate' => array('double_field_allowed_values_setting_validate'),
+          '#subfield_settings' => $field['settings'][$subfield],
         );
         $form[$subfield]['select']['allowed_values']['#description'] = '<p>' . t('The possible values this field can contain. Enter one value per line, in the format key|label.');
         $form[$subfield]['select']['allowed_values']['#description'] .= '<br/>' . t('The key is the stored value. The label will be used in displayed values and edit forms.');
@@ -458,13 +550,31 @@ function double_field_field_widget_settings_form($field, $instance) {
  * Element validate callback; check that the entered values are valid.
  */
 function double_field_allowed_values_setting_validate($element, &$form_state) {
-  $values = list_extract_allowed_values($element['#value'], 'list_text', FALSE);
-  $maxlength = $form_state['values']['field']['settings'][$element['#subfield']]['maxlength'];
 
-  // Count bytes not characters.
-  $options_length = array_map('strlen', array_keys($values));
-  if ($options_length && max($options_length) > $maxlength) {
-    form_error($element, t('Possible values of subfield cannot be greater maximum length of the subfield. '));
+  $settings = $form_state['values']['field']['settings'][$element['#subfield']];
+  $type = $settings['type'];
+  $values = list_extract_allowed_values($element['#value'], 'list_text', FALSE);
+  foreach ($values as $key => $value) {
+    if ($type == 'varchar' && drupal_strlen($key) > $settings['maxlength']) {
+      form_error($element, t('Allowed values list: each key must be a string at most !maxlength characters long.', array('!maxlength' => $settings['maxlength'])));
+      break;
+    }
+    elseif ($type == 'int' && !preg_match('/^-?\d+$/', $key)) {
+      form_error($element, t('Allowed values list: keys must be integers.'));
+      break;
+    }
+    elseif ($type == 'int' && !double_field_validate_integer_range($key, $settings['size'])) {
+      form_error($element, t('Allowed values list: keys out of range.'));
+      break;
+    }
+    elseif ($type == 'float' || $type == 'decimal' && !is_numeric($key)) {
+      form_error($element, t('Allowed values list: each key must be a valid integer or float.'));
+      break;
+    }
+    elseif ($type == 'decimal' && !double_field_validate_decimal_range($key, $settings['precision'], $settings['scale'])) {
+      form_error($element, t('Allowed values list: keys out of range.'));
+      break;
+    }
   }
   if (!is_array($values)) {
     form_error($element, t('Allowed values list: invalid input.'));
@@ -490,18 +600,19 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
       '#prefix' => $settings[$subfield]['general']['prefix'],
       '#suffix' => $settings[$subfield]['general']['suffix'],
       '#default_value' => isset($items[$delta][$subfield]) ? $items[$delta][$subfield] : NULL,
-      // Avoid PDOException: String data, right truncated.
-      '#maxlength' => $field['settings'][$subfield]['maxlength'],
       '#title' => $instance['label'],
       '#title_display' => 'invisible',
+      '#subfield_settings' => $field['settings'][$subfield],
     );
 
     $field_type = $field['settings'][$subfield]['type'];
-    if ($field_type == 'int') {
-      $double_field[$subfield]['#element_validate'][] = 'element_validate_integer';
+
+    // Avoid PDOException: String data, right truncated.
+    if ($field_type == 'varchar') {
+      $double_field[$subfield]['#maxlength'] = $field['settings'][$subfield]['maxlength'];
     }
-    if ($field_type == 'float' || $field_type == 'decimal') {
-      $double_field[$subfield]['#element_validate'][] = 'element_validate_number';
+    elseif ($field_type == 'int' || $field_type == 'float' || $field_type == 'decimal') {
+      $double_field[$subfield]['#element_validate'][] = 'double_field_validate_number';
     }
 
     switch ($subfield_types[$key]) {
@@ -546,8 +657,10 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
  * Transforms submitted checkbox values into field storage format.
  */
 function double_field_checkbox_to_storage($element, &$form_state) {
-  $value = $element['#value'] ? $element['#on_value'] : $element['#off_value'];
-  form_set_value($element, $value, $form_state);
+  $element['#value'] = $element['#value'] ? $element['#on_value'] : $element['#off_value'];
+  // Element value can be not numeric, so we need validate it.
+  double_field_validate_number($element, $form_state);
+  form_set_value($element, $element['#value'], $form_state);
 }
 
 /**
