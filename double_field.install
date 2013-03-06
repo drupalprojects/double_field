@@ -21,6 +21,13 @@ function double_field_field_schema($field) {
       $field['settings'][$subfield]['maxlength'] = 255;
     }
 
+    // Before 7.x-2.3 column type was defined according to the field maxlength.
+    // We should prevent changing column type because it already can store
+    // some values. See field_sql_storage_field_update_forbid().
+    if (empty($field['settings'][$subfield]['type'])) {
+      $field['settings'][$subfield]['type'] = $field['settings'][$subfield]['maxlength'] < 16384 / 3 ? 'varchar' : 'text';
+    }
+
     $type = $field['settings'][$subfield]['type'];
     $columns[$subfield] = array(
       'type' => $type == 'decimal' ? 'numeric' : $type,
@@ -57,44 +64,32 @@ function double_field_field_schema($field) {
  */
 function double_field_update_7201() {
 
-  $query = db_select('field_config', 'fc', array('fetch' => PDO::FETCH_ASSOC))
-    ->fields('fc')
-    ->condition('type', 'double_field');
-  foreach ($query->execute() as $field) {
-
-    $field_data = unserialize($field['data']);
+  $field_names = array();
+  foreach (field_read_fields(array('module' => 'double_field')) as $field) {
+    $field_names[] = $field['field_name'];
     foreach (array('first', 'second') as $subfield) {
-      $field_data['settings'][$subfield]['maxlength'] = $field_data['settings'][$subfield . '_maxlength'];
-      unset($field_data['settings'][$subfield . '_maxlength']);
+      $field['settings'][$subfield]['maxlength'] = $field['settings'][$subfield . '_maxlength'];
+      unset($field['settings'][$subfield . '_maxlength']);
     }
-    $field_data['indexes'] = array();
+    field_update_field($field);
 
-    // Save the field data.
-    $query = db_update('field_config')
-      ->condition('id', $field['id'])
-      ->fields(array('data' => serialize($field_data)))
-      ->execute();
-
-    $query = db_select('field_config_instance', 'fc', array('fetch' => PDO::FETCH_ASSOC))
-      ->fields('fc')
-      ->condition('field_id', $field['id']);
-    foreach ($query->execute() as $instance) {
-      $instance_data = unserialize($instance['data']);
+    $params = array('field_name' => $field_names);
+    foreach (field_read_instances($params) as $instance) {
 
       // Update widget type and widget settings.
-      $instance_data['widget']['type'] = 'textfield_&_textfield';
+      $instance['widget']['type'] = 'textfield_&_textfield';
       $widget_info = double_field_field_widget_info();
       foreach (array('first', 'second') as $subfield) {
-        $old_settings = $instance_data['widget']['settings'][$subfield];
-        $instance_data['widget']['settings'][$subfield] = $widget_info['textfield_&_textfield']['settings'][$subfield];
-        $instance_data['widget']['settings'][$subfield]['textfield']['size'] = $old_settings['size'];
+        $old_settings = $instance['widget']['settings'][$subfield];
+        $instance['widget']['settings'][$subfield] = $widget_info['textfield_&_textfield']['settings'][$subfield];
+        $instance['widget']['settings'][$subfield]['textfield']['size'] = $old_settings['size'];
         unset($old_settings['size']);
-        $instance_data['widget']['settings'][$subfield]['general'] = $old_settings;
+        $instance['widget']['settings'][$subfield]['general'] = $old_settings;
       }
 
       // Update formatter type and formatter settings.
       $formatters = double_field_field_formatter_info();
-      foreach ($instance_data['display'] as &$display) {
+      foreach ($instance['display'] as &$display) {
         switch ($display['type']) {
           case 'double_field_inline':
             $display['type'] = 'double_field_unformatted_list';
@@ -120,11 +115,41 @@ function double_field_update_7201() {
       }
 
       // Save the instance data.
-      $query = db_update('field_config_instance')
-        ->condition('id', $instance['id'])
-        ->fields(array('data' => serialize($instance_data)))
-        ->execute();
+      field_update_instance($instance);
     }
   }
+
+}
+
+/**
+ * Add placeholder attribute setting.
+ */
+function double_field_update_7202() {
+
+  $field_names = array();
+  foreach (field_read_fields(array('module' => 'double_field')) as $field_name => $field) {
+    $field_names[] = $field_name;
+    foreach (array('first', 'second') as $subfield) {
+      // Take type value from field schema.
+      $field['settings'][$subfield]['type'] = $field['columns'][$subfield]['type'];
+      $field['settings'][$subfield]['size'] = 'normal';
+      $field['settings'][$subfield]['precision'] = 10;
+      $field['settings'][$subfield]['scale'] = 2;
+    }
+    field_update_field($field);
+  };
+
+  $params = array('field_name' => $field_names);
+  foreach (field_read_instances($params) as $instance) {
+    foreach (array('first', 'second') as $subfield) {
+      if (isset($instance['widget']['settings'][$subfield]['textfield'])) {
+        $instance['widget']['settings'][$subfield]['textfield']['placeholder'] = '';
+      }
+      elseif (isset($instance['widget']['settings'][$subfield]['textarea'])) {
+        $instance['widget']['settings'][$subfield]['textarea']['placeholder'] = '';
+      }
+    }
+    field_update_instance($instance);
+  };
 
 }
