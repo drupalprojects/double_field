@@ -552,7 +552,7 @@ function double_field_allowed_values_setting_validate($element, &$form_state) {
       form_error($element, t('Allowed values list: keys out of range.'));
       break;
     }
-    elseif ($type == 'float' || $type == 'decimal' && !is_numeric($key)) {
+    elseif (($type == 'float' || $type == 'decimal') && !is_numeric($key)) {
       form_error($element, t('Allowed values list: each key must be a valid integer or float.'));
       break;
     }
@@ -589,7 +589,6 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
       '#title_display' => 'invisible',
       '#subfield_settings' => $field['settings'][$subfield],
     );
-
     $field_type = $field['settings'][$subfield]['type'];
 
     // Avoid PDOException: String data, right truncated.

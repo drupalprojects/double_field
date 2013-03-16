@@ -33,7 +33,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
 
     // Iterate through all widget types.
     foreach (DoubleFieldWidget::getAllWidgetTypes() as $widget_type => $widget_label) {
-      $widget = new DoubleFieldWidget($widget_type);
+      $widget = new DoubleFieldWidget($widget_type, $this->field['settings']);
 
       // Change widget type.
       $this->instance['widget']['type'] = $widget_type;
@@ -72,7 +72,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
   public function testRequired() {
     $field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
 
-    $widget = new DoubleFieldWidget('textfield_&_select');
+    $widget = new DoubleFieldWidget('textfield_&_select', $this->field['settings']);
     $this->instance['widget'] = array(
       'module' => 'double_field',
       'type' => $widget->getType(),

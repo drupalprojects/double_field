@@ -3,11 +3,11 @@
 /**
  * @file
  * Tests for Double field module.
- * 
+ *
  * Some field settings are initializated by random values.
  * So it is recommended to run these tests several times.
  * @code
- * for i in {1..10};
+ * for i in {1..30};
  * do
  *   php scripts/run-tests.sh --url http://example.com/ --color 'Double field';
  * done
@@ -47,7 +47,14 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
       'type' => 'double_field',
       'cardinality' => 1,
     );
+
+    $field_type = array_rand(DoubleFieldField::getAllFieldTypes());
+
+    $field['settings'] = DoubleFieldField::getFieldSettings($field_type);
+
     $this->field = field_create_field($field);
+
+    debug($field['settings'], 'Field settings', 1);
 
     $instance = array(
       'field_name' => $this->field_name,
@@ -59,11 +66,13 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
         'type' => 'textfield_&_textfield',
       ),
     );
-    $widget = new DoubleFieldWidget($instance['widget']['type']);
+    $widget = new DoubleFieldWidget($instance['widget']['type'], $this->field['settings']);
     $instance['widget']['settings'] = $widget->getSettings();
     field_create_instance($instance);
+
     // Field create instance doesn't return all field properties.
     $this->instance = field_read_instance($instance['entity_type'], $instance['field_name'], $instance['bundle']);
+    debug($this->instance['widget']['settings'], 'Widget settings', 1);
 
     $this->user = $this->drupalCreateUser(
       array(
@@ -106,12 +115,23 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
   protected function validate($validators, $success_message) {
     foreach ($validators as $xpath) {
       if (!$this->xpath($xpath)) {
-        debug($xpath);
+        debug($xpath, 'xpath', TRUE);
         $this->fail($success_message);
         return;
       }
     }
     $this->pass($success_message);
+  }
+
+  /**
+   * Generate random number.
+   */
+  public static function randomNumber($length = 8) {
+    $str = '';
+    for ($i = 0; $i < $length; $i++) {
+      $str .= chr(mt_rand(48, 57));
+    }
+    return $str;
   }
 
 }

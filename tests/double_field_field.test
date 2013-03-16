@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Tests for Double field schema.
+ * Tests for Double Field schema and field settings.
  */
 
 // Drupal testbot starts with all modules disabled
@@ -23,6 +23,45 @@ class DoubleFieldFieldTestCase extends DoubleFieldTestCase {
       'description' => 'Test global field settings',
       'group' => DoubleFieldTestCase::GROUP,
     );
+  }
+
+  /**
+   * Test widgets in field admin UI.
+   */
+  public function testInstanceSettings() {
+
+    // Delete the node to unlock field settings form.
+    node_delete(1);
+
+    $field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
+
+    // Iterate through all field types.
+    foreach (DoubleFieldField::getAllFieldTypes() as $field_type => $field_label) {
+
+      $instance = new DoubleFieldField($field_type);
+
+      // Test widget form.
+      $input = $instance->getSettingsFormInput($this->field_name);
+      $this->drupalPost($field_settings_page, $input, t('Save settings'));
+
+      // Test field settings form.
+      $this->drupalGet($field_settings_page);
+
+      $validators = $instance->getSettingsFormValidators();
+      $this->validate($validators, 'Field settings form is valid');
+
+      // Check form elements states.
+      $drupal_settings = $this->drupalGetSettings();
+      foreach (array('first', 'second') as $subfield) {
+        $result[] = $drupal_settings['states']["#edit-field-settings-$subfield-maxlength"]['visible'][":input[name='field[settings][$subfield][type]']"]['value'] == 'varchar';
+        $result[] = $drupal_settings['states']["#edit-field-settings-$subfield-size"]['visible'][":input[name='field[settings][$subfield][type]']"][0]['value'] == 'int';
+        $result[] = $drupal_settings['states']["#edit-field-settings-$subfield-size"]['visible'][":input[name='field[settings][$subfield][type]']"][1]['value'] == 'float';
+        $result[] = $drupal_settings['states']["#edit-field-settings-$subfield-precision"]['visible'][":input[name='field[settings][$subfield][type]']"]['value'] == 'decimal';
+        $result[] = $drupal_settings['states']["#edit-field-settings-$subfield-scale"]['visible'][":input[name='field[settings][$subfield][type]']"]['value'] == 'decimal';
+      }
+      $this->assertTrue(count($result) == count(array_filter($result)), 'Form states is correct');
+    }
+
   }
 
   /**

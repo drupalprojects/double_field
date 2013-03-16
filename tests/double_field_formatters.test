@@ -90,6 +90,22 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
    * Test that content is filtred with appropriate format.
    */
   public function testTextFormats() {
+
+    // Unlock node settings.
+    node_delete(1);
+
+    $this->field['settings'] = DoubleFieldField::getFieldSettings('varchar_&_varchar');
+    field_update_field($this->field);
+
+    // Create a node with actual data for the field.
+    $widget = new DoubleFieldWidget('textfield_&_textfield', $this->field['settings']);
+    $edit = array(
+      'type' => $this->type_name,
+      'uid' => $this->user->uid,
+    );
+    $edit[$this->field_name][LANGUAGE_NONE][0] = $widget->getValue();
+    $test_node = $this->drupalCreateNode($edit);
+
     $this->drupalGet("admin/structure/types/manage/{$this->type_name}/display");
     $formatter = new DoubleFieldFormatter('double_field_unformatted_list');
 
@@ -124,32 +140,32 @@ class DoubleFieldFormattersTestCase extends DoubleFieldTestCase {
 
     // Add some unsecure text to the node.
     $text = '<em>text</em><span style="color: red">text</span>';
-    $this->node->{$this->field_name}[LANGUAGE_NONE][0] = array(
+    $test_node->{$this->field_name}[LANGUAGE_NONE][0] = array(
       'first' => $text,
       'second' => $text,
     );
-    node_save($this->node);
+    node_save($test_node);
 
-    $this->drupalGet('node/' . $this->node->nid);
+    $this->drupalGet('node/' . $test_node->nid);
 
     $em_xpath = "//div[@class='double-field-first']//em";
     $span_xpath = "//div[@class='double-field-first']//span";
 
-    $this->assertTrue($this->xpath($em_xpath) &&$this->xpath($span_xpath), 'The text is filtred with full HTML format.');
+    $this->assertTrue($this->xpath($em_xpath) && $this->xpath($span_xpath), 'The text is filtred with full HTML format.');
 
     $this->instance['display']['default']['settings']['first']['format'] = 'filtered_html';
     field_update_instance($this->instance);
-    $this->drupalGet('node/' . $this->node->nid);
+    $this->drupalGet('node/' . $test_node->nid);
     $this->assertTrue($this->xpath($em_xpath) && !$this->xpath($span_xpath), 'The text is filtred with filtered HTML format.');
 
     $this->instance['display']['default']['settings']['first']['format'] = 'plain_text';
     field_update_instance($this->instance);
-    $this->drupalGet('node/' . $this->node->nid);
+    $this->drupalGet('node/' . $test_node->nid);
     $this->assertTrue(!$this->xpath($em_xpath) && !$this->xpath($span_xpath), 'The text is filtred with plain HTML format.');
 
     $this->instance['display']['default']['settings']['first']['format'] = '_none';
     field_update_instance($this->instance);
-    $this->drupalGet('node/' . $this->node->nid);
+    $this->drupalGet('node/' . $test_node->nid);
     $this->assertTrue(!$this->xpath($em_xpath) && !$this->xpath($span_xpath), 'The text is filtred with check_plain() function.');
 
   }

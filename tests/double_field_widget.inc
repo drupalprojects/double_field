@@ -16,35 +16,71 @@ class DoubleFieldWidget {
   protected $settings;
   protected $subwidgets;
   protected $value;
+  protected $fieldSettings;
 
   /**
    * Constructor for DoubleFieldWidget.
    */
-  public function __construct($widget_type) {
+  public function __construct($widget_type, $field_settings) {
+
+    $this->fieldSettings = $field_settings;
+
     // The order of the elements compared in
     // which order they were written in the list().
     list($this->subwidgets['second'], $this->subwidgets['first']) = array_reverse(explode('_&_', $widget_type));
 
     $this->settings['inline'] = (bool) mt_rand(0, 1);
-    foreach ($this->subwidgets as $index => $subwidget) {
+    foreach ($this->subwidgets as $index => $subwidget_type) {
       $this->settings[$index]['general'] = array(
         'required' => (bool) mt_rand(0, 1),
         'prefix' => '(' . DrupalTestCase::randomName(mt_rand(0, 126)) . ')',
         'suffix' => '(' . DrupalTestCase::randomName(mt_rand(0, 126)) . ')',
       );
-      $this->settings[$index][$subwidget] = $this->getSubWidgetSettings($subwidget);
+
+      // Subwidget related settings.
+      switch ($subwidget_type) {
+
+        case 'textfield':
+          $this->settings[$index][$subwidget_type]['size'] = mt_rand(1, 50);
+          $this->settings[$index][$subwidget_type]['placeholder'] = DrupalTestCase::randomName(mt_rand(0, 50));
+          break;
+
+        case 'checkbox':
+          $this->settings[$index][$subwidget_type]['on_value'] = DoubleFieldField::generateValue($this->fieldSettings[$index]);
+          $this->settings[$index][$subwidget_type]['off_value'] = '';
+          break;
+
+        case 'select':
+          $this->settings[$index][$subwidget_type]  = array();
+          for ($i = 0, $cnt = mt_rand(5, 10); $i < $cnt; $i++) {
+            $value = DoubleFieldField::generateValue($this->fieldSettings[$index]);
+            $this->settings[$index][$subwidget_type]['allowed_values'][$value] = ucfirst($value);
+          }
+          break;
+
+        case 'textarea':
+          $this->settings[$index][$subwidget_type]['cols'] = mt_rand(1, 25);
+          $this->settings[$index][$subwidget_type]['rows'] = mt_rand(1, 25);
+          $this->settings[$index][$subwidget_type]['resizable'] = (bool) mt_rand(0, 1);
+          $this->settings[$index][$subwidget_type]['placeholder'] = DrupalTestCase::randomName(mt_rand(0, 50));
+          break;
+
+        default:
+          throw new Exception('Undefined subwidget type: ' . $subwidget_type);
+
+      }
 
       // Generate field value based on current widget settings.
       for ($delta = 0; $delta < self::MAXCARDINALITY; $delta++) {
-        if ($subwidget == 'select') {
-          // Take value for select list subwidget from allowed values.
-          $this->value[$delta][$index] = array_rand($this->settings[$index][$subwidget]['allowed_values']);
+        if ($subwidget_type == 'select') {
+          // Take value for select list subwidget_type from allowed values.
+          $this->value[$delta][$index] = array_rand($this->settings[$index][$subwidget_type]['allowed_values']);
         }
-        elseif ($subwidget == 'checkbox') {
-          $this->value[$delta][$index] = mt_rand(0, 1) ? '' : $this->settings[$index][$subwidget]['on_value'];
+        elseif ($subwidget_type == 'checkbox') {
+          $this->value[$delta][$index] = mt_rand(0, 1) ? '' : $this->settings[$index][$subwidget_type]['on_value'];
         }
         else {
-          $this->value[$delta][$index] = DrupalTestCase::randomName(mt_rand(1, self::MAXLENGTH));
+          $this->value[$delta][$index] = DoubleFieldField::generateValue($this->fieldSettings[$index]);
         }
       }
 
@@ -79,45 +115,6 @@ class DoubleFieldWidget {
    */
   public function getType() {
     return implode('_&_', $this->subwidgets);
-  }
-
-  /**
-   * Return subwidget related settings.
-   */
-  protected function getSubWidgetSettings($subwidget) {
-
-    switch ($subwidget) {
-
-      case 'textfield':
-        $settings['size'] = mt_rand(1, 50);
-        $settings['placeholder'] = DrupalTestCase::randomName(mt_rand(0, 50));
-        break;
-
-      case 'checkbox':
-        $settings['on_value'] = DrupalTestCase::randomName(mt_rand(0, 25));
-        $settings['off_value'] = '';
-        break;
-
-      case 'select':
-        $settings = array();
-        for ($i = 0, $cnt = mt_rand(1, 10); $i < $cnt; $i++) {
-          $value = DrupalTestCase::randomName(mt_rand(0, self::MAXLENGTH));
-          $settings['allowed_values'][$value] = ucfirst($value);
-        }
-        break;
-
-      case 'textarea':
-        $settings['cols'] = mt_rand(1, 25);
-        $settings['rows'] = mt_rand(1, 25);
-        $settings['resizable'] = (bool) mt_rand(0, 1);
-        $settings['placeholder'] = DrupalTestCase::randomName(mt_rand(0, 50));
-        break;
-
-      default:
-        throw new Exception('Undefined subwidget type: ' . $subwidget);
-    }
-
-    return $settings;
   }
 
   /**
@@ -203,6 +200,7 @@ class DoubleFieldWidget {
 
     foreach ($this->subwidgets as $index => $subwidget) {
       $name = $field_name . '[' . LANGUAGE_NONE . '][0][' .  $index . ']';
+
       $value = $this->value[0][$index];
 
       // Check subwidget related elements.

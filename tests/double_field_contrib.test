@@ -59,7 +59,7 @@ class DoubleFieldContribTestCase extends DoubleFieldTestCase {
     );
     foreach ($widget_types as $widget_type) {
 
-      $widget = new DoubleFieldWidget($widget_type);
+      $widget = new DoubleFieldWidget($widget_type, $this->field['settings']);
 
       // Change widget type.
       $this->instance['widget']['type'] = $widget_type;
