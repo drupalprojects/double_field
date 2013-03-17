@@ -33,20 +33,16 @@ class DoubleFieldFieldTestCase extends DoubleFieldTestCase {
     // Delete the node to unlock field settings form.
     node_delete(1);
 
-    $field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
-
     // Iterate through all field types.
     foreach (DoubleFieldField::getAllFieldTypes() as $field_type => $field_label) {
-
       $instance = new DoubleFieldField($field_type);
 
       // Test widget form.
       $input = $instance->getSettingsFormInput($this->field_name);
-      $this->drupalPost($field_settings_page, $input, t('Save settings'));
+      $this->drupalPost($this->field_settings_page, $input, t('Save settings'));
 
       // Test field settings form.
-      $this->drupalGet($field_settings_page);
-
+      $this->drupalGet($this->field_settings_page);
       $validators = $instance->getSettingsFormValidators();
       $this->validate($validators, 'Field settings form is valid');
 
@@ -70,7 +66,7 @@ class DoubleFieldFieldTestCase extends DoubleFieldTestCase {
   public function testFieldCreation() {
 
     $field_name = strtolower($this->randomName(8));
-    $field_label = strtolower($this->randomName(8));
+    $field_label = $this->randomName(8);
     $field_ui_path = "admin/structure/types/manage/{$this->type_name}/";
     $this->drupalGet($field_ui_path . 'fields');
 
@@ -80,6 +76,7 @@ class DoubleFieldFieldTestCase extends DoubleFieldTestCase {
       'double_field',
       'Element «edit-fields-add-new-field-type» exists.'
     );
+
     // Check whether double field widgets are accessible.
     $widgets = $this->xpath('//select[@id="edit-fields-add-new-field-widget-type"]/optgroup[@label="Double field"]/option/@value');
     foreach ($widgets as $widget) {
@@ -102,8 +99,8 @@ class DoubleFieldFieldTestCase extends DoubleFieldTestCase {
     // Drupal prepends «field_» prefix to all custom fields.
     $field_name = 'field_' . $field_name;
     $edit = array(
-      'field[settings][first][maxlength]' => DoubleFieldWidget::MAXLENGTH,
-      'field[settings][second][maxlength]' => DoubleFieldWidget::MAXLENGTH,
+      'field[settings][first][maxlength]' => 50,
+      'field[settings][second][maxlength]' => 50,
     );
     $this->drupalPost("{$field_ui_path}fields/{$field_name}/field-settings", $edit, t('Save field settings'));
     $this->assertText(t('Updated field !label field settings.', array('!label' => $field_label)), 'Success message exists');

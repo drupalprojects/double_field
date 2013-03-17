@@ -10,7 +10,6 @@
  */
 class DoubleFieldWidget {
 
-  const MAXLENGTH = 255;
   const MAXCARDINALITY = 10;
 
   protected $settings;
@@ -29,6 +28,7 @@ class DoubleFieldWidget {
     // which order they were written in the list().
     list($this->subwidgets['second'], $this->subwidgets['first']) = array_reverse(explode('_&_', $widget_type));
 
+    // Generate widget settings.
     $this->settings['inline'] = (bool) mt_rand(0, 1);
     foreach ($this->subwidgets as $index => $subwidget_type) {
       $this->settings[$index]['general'] = array(
@@ -46,6 +46,7 @@ class DoubleFieldWidget {
           break;
 
         case 'checkbox':
+          // Get the value based on field settings.
           $this->settings[$index][$subwidget_type]['on_value'] = DoubleFieldField::generateValue($this->fieldSettings[$index]);
           $this->settings[$index][$subwidget_type]['off_value'] = '';
           break;
@@ -53,6 +54,7 @@ class DoubleFieldWidget {
         case 'select':
           $this->settings[$index][$subwidget_type]  = array();
           for ($i = 0, $cnt = mt_rand(5, 10); $i < $cnt; $i++) {
+            // These values should match global field settings.
             $value = DoubleFieldField::generateValue($this->fieldSettings[$index]);
             $this->settings[$index][$subwidget_type]['allowed_values'][$value] = ucfirst($value);
           }
@@ -70,7 +72,7 @@ class DoubleFieldWidget {
 
       }
 
-      // Generate field value based on current widget settings.
+      // Generate field value based on current field and widget settings.
       for ($delta = 0; $delta < self::MAXCARDINALITY; $delta++) {
         if ($subwidget_type == 'select') {
           // Take value for select list subwidget_type from allowed values.
@@ -89,14 +91,14 @@ class DoubleFieldWidget {
   }
 
   /**
-   * Get widget settings.
+   * Settings getter.
    */
   public function getSettings() {
     return $this->settings;
   }
 
   /**
-   * Set widget settings.
+   * Settings setter.
    */
   public function setSettings($settings) {
     $this->settings = $settings;
@@ -104,7 +106,7 @@ class DoubleFieldWidget {
 
 
   /**
-   * Get field value.
+   * Value getter.
    */
   public function getValue($delta = 0) {
     return $this->value[$delta];
@@ -289,6 +291,7 @@ class DoubleFieldWidget {
       'select'    => t('Select list'),
       'textarea'  => t('Textarea'),
     );
+    // Why we need labels here?
     foreach ($subwidgets as $first_subwidget => $first_subwidget_label) {
       foreach ($subwidgets as $second_subwidget => $second_subwidget_label) {
         $widgets[$first_subwidget . '_&_' . $second_subwidget] = array(

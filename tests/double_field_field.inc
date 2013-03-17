@@ -2,11 +2,11 @@
 
 /**
  * @file
- * The file contains a class that assists to test Double field instances.
+ * The file contains a class that assists to test Double Field field settings.
  */
 
 /**
- * Helper class to test Double Field base settings.
+ * Helper class to test Double Field field settings.
  */
 class DoubleFieldField {
 
@@ -51,6 +51,8 @@ class DoubleFieldField {
         break;
 
       case 'int':
+        // These size values based on mysql limitation because pgsql
+        // and sqlite have higher level of restrictions.
         // See http://dev.mysql.com/doc/refman/5.0/en/integer-types.html.
         $sizes = array(
           'tiny' => array(-128, 127),
@@ -63,6 +65,7 @@ class DoubleFieldField {
         break;
 
       case 'float':
+        // 2 Bytes?
         $value = mt_rand(-32768, 32767) / pow(10, mt_rand(0, 5));
         break;
 
@@ -186,6 +189,9 @@ class DoubleFieldField {
       'text' => t('Text'),
       'int' => t('Integer'),
       'float'  => t('Float'),
+      // Decimal values get rounded values and may differ
+      // from original values.
+      // See DoubleFieldField::getValue().
       // 'decimal' => t('Decimal'),
     );
     foreach ($subfields as $first_subfield => $first_subfield_label) {

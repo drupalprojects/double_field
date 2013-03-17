@@ -2,13 +2,14 @@
 
 /**
  * @file
- * Tests for Double field module.
+ * Tests for Double Field module.
  *
  * Some field settings are initializated by random values.
  * So it is recommended to run these tests several times.
  * @code
- * for i in {1..30};
+ * for i in {1..10};
  * do
+ *   echo "Test #$i"
  *   php scripts/run-tests.sh --url http://example.com/ --color 'Double field';
  * done
  * @endcode
@@ -49,12 +50,11 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
     );
 
     $field_type = array_rand(DoubleFieldField::getAllFieldTypes());
-
     $field['settings'] = DoubleFieldField::getFieldSettings($field_type);
 
     $this->field = field_create_field($field);
 
-    debug($field['settings'], 'Field settings', 1);
+    debug($field['settings'], 'Field settings', TRUE);
 
     $instance = array(
       'field_name' => $this->field_name,
@@ -72,7 +72,9 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
 
     // Field create instance doesn't return all field properties.
     $this->instance = field_read_instance($instance['entity_type'], $instance['field_name'], $instance['bundle']);
-    debug($this->instance['widget']['settings'], 'Widget settings', 1);
+    debug($this->instance['widget']['settings'], 'Widget settings', TRUE);
+
+    $this->field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
 
     $this->user = $this->drupalCreateUser(
       array(

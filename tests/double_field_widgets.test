@@ -29,7 +29,6 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
    * Test widgets.
    */
   public function testWidgets() {
-    $field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
 
     // Iterate through all widget types.
     foreach (DoubleFieldWidget::getAllWidgetTypes() as $widget_type => $widget_label) {
@@ -41,10 +40,10 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
 
       // Update widget settings.
       $input = $widget->getSettingsFormInput();
-      $this->drupalPost($field_settings_page, $input, t('Save settings'));
+      $this->drupalPost($this->field_settings_page, $input, t('Save settings'));
 
       // Test widget settings form.
-      $this->drupalGet($field_settings_page);
+      $this->drupalGet($this->field_settings_page);
       $validators = $widget->getSettingsFormValidators();
       $this->validate($validators, 'Widget settings form is valid');
 
@@ -70,7 +69,6 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
    * Test 'required' functionality.
    */
   public function testRequired() {
-    $field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
 
     $widget = new DoubleFieldWidget('textfield_&_select', $this->field['settings']);
     $this->instance['widget'] = array(
@@ -83,7 +81,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
     $widget->setRequiredOptions(TRUE, FALSE);
 
     $input = $widget->getSettingsFormInput();
-    $this->drupalPost($field_settings_page, $input, t('Save settings'));
+    $this->drupalPost($this->field_settings_page, $input, t('Save settings'));
 
     // This is a regression test for #1918064.
     $this->assertNoRaw(
@@ -91,7 +89,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
       '"Field is required message" was not found.'
     );
 
-    // Lets try to play with node form.
+    // Let's try to play with node form.
     $input = array('title' => 'Test') + $widget->getFormInput($this->field_name);
 
     $this->drupalPost('node/add/' . $this->type_name, $input, t('Save'));
@@ -132,7 +130,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
 
     $widget->setRequiredOptions(FALSE, TRUE);
     $input = $widget->getSettingsFormInput();
-    $this->drupalPost($field_settings_page, $input, t('Save settings'));
+    $this->drupalPost($this->field_settings_page, $input, t('Save settings'));
 
     $input = array('title' => 'Test') + $widget->getFormInput($this->field_name);
 
@@ -171,7 +169,7 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
 
     $widget->setRequiredOptions(FALSE, FALSE);
     $input = $widget->getSettingsFormInput();
-    $this->drupalPost($field_settings_page, $input, t('Save settings'));
+    $this->drupalPost($this->field_settings_page, $input, t('Save settings'));
 
     $input = array('title' => 'Test') + $widget->getFormInput($this->field_name);
     unset($input[$this->getSubfieldName('first')]);
