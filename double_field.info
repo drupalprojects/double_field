@@ -1,5 +1,5 @@
 name = Double field
-description = Provides a field with two text widgets
+description = Provides a field type with two separate subfields
 package = Fields
 core = 7.x
 
