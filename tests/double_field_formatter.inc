@@ -15,7 +15,8 @@ class DoubleFieldFormatter {
   protected $type;
   protected $listTypes = array(
     'ul' => 'Unordered',
-    'ol' => 'Ordered', 'dl' => 'Definition',
+    'ol' => 'Ordered',
+    'dl' => 'Definition',
   );
 
   /**
@@ -38,11 +39,11 @@ class DoubleFieldFormatter {
     $styles = array('block', 'inline', 'link', 'simple');
     switch ($this->type) {
       case 'double_field_unformatted_list':
-        $this->settings['style'] = $styles[mt_rand(0, 3)];
+        $this->settings['style'] = $styles[array_rand($styles)];
         break;
 
       case 'double_field_html_list':
-        $this->settings['style'] = $styles[mt_rand(0, 3)];
+        $this->settings['style'] = $styles[array_rand($styles)];
         $this->settings['list_type'] = array_rand($this->listTypes);
         break;
 
