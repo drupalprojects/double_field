@@ -738,6 +738,7 @@ function double_field_field_formatter_settings_form($field, $instance, $view_mod
       'inline' => t('Inline'),
       'block' => t('Block'),
       'link' => t('Link'),
+      'simple' => t('Simple'),
     ),
     '#default_value' => isset($settings['style']) ? $settings['style'] : 'inline',
     '#states' => array(
@@ -886,6 +887,7 @@ function double_field_field_formatter_settings_summary($field, $instance, $view_
         'inline' => t('Inline'),
         'block' => t('Block'),
         'link' => t('Link'),
+        'simple' => t('Simple'),
       );
       $summary[] = t('Display style: %value', array('%value' => $display_styles[$settings['style']]));
       if ($type == 'double_field_html_list') {
@@ -1092,6 +1094,9 @@ function theme_double_field($vars) {
 
   if ($settings['style'] == 'link') {
     $output = l($element['#item']['first'], $element['#item']['second']);
+  }
+  elseif ($settings['style'] == 'simple') {
+    $output = $element['#item']['first'] . $element['#item']['second'];
   }
   else {
     $class = $settings['style'] == 'block' ? 'clearfix' : 'container-inline';

@@ -35,14 +35,14 @@ class DoubleFieldFormatter {
       );
     }
 
-    $styles = array('block', 'inline', 'link');
+    $styles = array('block', 'inline', 'link', 'simple');
     switch ($this->type) {
       case 'double_field_unformatted_list':
-        $this->settings['style'] = $styles[mt_rand(0, 2)];
+        $this->settings['style'] = $styles[mt_rand(0, 3)];
         break;
 
       case 'double_field_html_list':
-        $this->settings['style'] = $styles[mt_rand(0, 2)];
+        $this->settings['style'] = $styles[mt_rand(0, 3)];
         $this->settings['list_type'] = array_rand($this->listTypes);
         break;
 
@@ -178,6 +178,7 @@ class DoubleFieldFormatter {
           'inline' => t('Inline'),
           'block' => t('Block'),
           'link' => t('Link'),
+          'simple' => t('Simple'),
         );
         $summary[] = t('Display style: %value', array('%value' => $display_styles[$this->settings['style']]));
         if ($this->type == 'double_field_html_list') {
@@ -233,6 +234,13 @@ class DoubleFieldFormatter {
             $validators[] = "//a[@href='$href' and text()='$text']";
           }
         }
+        elseif ($this->settings['style'] == 'simple') {
+          for ($delta = 0; $delta < $cardinality; $delta++) {
+            $text = $this->settings['first']['prefix'] . $items[$delta]['first'] . $this->settings['first']['suffix'];
+            $text .= $this->settings['second']['prefix'] . $items[$delta]['second'] . $this->settings['second']['suffix'];
+            $validators[] = "//div[contains(@class, 'field-item') and text()='$text']";
+          }
+        }
         else {
           $class = $this->settings['style'] == 'block' ? 'clearfix' : 'container-inline';
           for ($delta = 0; $delta < $cardinality; $delta++) {
@@ -264,6 +272,13 @@ class DoubleFieldFormatter {
               $text = $this->settings['first']['prefix'] . $items[$delta]['first'] . $this->settings['first']['suffix'];
               $href = check_plain(url($this->settings['second']['prefix'] . $items[$delta]['second'] . $this->settings['second']['suffix']));
               $validators[] = "$prefix/a[@href='$href' and text()='$text']";
+            }
+          }
+          elseif ($this->settings['style'] == 'simple') {
+            for ($delta = 0; $delta < $cardinality; $delta++) {
+              $text = $this->settings['first']['prefix'] . $items[$delta]['first'] . $this->settings['first']['suffix'];
+              $text .= $this->settings['second']['prefix'] . $items[$delta]['second'] . $this->settings['second']['suffix'];
+              $validators[] = "{$prefix}[text()='$text']";
             }
           }
           else {
