@@ -1,0 +1,3 @@
+dialog:
+  js:
+    js/dialog.js: {}

@@ -1,0 +1,15 @@
+<div class="double-field-tabs">
+  <ul>
+    {% for delta, item in items %}
+      <li><a href="#double-field-tab-{{ delta }}">{{ item.first }}</a></li>
+    {% endfor %}
+  </ul>
+  {% for delta, item in items %}
+  <div id="double-field-tab-{{ delta }}">{{ item.second }}</div>
+{% endfor %}
+</div>
+<script>
+  jQuery(document).ready(function () {
+    jQuery(".double-field-tabs").tabs();
+  });
+</script>

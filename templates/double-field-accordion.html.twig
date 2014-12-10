@@ -1,0 +1,11 @@
+<div class="double-field-accordion">
+{% for item in items %}
+  <h3><a href="#">{{ item.first }}</a></h3>
+  <div>{{ item.second }}</div>
+{% endfor %}
+</div>
+<script>
+  jQuery(document).ready(function() {
+    jQuery(".double-field-accordion").accordion({collapsible: true, active: false});
+  });
+</script>
