@@ -205,7 +205,7 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
   $field_is_empty = TRUE;
   list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
   foreach ($items as $delta => $item) {
-    d::dump($item);
+
     // Checkboxes get value from widget settings.
     foreach (array('first', 'second') as $subfield) {
       $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
