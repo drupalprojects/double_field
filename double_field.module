@@ -187,16 +187,9 @@ function double_field_field_is_empty($item, $field) {
  */
 function double_field_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 
-  // Validate numeric subfield types.
-  $overflow_error = array(
-    'error' => 'double_field_out_of_range',
-    'message' => t('%name field value is out of range.', array('%name' => $instance['label'])),
-    'error_element' => array('first' => FALSE, 'second' => FALSE),
-  );
-
   // This validation is performed after submit the widget configuration
   // form. Avoid validations here related to required items to be able to
-  // submit an empy field.
+  // submit an empty field.
   // We also should not validate widgets provided by other modules.
   if (!isset($entity) || $instance['widget']['module'] != 'double_field') {
     return;
@@ -213,7 +206,7 @@ function double_field_field_validate($entity_type, $entity, $field, $instance, $
   list($widget['first'], $widget['second']) = explode('_&_', $instance['widget']['type']);
   foreach ($items as $delta => $item) {
 
-    // Checkboxes get value from widget settigns.
+    // Checkboxes get value from widget settings.
     foreach (array('first', 'second') as $subfield) {
       $item[$subfield] = ($widget[$subfield] == 'checkbox' && $item[$subfield] == $settings[$subfield]['checkbox']['off_value']) ? '' : $item[$subfield];
     }
