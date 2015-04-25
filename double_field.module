@@ -557,6 +557,10 @@ function double_field_allowed_values_setting_validate($element, &$form_state) {
   if (!is_array($values)) {
     form_error($element, t('Allowed values list: invalid input.'));
   }
+
+  $i18n_name = 'double_field:' . $form_state['complete form']['#field']['field_name'] . ':#allowed_values';
+  double_field_translate_update($i18n_name, $values);
+
   form_set_value($element, $values, $form_state);
 }
 
@@ -609,7 +613,12 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
 
       case 'select':
         $label = $settings[$subfield]['general']['required'] ? t('- Select a value -') : t('- None -');
-        $double_field[$subfield]['#options'] = array('' => $label) + $settings[$subfield]['select']['allowed_values'];
+
+        $i18n_name = 'double_field:' . $instance['field_name'] . ':#allowed_values';
+        $allowed_values = double_field_translate($i18n_name, $settings[$subfield]['select']['allowed_values']);
+
+        $double_field[$subfield]['#options'] = array('' => $label) + $allowed_values;
+
         break;
 
       case 'textarea':
@@ -628,6 +637,45 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   }
 
   return $element + $double_field;
+}
+
+/**
+ * Implements hook_i18n_string_info().
+ */
+function double_field_i18n_string_info() {
+  $groups['double_field'] = array(
+    'title' => t('Double field'),
+    'description' => t('Translatable Double field select list allowed values.'),
+    'format' => FALSE,
+    'list' => TRUE,
+  );
+  return $groups;
+}
+
+/**
+ * Helper function to wrap the i18n_string function so that strings can be
+ * translated i18n_string is installed.
+ *
+ * @see i18n_string()
+ * @see https://www.drupal.org/node/1114010
+ *
+ * @return string|array
+ *   The translated value or array of values for $string, if i18n_string exists
+ *   and it is translated, otherwise the untranslated value.
+ */
+function double_field_translate($name, $string, $langcode = NULL) {
+  return function_exists('i18n_string') ? i18n_string($name, $string, array('langcode' => $langcode)) : $string;
+}
+
+/**
+ * Helper function to wrap the i18n_string_update function so that strings can
+ * be added to the i18n_string group to be translated.
+ *
+ * @see i18n_string_update()
+ * @see https://www.drupal.org/node/1114010
+ */
+function double_field_translate_update($name, $string, $langcode = NULL) {
+  return function_exists('i18n_string_update') ? i18n_string_update($name, $string, array('langcode' => $langcode)) : $string;
 }
 
 /**
@@ -946,7 +994,8 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
       else {
         // Show value pair of allowed values on instead of their key value.
         if (isset($instance['widget']['settings'][$subfield]['select']['allowed_values'])) {
-          $allowed_values = $instance['widget']['settings'][$subfield]['select']['allowed_values'];
+          $i18n_name = 'double_field:' . $field['field_name'] . ':#allowed_values';
+          $allowed_values = double_field_translate($i18n_name, $instance['widget']['settings'][$subfield]['select']['allowed_values']);
           $item[$subfield] = empty($allowed_values[$item[$subfield]]) ?
           $item[$subfield] : $allowed_values[$item[$subfield]];
         }
