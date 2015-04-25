@@ -512,16 +512,36 @@ function double_field_field_widget_settings_form($field, $instance) {
       '#type' => 'textfield',
       '#title' => t('Prefix'),
       '#default_value' => $settings[$subfield]['general']['prefix'],
+      '#element_validate' => array('double_field_prefix_validate'),
+      '#subfield' => $subfield,
     );
     $form[$subfield]['general']['suffix'] = array(
       '#type' => 'textfield',
       '#title' => t('Suffix'),
       '#default_value' => $settings[$subfield]['general']['suffix'],
+      '#element_validate' => array('double_field_suffix_validate'),
+      '#subfield' => $subfield,
     );
 
   }
 
   return $form;
+}
+
+/**
+ * Element validate callback. update the string for the prefix.
+ */
+function double_field_prefix_validate($element, $form_state, $form) {
+  $i18n_name = 'double_field:' . $form['#instance']['field_name'] . ':' . $element['#subfield'] . '-prefix';
+  double_field_translate_update($i18n_name, $element['#value']);
+}
+
+/**
+ * Element validate callback. update the string for the suffix..
+ */
+function double_field_suffix_validate($element, $form_state, $form) {
+  $i18n_name = 'double_field:' . $form['#instance']['field_name'] . ':' . $element['#subfield'] . '-suffix';
+  double_field_translate_update($i18n_name, $element['#value']);
 }
 
 /**
@@ -577,10 +597,16 @@ function double_field_field_widget_form(&$form, &$form_state, $field, $instance,
   );
 
   foreach (array('first', 'second') as $key => $subfield) {
+    // Translate the prefix and suffix.
+    $i18n_name = 'double_field:' . $instance['field_name'] . ':' . $subfield . '-prefix';
+    $prefix = double_field_translate($i18n_name, $settings[$subfield]['general']['prefix']);
+    $i18n_name = 'double_field:' . $instance['field_name'] . ':' . $subfield . '-suffix';
+    $suffix = double_field_translate($i18n_name, $settings[$subfield]['general']['suffix']);
+
     $double_field[$subfield] = array(
       '#type' => $subfield_types[$key],
-      '#prefix' => $settings[$subfield]['general']['prefix'],
-      '#suffix' => $settings[$subfield]['general']['suffix'],
+      '#prefix' => $prefix,
+      '#suffix' => $suffix,
       '#default_value' => isset($items[$delta][$subfield]) ? $items[$delta][$subfield] : NULL,
       '#title' => $instance['label'],
       '#title_display' => 'invisible',
@@ -1004,7 +1030,13 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
 
         // Do not display prefix and suffix for empty subfields.
         if ($item[$subfield] != '') {
-          $item[$subfield] = $settings[$subfield]['prefix'] . $item[$subfield] . $settings[$subfield]['suffix'];
+          // Translate the prefix and suffix.
+          $i18n_name = 'double_field:' . $instance['field_name'] . ':' . $subfield . '-prefix';
+          $prefix = double_field_translate($i18n_name, $settings[$subfield]['prefix']);
+          $i18n_name = 'double_field:' . $instance['field_name'] . ':' . $subfield . '-suffix';
+          $suffix = double_field_translate($i18n_name, $settings[$subfield]['suffix']);
+
+          $item[$subfield] = $prefix . $item[$subfield] . $suffix;
         }
       }
     }
