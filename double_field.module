@@ -310,7 +310,7 @@ function double_field_field_presave($entity_type, $entity, $field, $instance, $l
 }
 
 /**
- * Implements hook_field_field_update_instance().
+ * Implements hook_field_update_instance().
  */
 function double_field_field_update_instance($instance, $prior_instance) {
   // Update widget settings when widget type has been changed.
