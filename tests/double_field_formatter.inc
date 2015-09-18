@@ -5,7 +5,6 @@
  * The file contains a class that assists to test Double field formatter types.
  */
 
-
 /**
  * Helper class to test Double field formatters.
  */

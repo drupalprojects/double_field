@@ -59,7 +59,7 @@ class DoubleFieldField {
           'small' => array(-32768, 32767),
           'medium' => array(-8388608, 8388607),
           'normal' => array(-mt_getrandmax(), -mt_getrandmax()),
-          'big' => array(-mt_getrandmax(),  mt_getrandmax()),
+          'big' => array(-mt_getrandmax(), mt_getrandmax()),
         );
         $value = mt_rand($sizes[$subfield_settings['size']][0], $sizes[$subfield_settings['size']][1]);
         break;

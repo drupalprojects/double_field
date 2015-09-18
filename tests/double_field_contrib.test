@@ -11,7 +11,7 @@ require_once 'double_field_test_case.inc';
 
 /**
  * Test integration with contrib modules.
- * 
+ *
  * Simpletest doesn't resolve module dependencies.
  * So we need to download the modules manually.
  * @code

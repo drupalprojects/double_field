@@ -201,7 +201,7 @@ class DoubleFieldWidget {
     $prefix .= "//div[@class='$class']";
 
     foreach ($this->subwidgets as $index => $subwidget) {
-      $name = $field_name . '[' . LANGUAGE_NONE . '][0][' .  $index . ']';
+      $name = $field_name . '[' . LANGUAGE_NONE . '][0][' . $index . ']';
 
       $value = $this->value[0][$index];
 
@@ -301,4 +301,5 @@ class DoubleFieldWidget {
     }
     return $widgets;
   }
+
 }

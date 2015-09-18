@@ -10,7 +10,7 @@
 /**
  * Implements hook_hook_info().
  *
- * hook_hook_info() doesn't work for field related hooks.
+ * Unfortunately hook_hook_info() doesn't work for field related hooks.
  * See http://drupal.org/node/977052
  */
 function double_field_hook_info() {
@@ -382,9 +382,7 @@ function double_field_i18n_strings_update($instance) {
 }
 
 /**
- * Builds the prefix for i18n_string from the instance.
- *
- * Returns a unique prefix for each instance without numeric IDs.
+ * Returns a unique prefix for each field instance.
  */
 function double_field_i18n_strings_prefix($instance) {
   return $instance['entity_type'] . '-' . $instance['bundle'] . '-' . $instance['field_name'];
@@ -396,7 +394,6 @@ function double_field_i18n_strings_prefix($instance) {
  * @see i18n_string_translate()
  */
 function double_field_i18n_strings_translate($context, $string) {
-  d::dsm('double_field:' . $context);
   return function_exists('i18n_string_translate') ?
     i18n_string_translate('double_field:' . $context, $string) : $string;
 }

@@ -197,5 +197,4 @@ class DoubleFieldWidgetsTestCase extends DoubleFieldTestCase {
 
   }
 
-
 }
