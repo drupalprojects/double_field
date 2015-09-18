@@ -323,6 +323,15 @@ function double_field_field_presave($entity_type, $entity, $field, $instance, $l
 }
 
 /**
+ * Implements hook_field_create_instance().
+ */
+function double_field_field_create_instance($instance) {
+  if (module_exists('i18n_string')) {
+    double_field_i18n_strings_update($instance);
+  }
+}
+
+/**
  * Implements hook_field_update_instance().
  */
 function double_field_field_update_instance($instance, $prior_instance) {
@@ -352,22 +361,33 @@ function double_field_i18n_strings_update($instance) {
     $i18n_keys[] = $widget_prefix . 'textfield-placeholder';
     $i18n_keys[] = $widget_prefix . 'textarea-placeholder';
     $i18n_keys[] = $widget_prefix . 'select-allowed_values';
-    foreach ($instance['display'] as $display_name => $display) {
-      $formatter_prefix = "display-$display_name-settings-";
-      $i18n_keys[] = $formatter_prefix . $subfield . '-prefix';
-      $i18n_keys[] = $formatter_prefix . $subfield . '-suffix';
-      $i18n_keys[] = $formatter_prefix . "table-$subfield-column_label";
-      $i18n_keys[] = $formatter_prefix . "table-number_column_label";
+    if (isset($instance['display'])) {
+      foreach ($instance['display'] as $display_name => $display) {
+        $formatter_prefix = "display-$display_name-settings-";
+        $i18n_keys[] = $formatter_prefix . $subfield . '-prefix';
+        $i18n_keys[] = $formatter_prefix . $subfield . '-suffix';
+        $i18n_keys[] = $formatter_prefix . "table-$subfield-column_label";
+        $i18n_keys[] = $formatter_prefix . "table-number_column_label";
+      }
     }
   }
 
   foreach ($i18n_keys as $i18n_key) {
     $parents = explode('-', $i18n_key);
     if ($value = drupal_array_get_nested_value($instance, $parents)) {
-      i18n_string_update('double_field:' . $instance['id'] . ':' . $i18n_key, $value);
+      i18n_string_update('double_field:' . double_field_i18n_strings_prefix($instance) . ':' . $i18n_key, $value);
     }
   }
 
+}
+
+/**
+ * Builds the prefix for i18n_string from the instance.
+ *
+ * Returns a unique prefix for each instance without numeric IDs.
+ */
+function double_field_i18n_strings_prefix($instance) {
+  return $instance['entity_type'] . '-' . $instance['bundle'] . '-' . $instance['field_name'];
 }
 
 /**
@@ -376,6 +396,7 @@ function double_field_i18n_strings_update($instance) {
  * @see i18n_string_translate()
  */
 function double_field_i18n_strings_translate($context, $string) {
+  d::dsm('double_field:' . $context);
   return function_exists('i18n_string_translate') ?
     i18n_string_translate('double_field:' . $context, $string) : $string;
 }
@@ -625,7 +646,7 @@ function double_field_allowed_values_setting_validate($element, &$form_state) {
  */
 function double_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $settings = $instance['widget']['settings'];
-  $i18n_context_prefix = $instance['id'] . ':widget-settings-';
+  $i18n_context_prefix = double_field_i18n_strings_prefix($instance) . ':widget-settings-';
 
   $subfield_types = explode('_&_', $instance['widget']['type']);
   $double_field = array(
@@ -1026,7 +1047,7 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
   }
 
   $settings = $display['settings'];
-  $i18n_context_prefix = $instance['id'] . ':display-default-settings-';
+  $i18n_context_prefix = double_field_i18n_strings_prefix($instance) . ':display-default-settings-';
   $element = array();
 
   foreach ($items as $delta => $item) {
@@ -1038,7 +1059,7 @@ function double_field_field_formatter_view($entity_type, $entity, $field, $insta
         // Show value pair of allowed values on instead of their key value.
         if (isset($instance['widget']['settings'][$subfield]['select']['allowed_values'])) {
           $allowed_values = double_field_i18n_strings_translate(
-            $instance['id'] . ":widget-settings-$subfield-select-allowed_values",
+            double_field_i18n_strings_prefix($instance) . ':widget-settings-' . $subfield . '-select-allowed_values',
             $instance['widget']['settings'][$subfield]['select']['allowed_values']
           );
           $item[$subfield] = empty($allowed_values[$item[$subfield]]) ?
