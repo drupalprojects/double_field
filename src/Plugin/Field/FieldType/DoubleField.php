@@ -43,7 +43,6 @@ class DoubleField extends FieldItemBase {
     return $settings + parent::defaultStorageSettings();
   }
 
-
   /**
    * {@inheritdoc}
    */
@@ -77,7 +76,7 @@ class DoubleField extends FieldItemBase {
         '#disabled' => $has_data,
         '#min' => 1,
         '#states' => [
-          'visible' => [":input[name='field_storage[settings][storage][$subfield][type]']" => ['value' => 'varchar']],
+          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'int']],
         ],
       ];
 
@@ -89,7 +88,7 @@ class DoubleField extends FieldItemBase {
         '#description' => t('The total number of digits to store in the database, including those to the right of the decimal.'),
         '#disabled' => $has_data,
         '#states' => [
-          'visible' => [":input[name='field_storage[settings][storage][$subfield][type]']" => ['value' => 'numeric']],
+          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']],
         ],
       ];
 
@@ -101,7 +100,7 @@ class DoubleField extends FieldItemBase {
         '#description' => t('The number of digits to the right of the decimal.'),
         '#disabled' => $has_data,
         '#states' => [
-          'visible' => [":input[name='field_storage[settings][storage][$subfield][type]']" => ['value' => 'numeric']],
+          'visible' => [":input[name='settings[[storage][$subfield][type]']" => ['value' => 'numeric']],
         ],
       ];
 
@@ -109,7 +108,6 @@ class DoubleField extends FieldItemBase {
 
     return $element;
   }
-
 
   /**
    * {@inheritdoc}
