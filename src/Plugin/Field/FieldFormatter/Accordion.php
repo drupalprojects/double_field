@@ -23,7 +23,7 @@ class Accordion extends Base {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
 
 	$settings = $this->getSettings();
     $this->prepareItems($items);

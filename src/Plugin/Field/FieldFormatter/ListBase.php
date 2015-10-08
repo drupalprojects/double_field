@@ -63,7 +63,7 @@ abstract class ListBase extends Base {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
 	$this->prepareItems($items);
 	$element = [];
 

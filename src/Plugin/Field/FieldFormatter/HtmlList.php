@@ -68,7 +68,7 @@ class HtmlList extends ListBase {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
 
 	$element = parent::viewElements($items);
 	$settings = $this->getSettings();
