@@ -70,7 +70,7 @@ class HtmlList extends ListBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
 
-	$element = parent::viewElements($items);
+	$element = parent::viewElements($items, $langcode);
 	$settings = $this->getSettings();
 
 	if ($settings['list_type'] == 'dl') {
