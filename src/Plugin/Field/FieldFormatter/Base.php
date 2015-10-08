@@ -141,7 +141,7 @@ abstract class Base extends FormatterBase {
 		  }
 
           // TODO: Check markup here.
-          $item->{$subfield} = \Drupal\Component\Utility\String::checkPlain($item->{$subfield});
+          $item->{$subfield} = \Drupal\Component\Utility\SafeMarkup::checkPlain($item->{$subfield});
 
 //          $item[$subfield] = $settings[$subfield]['format'] == '_none' ?
 //            check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
@@ -150,7 +150,7 @@ abstract class Base extends FormatterBase {
           if ($item->{$subfield} != '') {
             $prefix = $settings[$subfield]['prefix'];
             $suffix = $settings[$subfield]['suffix'];
-            $item->{$subfield} = SafeMarkup::set($prefix . $item->{$subfield} . $suffix);
+            $item->{$subfield} = SafeMarkup::format($prefix . $item->{$subfield} . $suffix, []);
           }
 
         }
