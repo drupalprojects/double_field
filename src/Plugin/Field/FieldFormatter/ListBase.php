@@ -51,10 +51,10 @@ abstract class ListBase extends Base {
    */
   public function settingsSummary() {
 
-	$summary = [];
-	if ($this->getSetting('list_type') != 'dl') {
-	  $summary[] = t('Display style: %value', ['%value' => $this->getSetting('style')]);
-	}
+    $summary = [];
+    if ($this->getSetting('list_type') != 'dl') {
+      $summary[] = t('Display style: %value', ['%value' => $this->getSetting('style')]);
+    }
 
     return array_merge($summary, parent::settingsSummary());
   }
@@ -64,17 +64,17 @@ abstract class ListBase extends Base {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-	$this->prepareItems($items);
-	$element = [];
+    $this->prepareItems($items);
+    $element = [];
 
-	if ($this->getSetting('style') == 'dialog') {
-	  $element['#attached']['library'] = ['core/jquery.ui.tabs'];
-	  $element['#attached']['library'] = ['core/jquery.ui.effects.explode'];
-	  $element['#attached']['library'] = ['double_field/dialog'];
-	  //$element['#attached']['js'][] = drupal_get_path('module', 'double_field') . '/js/dialog.js';
-	}
+    if ($this->getSetting('style') == 'dialog') {
+      $element['#attached']['library'] = ['core/jquery.ui.tabs'];
+      $element['#attached']['library'] = ['core/jquery.ui.effects.explode'];
+      $element['#attached']['library'] = ['double_field/dialog'];
+      //$element['#attached']['js'][] = drupal_get_path('module', 'double_field') . '/js/dialog.js';
+    }
 
-	return $element;
+    return $element;
   }
 
 

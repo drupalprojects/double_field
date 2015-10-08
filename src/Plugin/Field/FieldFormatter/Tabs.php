@@ -23,19 +23,19 @@ class Tabs extends Base {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode	) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
 
-	$settings = $this->getSettings();
+    $settings = $this->getSettings();
     $this->prepareItems($items);
 
-	$element[0] = array(
-	  '#theme' => 'double_field_tabs',
-	  '#items' => $items,
-	  '#settings' => $settings,
-	  '#attached' => ['library' => ['core/jquery.ui.tabs']],
-	);
+    $element[0] = array(
+      '#theme' => 'double_field_tabs',
+      '#items' => $items,
+      '#settings' => $settings,
+      '#attached' => ['library' => ['core/jquery.ui.tabs']],
+    );
 
-	return $element;
+    return $element;
 
   }
 

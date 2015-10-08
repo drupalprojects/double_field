@@ -25,9 +25,9 @@ class HtmlList extends ListBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-	return [
-	  'list_type' => 'ul',
-	] + parent::defaultSettings();
+    return [
+      'list_type' => 'ul',
+    ] + parent::defaultSettings();
   }
 
   /**
@@ -35,25 +35,25 @@ class HtmlList extends ListBase {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
 
-	$settings = $this->getSettings();
+    $settings = $this->getSettings();
 
-	$element['list_type'] = [
-	  '#type' => 'radios',
-	  '#title' => t('List type'),
-	  '#options' => [
-		'ul' => t('Unordered list'),
-		'ol' => t('Ordered list'),
-		'dl' => t('Definition list'),
-	  ],
-	  '#default_value' => $settings['list_type'],
-	];
+    $element['list_type'] = [
+      '#type' => 'radios',
+      '#title' => t('List type'),
+      '#options' => [
+        'ul' => t('Unordered list'),
+        'ol' => t('Ordered list'),
+        'dl' => t('Definition list'),
+      ],
+      '#default_value' => $settings['list_type'],
+    ];
 
 
-	$element += parent::settingsForm($form, $form_state);
-	$field_name = $this->fieldDefinition->getName();
+    $element += parent::settingsForm($form, $form_state);
+    $field_name = $this->fieldDefinition->getName();
 
-	$element['style']['#states']['invisible'] = [":input[name='fields[$field_name][settings_edit_form][settings][list_type]']" => ['value' => 'dl']];
-	return $element;
+    $element['style']['#states']['invisible'] = [":input[name='fields[$field_name][settings_edit_form][settings][list_type]']" => ['value' => 'dl']];
+    return $element;
   }
 
   /**
@@ -61,8 +61,8 @@ class HtmlList extends ListBase {
    */
   public function settingsSummary() {
 
-	$summary[] = t('List type: %list_type', ['%list_type' => $this->getSetting('list_type')]);
-	return array_merge($summary, parent::settingsSummary());
+    $summary[] = t('List type: %list_type', ['%list_type' => $this->getSetting('list_type')]);
+    return array_merge($summary, parent::settingsSummary());
   }
 
   /**
@@ -70,30 +70,30 @@ class HtmlList extends ListBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
 
-	$element = parent::viewElements($items, $langcode);
-	$settings = $this->getSettings();
+    $element = parent::viewElements($items, $langcode);
+    $settings = $this->getSettings();
 
-	if ($settings['list_type'] == 'dl') {
-	  $element[0] = [
-		'#theme' => 'double_field_definition_list',
-		'#items' => $items,
-		'#settings' => $settings,
-	  ];
-	}
-	else {
-	  foreach ($items as $delta => $item) {
-		$list_items[$delta] = [
-		  '#settings' => $settings,
-		  '#item' => $item,
-		  '#theme' => 'double_field_item',
-		];
-	  }
-	  $element[0] = [
-		'#theme' => 'item_list',
-		'#list_type' => $settings['list_type'],
-		'#items' => $list_items,
-	  ];
-	}
+    if ($settings['list_type'] == 'dl') {
+      $element[0] = [
+        '#theme' => 'double_field_definition_list',
+        '#items' => $items,
+        '#settings' => $settings,
+      ];
+    }
+    else {
+      foreach ($items as $delta => $item) {
+        $list_items[$delta] = [
+          '#settings' => $settings,
+          '#item' => $item,
+          '#theme' => 'double_field_item',
+        ];
+      }
+      $element[0] = [
+        '#theme' => 'item_list',
+        '#list_type' => $settings['list_type'],
+        '#items' => $list_items,
+      ];
+    }
 
     return $element;
 

@@ -7,8 +7,10 @@
 
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Component\Render\HtmlEscapedText;
+use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FormatterBase;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 
@@ -21,7 +23,7 @@ abstract class Base extends FormatterBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-
+    $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings[$subfield] = [
         // Hidden option especially useful to display data with views module.
@@ -93,17 +95,10 @@ abstract class Base extends FormatterBase {
 
     $settings = $this->getSettings();
 
-    //$filter_formats = filter_formats();
-
-    // Summary of general settings.
+    $summary = [];
     foreach (['first', 'second'] as $subfield) {
-      $summary[] = SafeMarkup::format('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
+      $summary[] = new FormattableMarkup('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
       $summary[] = t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? t('yes') : t('no')]);
-//      $format = isset($filter_formats[$settings[$subfield]['format']]) ? $filter_formats[$settings[$subfield]['format']]->name : '';
-//      $format_color = $settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto';
-//      if ($format) {
-//        $summary[] = SafeMarkup::set('<span style="color: ' . $format_color . '">' . t('Format: %value', ['%value' => $format]) . '</span>');
-//      }
 
 	  $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
 	  $summary[] = t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
@@ -141,7 +136,7 @@ abstract class Base extends FormatterBase {
 		  }
 
           // TODO: Check markup here.
-          $item->{$subfield} = \Drupal\Component\Utility\SafeMarkup::checkPlain($item->{$subfield});
+          $item->{$subfield} = new HtmlEscapedText($item->{$subfield});
 
 //          $item[$subfield] = $settings[$subfield]['format'] == '_none' ?
 //            check_plain($item[$subfield]) : check_markup($item[$subfield], $settings[$subfield]['format']);
@@ -150,7 +145,7 @@ abstract class Base extends FormatterBase {
           if ($item->{$subfield} != '') {
             $prefix = $settings[$subfield]['prefix'];
             $suffix = $settings[$subfield]['suffix'];
-            $item->{$subfield} = SafeMarkup::format($prefix . $item->{$subfield} . $suffix, []);
+            $item->{$subfield} = $prefix . $item->{$subfield} . $suffix;
           }
 
         }

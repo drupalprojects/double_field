@@ -25,7 +25,7 @@ class UnformattedList extends ListBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
 
-	$element = parent::viewElements($items);
+    $element = parent::viewElements($items, $langcode);
 
     foreach ($items as $delta => $item) {
 

@@ -7,11 +7,12 @@
 
 namespace Drupal\double_field\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\double_field\Plugin\Field\FieldType\DoubleField as DoubleFieldItem;
 use Symfony\Component\Validator\ConstraintViolationInterface;
-use Drupal\Component\Utility\SafeMarkup;
 
 /**
  * Plugin implementation of the 'double_field' widget.
@@ -33,8 +34,8 @@ class DoubleField extends WidgetBase {
 
       $settings[$subfield] = [
         'type' => 'textfield',
-		'prefix' => '',
-		'suffix' => '',
+        'prefix' => '',
+        'suffix' => '',
         'textfield' => [
           'size' => 10,
           'placeholder' => '',
@@ -68,7 +69,7 @@ class DoubleField extends WidgetBase {
     $settings = $this->getSettings();
     $field_settings = $this->getFieldSettings();
 
-	$types = \Drupal\double_field\Plugin\Field\FieldType\DoubleField::subfieldTypes();
+    $types = DoubleFieldItem::subfieldTypes();
 
     $field_name = $this->fieldDefinition->getName();
 
@@ -80,10 +81,10 @@ class DoubleField extends WidgetBase {
 
     foreach (['first', 'second'] as $subfield) {
 
-	  $type = $field_settings['storage'][$subfield]['type'];
+      $type = $field_settings['storage'][$subfield]['type'];
 
-	  $title =  $subfield == 'first' ? t('First subfield') : t('Second subfield');
-	  $title .= ' - ' .  $types[$type];
+      $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
+      $title .= ' - ' . $types[$type];
 
       $element[$subfield] = [
         '#type' => 'details',
@@ -180,38 +181,38 @@ class DoubleField extends WidgetBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-	$settings = $this->getSettings();
+    $settings = $this->getSettings();
     $summary = [];
 
-	if ($settings['inline']) {
-	  $summary[] = t('Display as inline element');
-	}
+    if ($settings['inline']) {
+      $summary[] = t('Display as inline element');
+    }
 
-	foreach (['first', 'second'] as $subfield) {
-	  $summary[] = SafeMarkup::format('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
-	  $summary[] = t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
-	  switch($settings[$subfield]['type']) {
-		case 'textfield':
-		  $summary[] = t('Size: %size', ['%size' => $settings[$subfield]['textfield']['size']]);
-		  $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['textfield']['placeholder']]);
-		  break;
+    foreach (['first', 'second'] as $subfield) {
+      $summary[] = new FormattableMarkup('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
+      $summary[] = t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
+      switch ($settings[$subfield]['type']) {
+        case 'textfield':
+          $summary[] = t('Size: %size', ['%size' => $settings[$subfield]['textfield']['size']]);
+          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['textfield']['placeholder']]);
+          break;
 
-		case 'checkbox':
-		  $summary[] = t('Label: %label', ['%label' => $settings[$subfield]['checkbox']['label']]);
-		  break;
+        case 'checkbox':
+          $summary[] = t('Label: %label', ['%label' => $settings[$subfield]['checkbox']['label']]);
+          break;
 
-		case 'select':
-		  break;
+        case 'select':
+          break;
 
-		case 'textarea':
-		  $summary[] = t('Columns: %cols', ['%cols' => $settings[$subfield]['textarea']['cols']]);
-		  $summary[] = t('Rows: %rows', ['%rows' => $settings[$subfield]['textarea']['rows']]);
-		  $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['textarea']['placeholder']]);
-		  break;
-	  }
-	  $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
-	  $summary[] = t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
-	}
+        case 'textarea':
+          $summary[] = t('Columns: %cols', ['%cols' => $settings[$subfield]['textarea']['cols']]);
+          $summary[] = t('Rows: %rows', ['%rows' => $settings[$subfield]['textarea']['rows']]);
+          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['textarea']['placeholder']]);
+          break;
+      }
+      $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
+      $summary[] = t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
+    }
 
     return $summary;
   }
@@ -260,9 +261,9 @@ class DoubleField extends WidgetBase {
         case 'select':
           $label = $field_settings[$subfield]['required'] ? t('- Select a value -') : t('- None -');
           $widget[$subfield]['#options'] = ['' => $label];
-		  if ($field_settings[$subfield]['list']) {
-			$widget[$subfield]['#options'] += $field_settings[$subfield]['allowed_values'];
-		  }
+          if ($field_settings[$subfield]['list']) {
+            $widget[$subfield]['#options'] += $field_settings[$subfield]['allowed_values'];
+          }
           break;
 
         case 'textarea':
@@ -277,17 +278,21 @@ class DoubleField extends WidgetBase {
           }
           break;
 
-		case 'number':
+        case 'number':
 
-		  if (in_array($field_settings['storage'][$subfield]['type'], ['int', 'float', 'numeric'])) {
-			if ($field_settings[$subfield]['min']) {
-			  $widget[$subfield]['#min'] = $field_settings[$subfield]['min'];
-			}
-			if ($field_settings[$subfield]['max']) {
-			  $widget[$subfield]['#max'] = $field_settings[$subfield]['max'];
-			}
-		  }
-		  break;
+          if (in_array($field_settings['storage'][$subfield]['type'], [
+            'int',
+            'float',
+            'numeric'
+          ])) {
+            if ($field_settings[$subfield]['min']) {
+              $widget[$subfield]['#min'] = $field_settings[$subfield]['min'];
+            }
+            if ($field_settings[$subfield]['max']) {
+              $widget[$subfield]['#max'] = $field_settings[$subfield]['max'];
+            }
+          }
+          break;
       }
 
     }
@@ -300,15 +305,15 @@ class DoubleField extends WidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
 
-	$settings = $this->getSettings();
+    $settings = $this->getSettings();
 
-	foreach ($values as $delta => $value) {
-	  foreach (['first', 'second'] as $subfield) {
-		if ($settings[$subfield]['type'] == 'select' && $value[$subfield] === '') {
-		  $values[$delta][$subfield] = NULL;
-		}
-	  }
-	}
+    foreach ($values as $delta => $value) {
+      foreach (['first', 'second'] as $subfield) {
+        if ($settings[$subfield]['type'] == 'select' && $value[$subfield] === '') {
+          $values[$delta][$subfield] = NULL;
+        }
+      }
+    }
 
     return $values;
 
@@ -335,7 +340,7 @@ class DoubleField extends WidgetBase {
    */
   public function errorElement(array $element, ConstraintViolationInterface $violation, array $form, FormStateInterface $form_state) {
 
-    if (isset($violation->arrayPropertyPath[0]))  {
+    if (isset($violation->arrayPropertyPath[0])) {
       return $element[$violation->arrayPropertyPath[0]];
     }
     else {

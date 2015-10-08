@@ -10,13 +10,13 @@
  */
 function double_field_theme() {
   $templates = [
-	'item',
-	'definition_list',
-	'accordion',
-	'tabs',
+    'item',
+    'definition_list',
+    'accordion',
+    'tabs',
   ];
   foreach ($templates as $template) {
-	$items['double_field_' . $template] = ['render element' => 'elements'];
+    $items['double_field_' . $template] = ['render element' => 'elements'];
   }
   return $items;
 }
@@ -31,7 +31,7 @@ function template_preprocess_double_field_item(&$vars) {
   $vars['style'] = $elements['#settings']['style'];
   $vars['settings'] = $elements['#settings'];
   if ($vars['style'] == 'inline') {
-	$vars['attributes']['class'][] = 'container-inline';
+    $vars['attributes']['class'][] = 'container-inline';
   }
 
   foreach (['first', 'second'] as $subfield) {
@@ -71,11 +71,11 @@ function double_field_prepare_items(&$vars) {
 
   foreach ($elements['#items'] as $delta => $item) {
 
-	foreach (['first', 'second'] as $subfield) {
-	  if ($item->{$subfield}) {
-		$vars['items'][$delta][$subfield] = $item->{$subfield};
-	  }
-	}
+    foreach (['first', 'second'] as $subfield) {
+      if ($item->{$subfield}) {
+        $vars['items'][$delta][$subfield] = $item->{$subfield};
+      }
+    }
 
   }
 

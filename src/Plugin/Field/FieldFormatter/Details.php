@@ -25,9 +25,9 @@ class Details extends Base {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-	return [
-	  'open' => TRUE,
-	] + parent::defaultSettings();
+    return [
+      'open' => TRUE,
+    ] + parent::defaultSettings();
   }
 
   /**
@@ -35,26 +35,26 @@ class Details extends Base {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
 
-	$settings = $this->getSettings();
+    $settings = $this->getSettings();
 
-	$element['open'] = array(
-	  '#type' => 'checkbox',
-	  '#title' => t('Open'),
-	  '#default_value' => $settings['open'],
-	);
+    $element['open'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Open'),
+      '#default_value' => $settings['open'],
+    );
 
-	$element += parent::settingsForm($form, $form_state);
+    $element += parent::settingsForm($form, $form_state);
 
-	return $element;
+    return $element;
   }
 
   /**
    * {@inheritdoc}
    */
   public function settingsSummary() {
-	$open = $this->getSetting('open');
-	$summary[] = t('Open: %open', ['%open' => $open ? t('yes') : t('no')]);
-	return array_merge($summary, parent::settingsSummary());
+    $open = $this->getSetting('open');
+    $summary[] = t('Open: %open', ['%open' => $open ? t('yes') : t('no')]);
+    return array_merge($summary, parent::settingsSummary());
   }
 
   /**
@@ -62,19 +62,19 @@ class Details extends Base {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
 
-	$element = [];
-	$this->prepareItems($items);
-	$settings = $this->getSettings();
+    $element = [];
+    $this->prepareItems($items);
+    $settings = $this->getSettings();
 
-	foreach ($items as $delta => $item) {
-	  $element[$delta] = array(
-		'#title' => $item->first,
-		'#value' => $item->second,
-		'#type' => 'details',
-		'#open' => $settings['open'],
-	  );
+    foreach ($items as $delta => $item) {
+      $element[$delta] = array(
+        '#title' => $item->first,
+        '#value' => $item->second,
+        '#type' => 'details',
+        '#open' => $settings['open'],
+      );
 
-	}
+    }
     return $element;
 
   }
