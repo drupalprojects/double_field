@@ -97,7 +97,7 @@ abstract class Base extends FormatterBase {
 
     // Summary of general settings.
     foreach (['first', 'second'] as $subfield) {
-      $summary[] = SafeMarkup::set('<br/><b>' . ($subfield == 'first' ? t('First subfield') : t('Second subfield')) . '</b>');
+      $summary[] = SafeMarkup::format('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
       $summary[] = t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? t('yes') : t('no')]);
 //      $format = isset($filter_formats[$settings[$subfield]['format']]) ? $filter_formats[$settings[$subfield]['format']]->name : '';
 //      $format_color = $settings[$subfield]['format'] == 'full_html' ? 'red' : 'auto';

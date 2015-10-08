@@ -188,7 +188,7 @@ class DoubleField extends WidgetBase {
 	}
 
 	foreach (['first', 'second'] as $subfield) {
-	  $summary[] = SafeMarkup::set('<br/><b>' . ($subfield == 'first' ? t('First subfield') : t('Second subfield')) . '</b>');
+	  $summary[] = SafeMarkup::format('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
 	  $summary[] = t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
 	  switch($settings[$subfield]['type']) {
 		case 'textfield':
