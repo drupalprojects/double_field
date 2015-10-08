@@ -30,7 +30,6 @@ class DoubleField extends FieldItemBase {
    */
   public static function defaultStorageSettings() {
 
-    $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings['storage'][$subfield] = [
         'type' => 'varchar',
@@ -46,7 +45,7 @@ class DoubleField extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form  , FormStateInterface $form_state, $has_data) {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
 
     $element = [];
     $settings = $this->getSettings();
@@ -63,7 +62,7 @@ class DoubleField extends FieldItemBase {
         '#title' => t('Field type'),
         '#default_value' => $settings['storage'][$subfield]['type'],
         '#required' => TRUE,
-        '#options' => $this->subfieldTypes() ,
+        '#options' => $this->subfieldTypes(),
         '#disabled' => $has_data,
       ];
 
@@ -118,13 +117,13 @@ class DoubleField extends FieldItemBase {
     foreach (['first', 'second'] as $subfield) {
 
       $settings[$subfield] = [
-		'min' => '',
-		'max' => '',
-		'list' => FALSE,
-		'allowed_values' => [],
-		'required' => TRUE,
-		'on_label' => t('On'),
-		'off_label' => t('Off'),
+        'min' => '',
+        'max' => '',
+        'list' => FALSE,
+        'allowed_values' => [],
+        'required' => TRUE,
+        'on_label' => t('On'),
+        'off_label' => t('Off'),
       ];
     }
 
@@ -139,13 +138,13 @@ class DoubleField extends FieldItemBase {
     $element = array();
     $settings = $this->getSettings();
 
-	$types = self::subfieldTypes();
+    $types = self::subfieldTypes();
     foreach (['first', 'second'] as $subfield) {
 
-	  $type = $settings['storage'][$subfield]['type'];
+      $type = $settings['storage'][$subfield]['type'];
 
-	  $title =  $subfield == 'first' ? t('First subfield') : t('Second subfield');
-	  $title .= ' - ' .  $types[$type];
+      $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
+      $title .= ' - ' . $types[$type];
 
       $element[$subfield] = [
         '#type' => 'details',
@@ -154,65 +153,65 @@ class DoubleField extends FieldItemBase {
         '#tree' => TRUE,
       ];
 
-	  $element[$subfield]['required'] = array(
-		'#type' => 'checkbox',
-		'#title' => t('Required'),
-		'#default_value' => $settings[$subfield]['required'],
-	  );
+      $element[$subfield]['required'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Required'),
+        '#default_value' => $settings[$subfield]['required'],
+      );
 
-	  $element[$subfield]['min'] = array(
-		'#type' => 'number',
-		'#title' => t('Minimum'),
-		'#default_value' => $settings[$subfield]['min'],
-		'#description' => t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
-		'#access' => in_array($type, ['int', 'float', 'numeric']),
-	  );
+      $element[$subfield]['min'] = array(
+        '#type' => 'number',
+        '#title' => t('Minimum'),
+        '#default_value' => $settings[$subfield]['min'],
+        '#description' => t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
+        '#access' => in_array($type, ['int', 'float', 'numeric']),
+      );
 
-	  $element[$subfield]['max'] = array(
-		'#type' => 'number',
-		'#title' => t('Maximum'),
-		'#default_value' => $settings[$subfield]['max'],
-		'#description' => t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
-		'#access' => in_array($type, ['int', 'float', 'numeric']),
-	  );
+      $element[$subfield]['max'] = array(
+        '#type' => 'number',
+        '#title' => t('Maximum'),
+        '#default_value' => $settings[$subfield]['max'],
+        '#description' => t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
+        '#access' => in_array($type, ['int', 'float', 'numeric']),
+      );
 
-	  $element[$subfield]['list'] = [
-		'#type' => 'checkbox',
-		'#title' => t('Limit allowed values'),
-		'#default_value' => $settings[$subfield]['list'],
-		'#access' => $type != 'boolean',
-	  ];
+      $element[$subfield]['list'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Limit allowed values'),
+        '#default_value' => $settings[$subfield]['list'],
+        '#access' => $type != 'boolean',
+      ];
 
-	  $element[$subfield]['allowed_values'] = [
-		'#type' => 'textarea',
-		'#title' => t('Allowed values list'),
-		'#default_value' => $this->allowedValuesString($settings[$subfield]['allowed_values']),
-		'#rows' => 10,
-		'#element_validate' => [[get_class($this), 'validateAllowedValues']],
-		'#field_name' => $this->getFieldDefinition()->getName(),
-		'#entity_type' => $this->getEntity()->getEntityTypeId(),
-		'#allowed_values' => $settings[$subfield]['allowed_values'],
-		'#states' => [
-		  'invisible' => [
-			[":input[name='field[settings][$subfield][list]']" => ['checked' => FALSE]],
-		  ],
-		],
-		'#description' => $this->allowedValuesDescription(),
-		'#access' => $type != 'boolean',
-	  ];
+      $element[$subfield]['allowed_values'] = [
+        '#type' => 'textarea',
+        '#title' => t('Allowed values list'),
+        '#default_value' => $this->allowedValuesString($settings[$subfield]['allowed_values']),
+        '#rows' => 10,
+        '#element_validate' => [[get_class($this), 'validateAllowedValues']],
+        '#field_name' => $this->getFieldDefinition()->getName(),
+        '#entity_type' => $this->getEntity()->getEntityTypeId(),
+        '#allowed_values' => $settings[$subfield]['allowed_values'],
+        '#states' => [
+          'invisible' => [
+            [":input[name='field[settings][$subfield][list]']" => ['checked' => FALSE]],
+          ],
+        ],
+        '#description' => $this->allowedValuesDescription(),
+        '#access' => $type != 'boolean',
+      ];
 
-	  $element[$subfield]['on_label'] = array(
-		'#type' => 'textfield',
-		'#title' => t('"On" label'),
-		'#default_value' => $settings[$subfield]['on_label'],
-		'#access' => $type == 'boolean',
-	  );
-	  $element[$subfield]['off_label'] = array(
-		'#type' => 'textfield',
-		'#title' => t('"Off" label'),
-		'#default_value' => $settings[$subfield]['off_label'],
-		'#access' => $type == 'boolean',
-	  );
+      $element[$subfield]['on_label'] = array(
+        '#type' => 'textfield',
+        '#title' => t('"On" label'),
+        '#default_value' => $settings[$subfield]['on_label'],
+        '#access' => $type == 'boolean',
+      );
+      $element[$subfield]['off_label'] = array(
+        '#type' => 'textfield',
+        '#title' => t('"Off" label'),
+        '#default_value' => $settings[$subfield]['off_label'],
+        '#access' => $type == 'boolean',
+      );
 
     }
 
@@ -226,14 +225,15 @@ class DoubleField extends FieldItemBase {
 
     $settings = $this->getSettings();
 
-    $constraint_manager = \Drupal::typedDataManager()->getValidationConstraintManager();
+    $constraint_manager = \Drupal::typedDataManager()
+      ->getValidationConstraintManager();
     $constraints = parent::getConstraints();
 
     $subconstrains = [];
     foreach (['first', 'second'] as $subfield) {
       if ($settings['storage'][$subfield]['type'] != 'boolean' && $settings[$subfield]['list'] && $settings[$subfield]['allowed_values']) {
-		$allowed_values = array_keys($settings[$subfield]['allowed_values']);
-		$allowed_values[] = '';
+        $allowed_values = array_keys($settings[$subfield]['allowed_values']);
+        $allowed_values[] = '';
         $subconstrains[$subfield]['AllowedValues'] = $allowed_values;
       }
       if ($settings['storage'][$subfield]['type'] == 'varchar') {
@@ -242,9 +242,9 @@ class DoubleField extends FieldItemBase {
       if ($settings[$subfield]['required']) {
         $subconstrains[$subfield]['NotBlank'] = [];
       }
-	  if ($settings['storage'][$subfield]['type'] == 'boolean') {
-		$subconstrains[$subfield]['AllowedValues'] = [0, 1];
-	  }
+      if ($settings['storage'][$subfield]['type'] == 'boolean') {
+        $subconstrains[$subfield]['AllowedValues'] = [0, 1];
+      }
     }
 
     $constraints[] = $constraint_manager->create('ComplexData', $subconstrains);
@@ -311,7 +311,6 @@ class DoubleField extends FieldItemBase {
         ->setLabel($primitive_types[$subfield_type][1]);
     }
 
-
     return $properties;
   }
 
@@ -330,25 +329,25 @@ class DoubleField extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-	$is_empty = TRUE;
-	foreach (['first', 'second'] as $subfield) {
-	  $is_empty = $is_empty && ($this->{$subfield} === NULL || $this->{$subfield} === '');
-	}
+    $is_empty = TRUE;
+    foreach (['first', 'second'] as $subfield) {
+      $is_empty = $is_empty && ($this->{$subfield} === NULL || $this->{$subfield} === '');
+    }
     return $is_empty;
   }
 
   /**
-   * #element_validate callback for options field allowed values.
+   * Element validate callback for options field allowed values.
    *
-   * @param $element
+   * @param array $element
    *   An associative array containing the properties and children of the
    *   generic form element.
-   * @param $form_state
+   * @param FormStateInterface $form_state
    *   The current state of the form for the form this element belongs to.
    *
    * @see \Drupal\Core\Render\Element\FormElement::processPattern()
    */
-  public static function validateAllowedValues($element, FormStateInterface $form_state) {
+  public static function validateAllowedValues(array $element, FormStateInterface $form_state) {
     $values = static::extractAllowedValues($element['#value']);
 
     if (!is_array($values)) {
@@ -372,6 +371,7 @@ class DoubleField extends FieldItemBase {
    *
    * @param string $string
    *   The raw string to extract values from.
+   *
    * @return array|null
    *   The array of extracted key/value pairs, or NULL if the string is invalid.
    *
@@ -411,7 +411,7 @@ class DoubleField extends FieldItemBase {
 
     // We generate keys only if the list contains no explicit key at all.
     if ($explicit_keys && $generated_keys) {
-      return;
+      return NULL;
     }
 
     return $values;
@@ -428,9 +428,7 @@ class DoubleField extends FieldItemBase {
    */
   protected static function validateAllowedValue($option) {
     return FALSE;
-    return t('Allowed values list: keys must be integers.');
   }
-
 
   /**
    * Generates a string representation of an array of 'allowed values'.
@@ -446,7 +444,7 @@ class DoubleField extends FieldItemBase {
    *    - Values are separated by a carriage return.
    *    - Each value is in the format "value|label" or "value".
    */
-  protected function allowedValuesString($values) {
+  protected function allowedValuesString(array $values) {
     $lines = [];
     foreach ($values as $key => $value) {
       $lines[] = "$key|$value";
@@ -454,11 +452,10 @@ class DoubleField extends FieldItemBase {
     return implode("\n", $lines);
   }
 
-
   /**
-   *
+   * Returns available subfield types.
    */
-  public  static function subfieldTypes() {
+  public static function subfieldTypes() {
     $type_options = [
       'boolean' => t('Boolean'),
       'varchar' => t('Text'),
@@ -471,7 +468,7 @@ class DoubleField extends FieldItemBase {
   }
 
   /**
-   *
+   * Returns available primitive subfield types.
    */
   protected static function subfieldPrimiriveTypes() {
     $type_options = [

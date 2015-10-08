@@ -1,6 +1,8 @@
 /**
+ * @file
  * Behavior for dialog formatter.
  */
+
 (function ($) {
 
   'use strict';
@@ -15,12 +17,10 @@
           .html(data.html())
           .dialog({
             title: data.attr('title'),
-            hide: {
-              effect: 'explode'
-            }
-          }
-        );
-        return false;
+            hide: {effect: 'explode'}
+          });
+
+          return false;
 
       })
     }

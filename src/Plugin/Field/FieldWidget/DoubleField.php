@@ -320,9 +320,9 @@ class DoubleField extends WidgetBase {
   }
 
   /**
-   *
+   * Returns available subwidgets.
    */
-  protected function getSubwidgets($subfield_settings) {
+  protected function getSubwidgets() {
     $available_subwidgets = [
       'textfield' => t('Textfield'),
       'select' => t('Select list'),

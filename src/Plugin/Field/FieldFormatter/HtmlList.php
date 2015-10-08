@@ -48,7 +48,6 @@ class HtmlList extends ListBase {
       '#default_value' => $settings['list_type'],
     ];
 
-
     $element += parent::settingsForm($form, $form_state);
     $field_name = $this->fieldDefinition->getName();
 
