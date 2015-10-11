@@ -163,27 +163,12 @@ class DoubleField extends FieldItemBase {
         '#default_value' => $settings[$subfield]['required'],
       );
 
-      $element[$subfield]['min'] = array(
-        '#type' => 'number',
-        '#title' => t('Minimum'),
-        '#default_value' => $settings[$subfield]['min'],
-        '#description' => t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
-        '#access' => in_array($type, ['int', 'float', 'numeric']),
-      );
-
-      $element[$subfield]['max'] = array(
-        '#type' => 'number',
-        '#title' => t('Maximum'),
-        '#default_value' => $settings[$subfield]['max'],
-        '#description' => t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
-        '#access' => in_array($type, ['int', 'float', 'numeric']),
-      );
-
+      $list_is_allowed = in_array($type, ['varchar', 'int', 'float', 'numeric']);
       $element[$subfield]['list'] = [
         '#type' => 'checkbox',
         '#title' => t('Limit allowed values'),
         '#default_value' => $settings[$subfield]['list'],
-        '#access' => $type != 'boolean',
+        '#access' => $list_is_allowed,
       ];
 
       $element[$subfield]['allowed_values'] = [
@@ -197,12 +182,38 @@ class DoubleField extends FieldItemBase {
         '#allowed_values' => $settings[$subfield]['allowed_values'],
         '#states' => [
           'invisible' => [
-            [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
+            ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
           ],
         ],
         '#description' => $this->allowedValuesDescription(),
-        '#access' => $type != 'boolean',
+        '#access' => $list_is_allowed,
       ];
+
+      $element[$subfield]['min'] = array(
+        '#type' => 'number',
+        '#title' => t('Minimum'),
+        '#default_value' => $settings[$subfield]['min'],
+        '#description' => t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
+        '#access' => in_array($type, ['int', 'float', 'numeric']),
+        '#states' => [
+          'visible' => [
+            ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
+          ],
+        ],
+      );
+
+      $element[$subfield]['max'] = array(
+        '#type' => 'number',
+        '#title' => t('Maximum'),
+        '#default_value' => $settings[$subfield]['max'],
+        '#description' => t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
+        '#access' => in_array($type, ['int', 'float', 'numeric']),
+        '#states' => [
+          'visible' => [
+            ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
+          ],
+        ],
+      );
 
       $element[$subfield]['on_label'] = array(
         '#type' => 'textfield',
@@ -243,11 +254,23 @@ class DoubleField extends FieldItemBase {
       if ($settings['storage'][$subfield]['type'] == 'varchar') {
         $subconstrains[$subfield]['Length'] = ['max' => $settings['storage'][$subfield]['maxlength']];
       }
-      if ($settings[$subfield]['required']) {
-        $subconstrains[$subfield]['NotBlank'] = [];
+
+      if (in_array($settings['storage'][$subfield]['type'], ['int', 'float', 'numeric'])) {
+        if (is_numeric($settings[$subfield]['min'])) {
+          $subconstrains[$subfield]['Range']['min'] = $settings[$subfield]['min'];
+        }
+        if (is_numeric($settings[$subfield]['max'])) {
+          $subconstrains[$subfield]['Range']['max'] = $settings[$subfield]['max'];
+        }
       }
+
       if ($settings['storage'][$subfield]['type'] == 'boolean') {
         $subconstrains[$subfield]['AllowedValues'] = [0, 1];
+      }
+
+      // This is applicable to all types.
+      if ($settings[$subfield]['required']) {
+        $subconstrains[$subfield]['NotBlank'] = [];
       }
     }
 

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\double_field\Tests\DoubleFieldTestBase.
+ * Contains \Drupal\double_field\Tests\FieldTestBase.
  */
 
 namespace Drupal\double_field\Tests;
@@ -13,7 +13,7 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 /**
  * Tests the creation of text fields.
  */
-abstract class DoubleFieldTestBase extends WebTestBase {
+abstract class FieldTestBase extends WebTestBase {
 
   /**
    * A user with relevant administrative privileges.
@@ -68,6 +68,11 @@ abstract class DoubleFieldTestBase extends WebTestBase {
    */
   protected $fieldStorage;
 
+  /**
+   * @var \Drupal\field\Entity\FieldConfig
+   */
+  protected $field;
+
 
   /**
    * Modules to enable.
@@ -121,12 +126,12 @@ abstract class DoubleFieldTestBase extends WebTestBase {
       'settings' => $storage_settings,
     ]);
     $this->fieldStorage->save();
-    $field = entity_create('field_config', [
+    $this->field = entity_create('field_config', [
       'field_storage' => $this->fieldStorage,
       'bundle' => $this->contentTypeId,
       'required' => TRUE,
     ]);
-    $field->save();
+    $this->field->save();
     $this->contentTypeAdminPath = sprintf('admin/structure/types/manage/%s', $this->contentTypeId);
     $this->fieldAdminPath = sprintf('%s/fields/node.%s.%s', $this->contentTypeAdminPath, $this->contentTypeId, $this->fieldName);
     $this->fieldStorageAdminPath = sprintf('%s/storage', $this->fieldAdminPath);
