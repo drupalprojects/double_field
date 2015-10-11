@@ -75,15 +75,17 @@ class DoubleField extends FieldItemBase {
         '#disabled' => $has_data,
         '#min' => 1,
         '#states' => [
-          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'int']],
+          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'varchar']],
         ],
       ];
 
       $element['storage'][$subfield]['precision'] = [
-        '#type' => 'select',
+        '#type' => 'number',
         '#title' => t('Precision'),
-        '#options' => array_combine(range(10, 32), range(10, 32)),
+        '#min' => 10,
+        '#max' => 32,
         '#default_value' => $settings['storage'][$subfield]['precision'],
+        '#required' => TRUE,
         '#description' => t('The total number of digits to store in the database, including those to the right of the decimal.'),
         '#disabled' => $has_data,
         '#states' => [
@@ -92,14 +94,16 @@ class DoubleField extends FieldItemBase {
       ];
 
       $element['storage'][$subfield]['scale'] = [
-        '#type' => 'select',
+        '#type' => 'number',
         '#title' => t('Scale'),
-        '#options' => array_combine(range(0, 10), range(0, 10)),
+        '#min' => 0,
+        '#max' => 10,
         '#default_value' => $settings['storage'][$subfield]['scale'],
+        '#required' => TRUE,
         '#description' => t('The number of digits to the right of the decimal.'),
         '#disabled' => $has_data,
         '#states' => [
-          'visible' => [":input[name='settings[[storage][$subfield][type]']" => ['value' => 'numeric']],
+          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']],
         ],
       ];
 
@@ -193,7 +197,7 @@ class DoubleField extends FieldItemBase {
         '#allowed_values' => $settings[$subfield]['allowed_values'],
         '#states' => [
           'invisible' => [
-            [":input[name='field[settings][$subfield][list]']" => ['checked' => FALSE]],
+            [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
           ],
         ],
         '#description' => $this->allowedValuesDescription(),
