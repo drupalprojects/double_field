@@ -11,6 +11,7 @@ use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\Component\Utility\Unicode;
 
 /**
  * Plugin implementation of the 'double_field' field type.
@@ -139,7 +140,6 @@ class DoubleField extends FieldItemBase {
    */
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
 
-    $element = array();
     $settings = $this->getSettings();
 
     $types = self::subfieldTypes();
@@ -157,39 +157,40 @@ class DoubleField extends FieldItemBase {
         '#tree' => TRUE,
       ];
 
-      $element[$subfield]['required'] = array(
+      $element[$subfield]['required'] = [
         '#type' => 'checkbox',
         '#title' => t('Required'),
         '#default_value' => $settings[$subfield]['required'],
-      );
-
-      $list_is_allowed = in_array($type, ['varchar', 'int', 'float', 'numeric']);
-      $element[$subfield]['list'] = [
-        '#type' => 'checkbox',
-        '#title' => t('Limit allowed values'),
-        '#default_value' => $settings[$subfield]['list'],
-        '#access' => $list_is_allowed,
       ];
 
-      $element[$subfield]['allowed_values'] = [
-        '#type' => 'textarea',
-        '#title' => t('Allowed values list'),
-        '#default_value' => $this->allowedValuesString($settings[$subfield]['allowed_values']),
-        '#rows' => 10,
-        '#element_validate' => [[get_class($this), 'validateAllowedValues']],
-        '#field_name' => $this->getFieldDefinition()->getName(),
-        '#entity_type' => $this->getEntity()->getEntityTypeId(),
-        '#allowed_values' => $settings[$subfield]['allowed_values'],
-        '#states' => [
-          'invisible' => [
-            ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
+      if (in_array($type, ['varchar', 'int', 'float', 'numeric'])) {
+        $element[$subfield]['list'] = [
+          '#type' => 'checkbox',
+          '#title' => t('Limit allowed values'),
+          '#default_value' => $settings[$subfield]['list'],
+        ];
+
+        $element[$subfield]['allowed_values'] = [
+          '#type' => 'textarea',
+          '#title' => t('Allowed values list'),
+          '#default_value' => $this->allowedValuesString($settings[$subfield]['allowed_values']),
+          '#rows' => 10,
+          '#element_validate' => [[get_class($this), 'validateAllowedValues']],
+          '#storage_type' => $type,
+          '#storage_maxlength' => $settings['storage'][$subfield]['maxlength'],
+          '#field_name' => $this->getFieldDefinition()->getName(),
+          '#entity_type' => $this->getEntity()->getEntityTypeId(),
+          '#allowed_values' => $settings[$subfield]['allowed_values'],
+          '#states' => [
+            'invisible' => [
+              ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
+            ],
           ],
-        ],
-        '#description' => $this->allowedValuesDescription(),
-        '#access' => $list_is_allowed,
-      ];
+          '#description' => $this->allowedValuesDescription(),
+        ];
+      }
 
-      $element[$subfield]['min'] = array(
+      $element[$subfield]['min'] = [
         '#type' => 'number',
         '#title' => t('Minimum'),
         '#default_value' => $settings[$subfield]['min'],
@@ -200,9 +201,9 @@ class DoubleField extends FieldItemBase {
             ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
           ],
         ],
-      );
+      ];
 
-      $element[$subfield]['max'] = array(
+      $element[$subfield]['max'] = [
         '#type' => 'number',
         '#title' => t('Maximum'),
         '#default_value' => $settings[$subfield]['max'],
@@ -213,20 +214,20 @@ class DoubleField extends FieldItemBase {
             ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
           ],
         ],
-      );
+      ];
 
-      $element[$subfield]['on_label'] = array(
+      $element[$subfield]['on_label'] = [
         '#type' => 'textfield',
         '#title' => t('"On" label'),
         '#default_value' => $settings[$subfield]['on_label'],
         '#access' => $type == 'boolean',
-      );
-      $element[$subfield]['off_label'] = array(
+      ];
+      $element[$subfield]['off_label'] = [
         '#type' => 'textfield',
         '#title' => t('"Off" label'),
         '#default_value' => $settings[$subfield]['off_label'],
         '#access' => $type == 'boolean',
-      );
+      ];
 
     }
 
@@ -246,26 +247,30 @@ class DoubleField extends FieldItemBase {
 
     $subconstrains = [];
     foreach (['first', 'second'] as $subfield) {
-      if ($settings['storage'][$subfield]['type'] != 'boolean' && $settings[$subfield]['list'] && $settings[$subfield]['allowed_values']) {
+
+      $subfield_type = $settings['storage'][$subfield]['type'];
+
+      if (!in_array($subfield_type, ['boolean', 'text']) && $settings[$subfield]['list'] && $settings[$subfield]['allowed_values']) {
         $allowed_values = array_keys($settings[$subfield]['allowed_values']);
         $allowed_values[] = '';
         $subconstrains[$subfield]['AllowedValues'] = $allowed_values;
       }
-      if ($settings['storage'][$subfield]['type'] == 'varchar') {
-        $subconstrains[$subfield]['Length'] = ['max' => $settings['storage'][$subfield]['maxlength']];
+
+      if ($subfield_type == 'boolean') {
+        $subconstrains[$subfield]['AllowedValues'] = [0, 1];
       }
 
-      if (in_array($settings['storage'][$subfield]['type'], ['int', 'float', 'numeric'])) {
+      if ($subfield_type == 'varchar') {
+        $subconstrains[$subfield]['Length']['max'] = $settings['storage'][$subfield]['maxlength'];
+      }
+
+      if (in_array($subfield_type, ['int', 'float', 'numeric'])) {
         if (is_numeric($settings[$subfield]['min'])) {
           $subconstrains[$subfield]['Range']['min'] = $settings[$subfield]['min'];
         }
         if (is_numeric($settings[$subfield]['max'])) {
           $subconstrains[$subfield]['Range']['max'] = $settings[$subfield]['max'];
         }
-      }
-
-      if ($settings['storage'][$subfield]['type'] == 'boolean') {
-        $subconstrains[$subfield]['AllowedValues'] = [0, 1];
       }
 
       // This is applicable to all types.
@@ -377,20 +382,40 @@ class DoubleField extends FieldItemBase {
   public static function validateAllowedValues(array $element, FormStateInterface $form_state) {
     $values = static::extractAllowedValues($element['#value']);
 
-    if (!is_array($values)) {
-      $form_state->setError($element, t('Allowed values list: invalid input.'));
-    }
-    else {
-      // Check that keys are valid for the field type.
-      foreach ($values as $key => $value) {
-        if ($error = static::validateAllowedValue($key)) {
-          $form_state->setError($element, $error);
-          break;
-        }
-      }
+    // Check that keys are valid for the field type.
+    foreach ($values as $key => $value) {
+      switch ($element['#storage_type']) {
 
-      $form_state->setValueForElement($element, $values);
+        case 'varchar':
+          // @see \Drupal\options\Plugin\Field\FieldType\ListStringItem::validateAllowedValue()
+          if (Unicode::strlen($key) > $element['#storage_maxlength']) {
+            $error_message = t(
+              'Allowed values list: each key must be a string at most @maxlength characters long.',
+              ['@maxlength' => $element['#storage_maxlength']]
+            );
+            $form_state->setError($element, $error_message);
+          }
+          break;
+
+        case 'int':
+          // @see \Drupal\options\Plugin\Field\FieldType\ListIntegerItem::validateAllowedValue()
+          if (!preg_match('/^-?\d+$/', $key)) {
+            $form_state->setError($element, ('Allowed values list: keys must be integers.'));
+          }
+          break;
+
+        case 'float':
+        case 'numeric':
+          // @see \Drupal\options\Plugin\Field\FieldType\ListFloatItem::validateAllowedValue()
+          if (!is_numeric($key)) {
+            $form_state->setError($element, ('Allowed values list: each key must be a valid integer or decimal.'));
+          }
+          break;
+
+      }
     }
+
+    $form_state->setValueForElement($element, $values);
   }
 
   /**
@@ -399,10 +424,10 @@ class DoubleField extends FieldItemBase {
    * @param string $string
    *   The raw string to extract values from.
    *
-   * @return array|null
-   *   The array of extracted key/value pairs, or NULL if the string is invalid.
+   * @return array
+   *   The array of extracted key/value pairs.
    *
-   * @see \Drupal\options\Plugin\Field\FieldType\ListTextItem::allowedValuesString()
+   * @see \Drupal\options\Plugin\Field\FieldType\ListTextItem::extractAllowedValues()
    */
   protected static function extractAllowedValues($string) {
 
@@ -412,49 +437,20 @@ class DoubleField extends FieldItemBase {
     $list = array_map('trim', $list);
     $list = array_filter($list, 'strlen');
 
-    $generated_keys = $explicit_keys = FALSE;
-    foreach ($list as $position => $text) {
+    foreach ($list as $text) {
       // Check for an explicit key.
-      $matches = [];
       if (preg_match('/(.*)\|(.*)/', $text, $matches)) {
         // Trim key and value to avoid unwanted spaces issues.
         $key = trim($matches[1]);
         $value = trim($matches[2]);
-        $explicit_keys = TRUE;
       }
-      // Otherwise see if we can use the value as the key.
-      elseif (!static::validateAllowedValue($text)) {
-        $key = $value = $text;
-        $explicit_keys = TRUE;
-      }
-      // Otherwise see if we can generate a key from the position.
       else {
-        $key = (string) $position;
-        $value = $text;
-        $generated_keys = TRUE;
+        $key = $value = $text;
       }
       $values[$key] = $value;
     }
 
-    // We generate keys only if the list contains no explicit key at all.
-    if ($explicit_keys && $generated_keys) {
-      return NULL;
-    }
-
     return $values;
-  }
-
-  /**
-   * Checks whether a candidate allowed value is valid.
-   *
-   * @param string $option
-   *   The option value entered by the user.
-   *
-   * @return string
-   *   The error message if the specified value is invalid, NULL otherwise.
-   */
-  protected static function validateAllowedValue($option) {
-    return FALSE;
   }
 
   /**
@@ -512,3 +508,4 @@ class DoubleField extends FieldItemBase {
   }
 
 }
+

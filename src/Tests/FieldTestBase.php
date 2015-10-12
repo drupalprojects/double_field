@@ -8,7 +8,8 @@
 namespace Drupal\double_field\Tests;
 
 use Drupal\simpletest\WebTestBase;
-use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
+use Drupal\Component\Utility\NestedArray;
+
 
 /**
  * Tests the creation of text fields.
@@ -21,7 +22,6 @@ abstract class FieldTestBase extends WebTestBase {
    * @var \Drupal\user\UserInterface
    */
   protected $adminUser;
-
 
   /**
    * A content type id.
@@ -79,7 +79,11 @@ abstract class FieldTestBase extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = ['double_field', 'node', 'field_ui', 'dblog', 'datetime_test', 'datetime'];
+  public static $modules = [
+    'double_field',
+    'node',
+    'field_ui',
+  ];
 
   /**
    * {@inheritdoc}
@@ -87,7 +91,8 @@ abstract class FieldTestBase extends WebTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->contentTypeId = $this->drupalCreateContentType(['type' => 'page'])->id();
+    $this->contentTypeId = $this->drupalCreateContentType(['type' => 'page'])
+      ->id();
 
     $this->adminUser = $this->drupalCreateUser([
       // @TODO: Remove unused permissions.
@@ -144,7 +149,12 @@ abstract class FieldTestBase extends WebTestBase {
   protected function getMessages($type) {
     $messages = [];
 
-    $wrapper = $this->cssSelect('.messages--' . $type);
+    $xpath = '//div[@aria-label="' . ucfirst($type) .' message"]';
+    // Error messages have one more wrapper.
+    if ($type == 'error') {
+      $xpath .= '/div[@role="alert"]';
+    }
+    $wrapper = $this->xpath($xpath);
     if (!empty($wrapper[0])) {
       // Multiple messages are rendered with an HTML list.
       if (isset($wrapper[0]->ul)) {
@@ -215,5 +225,24 @@ abstract class FieldTestBase extends WebTestBase {
     }
   }
 
+  /**
+   * @param array $settings
+   */
+  protected function saveFieldSettings(array $settings) {
+    $this->field->setSettings(
+      NestedArray::mergeDeep($this->field->getSettings(), $settings)
+    );
+    $this->field->save();
+  }
+
+  /**
+   * @param array $settings
+   */
+  protected function saveFieldStorageSettings(array $settings) {
+    $this->fieldStorage->setSettings(
+      NestedArray::mergeDeep($this->fieldStorage->getSettings(), $settings)
+    );
+    $this->fieldStorage->save();
+  }
 
 }

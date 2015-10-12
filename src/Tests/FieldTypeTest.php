@@ -8,7 +8,6 @@
 namespace Drupal\double_field\Tests;
 
 use Drupal\node\Entity\Node;
-use Symfony\Component\Validator\ConstraintViolationList;
 
 /**
  * Tests the creation of text fields.
@@ -22,92 +21,72 @@ class FieldTypeTest extends FieldTestBase {
    */
   function testFieldStorageSettings() {
 
-    $settings = $this->fieldStorage->getSettings();
-    $maxlength = $settings['storage']['second']['maxlength'];
+    $maxlength = mt_rand(1, 50);
 
     // -- Boolean and varchar.
-    $settings['storage']['first']['type'] = 'boolean';
-    $settings['storage']['second']['type'] = 'varchar';
-    $this->fieldStorage->setSettings($settings);
-    $this->fieldStorage->save();
+    $storage_settings['storage']['first']['type'] = 'boolean';
+    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['second']['maxlength'] = $maxlength;
+    $this->saveFieldStorageSettings($storage_settings);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => 123,
-      'second' => $this->randomString($maxlength + 1)
+    $values = [
+      123,
+      $this->randomString($maxlength + 1)
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
     $expected_messages = [
       t('The value you selected is not a valid choice.'),
       t('This value is too long. It should have @maxlength characters or less.', ['@maxlength' => $maxlength]),
     ];
-    $this->assertViolations($violations, $expected_messages);
+    $this->assertViolations($values, $expected_messages);
 
     // --
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => mt_rand(0, 1),
-      'second' => $this->randomString($maxlength)
+    $values = [
+      mt_rand(0, 1),
+      $this->randomString($maxlength)
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
-    $this->assertViolations($violations, []);
+    $this->assertViolations($values, []);
 
     // -- Text (long) and integer.
     $storage_settings['storage']['first']['type'] = 'text';
     $storage_settings['storage']['second']['type'] = 'int';
-    $this->fieldStorage->setSettings($storage_settings);
-    $this->fieldStorage->save();
+    $this->saveFieldStorageSettings($storage_settings);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => $this->randomString(1000),
-      'second' => 'abc',
+    $values = [
+      $this->randomString(1000),
+      'abc',
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
     $expected_messages = [
       t('This value should be of the correct primitive type.'),
     ];
-    $this->assertViolations($violations, $expected_messages);
+    $this->assertViolations($values, $expected_messages);
 
     // --
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => $this->randomString(1000),
-      'second' => mt_rand(0, 1000)
+    $values = [
+      $this->randomString(1000),
+      mt_rand(0, 1000)
     ];
-    $violations = $node->{$this->fieldName}->validate();
-    $this->assertViolations($violations, []);
+    $this->assertViolations($values, []);
 
     // -- Float and numeric.
     $storage_settings['storage']['first']['type'] = 'float';
     $storage_settings['storage']['second']['type'] = 'numeric';
-    $this->fieldStorage->setSettings($storage_settings);
-    $this->fieldStorage->save();
+    $this->saveFieldStorageSettings($storage_settings);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => 'abc',
-      'second' => 'abc',
+    $values = [
+      'abc',
+      'abc'
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
     $expected_messages = [
       t('This value should be of the correct primitive type.'),
       t('This value should be of the correct primitive type.'),
     ];
+    $this->assertViolations($values, $expected_messages);
 
-    $this->assertViolations($violations, $expected_messages);
-
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => mt_rand(0, 1000) + mt_rand(),
-      'second' => mt_rand(0, 1000) + mt_rand(),
+    $values = [
+      mt_rand(0, 1000) + mt_rand(),
+      mt_rand(0, 1000) + mt_rand(),
     ];
-    $violations = $node->{$this->fieldName}->validate();
-    $this->assertViolations($violations, []);
+    $this->assertViolations($values, []);
 
   }
 
@@ -210,13 +189,10 @@ class FieldTypeTest extends FieldTestBase {
    */
   function testFieldSettings() {
 
-    $storage_settings = $this->fieldStorage->getSettings();
-
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
     $storage_settings['storage']['second']['type'] = 'varchar';
-    $this->fieldStorage->setSettings($storage_settings);
-    $this->fieldStorage->save();
+    $this->saveFieldStorageSettings($storage_settings);
 
     $settings = $this->field->getSettings();
     $settings['second']['list'] = TRUE;
@@ -225,36 +201,21 @@ class FieldTypeTest extends FieldTestBase {
       'bbb' => 'Bbb',
       'ccc' => 'Ccc',
     ];
-    $this->field->setSettings($settings);
-    $this->field->save();
+    $this->saveFieldSettings($settings);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' =>  NULL,
-      'second' => 'abc',
-    ];
-
-    $violations = $node->{$this->fieldName}->validate();
     $expected_messages = [
       t('This value should not be blank.'),
       t('The value you selected is not a valid choice.'),
     ];
-    $this->assertViolations($violations, $expected_messages);
+    $this->assertViolations([NULL, 'abc'], $expected_messages);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => 0,
-      'second' => array_rand($settings['second']['allowed_values']),
-    ];
-
-    $violations = $node->{$this->fieldName}->validate();
-    $this->assertViolations($violations, []);
+    $values = [0, array_rand($settings['second']['allowed_values'])];
+    $this->assertViolations($values, []);
 
     // -- Integer.
     $storage_settings['storage']['first']['type'] = 'int';
     $storage_settings['storage']['second']['type'] = 'int';
-    $this->fieldStorage->setSettings($storage_settings);
-    $this->fieldStorage->save();
+    $this->saveFieldStorageSettings($storage_settings);
 
     $min_limit = mt_rand(-1000, 1000);
     $max_limit = mt_rand($min_limit, $min_limit + 1000);
@@ -265,37 +226,29 @@ class FieldTypeTest extends FieldTestBase {
     $settings['second']['list'] = FALSE;
     $settings['second']['min'] = $min_limit;
     $settings['second']['max'] = $max_limit;
-    $this->field->setSettings($settings);
-    $this->field->save();
+    $this->saveFieldSettings($settings);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' =>  mt_rand($min_limit - 1000, $min_limit - 1),
-      'second' => mt_rand($max_limit + 1, $max_limit + 1000),
+    $values = [
+      mt_rand($min_limit - 1000, $min_limit - 1),
+      mt_rand($max_limit + 1, $max_limit + 1000),
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
     $expected_messages = [
       t('This value should be @min_limit or more.', ['@min_limit' => $min_limit]),
       t('This value should be @max_limit or less.', ['@max_limit' => $max_limit]),
     ];
-    $this->assertViolations($violations, $expected_messages);
+    $this->assertViolations($values, $expected_messages);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => mt_rand($min_limit, $max_limit),
-      'second' => mt_rand($min_limit, $max_limit),
+    $values = [
+      mt_rand($min_limit, $max_limit),
+      mt_rand($min_limit, $max_limit),
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
-    $this->assertViolations($violations, []);
+    $this->assertViolations($values, []);
 
     // -- Float and numeric.
     // --
     $storage_settings['storage']['first']['type'] = 'float';
     $storage_settings['storage']['second']['type'] = 'numeric';
-    $this->fieldStorage->setSettings($storage_settings);
-    $this->fieldStorage->save();
+    $this->saveFieldStorageSettings($storage_settings);
 
     $min_limit = mt_rand(-1000, 1000);
     $max_limit = mt_rand($min_limit, $min_limit + 1000);
@@ -306,21 +259,17 @@ class FieldTypeTest extends FieldTestBase {
     $settings['second']['list'] = FALSE;
     $settings['second']['min'] = $min_limit;
     $settings['second']['max'] = $max_limit;
-    $this->field->setSettings($settings);
-    $this->field->save();
+    $this->saveFieldSettings($settings);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' =>  mt_rand($min_limit - 1000, $min_limit - 1),
-      'second' => mt_rand($max_limit + 1, $max_limit + 1000),
+    $values = [
+      mt_rand($min_limit - 1000, $min_limit - 1),
+      mt_rand($max_limit + 1, $max_limit + 1000),
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
     $expected_messages = [
       t('This value should be @min_limit or more.', ['@min_limit' => $min_limit]),
       t('This value should be @max_limit or less.', ['@max_limit' => $max_limit]),
     ];
-    $this->assertViolations($violations, $expected_messages);
+    $this->assertViolations($values, $expected_messages);
 
     // --
 /*  @TODO: Fix 'key contains a dot which is not supported' exception.
@@ -375,8 +324,6 @@ class FieldTypeTest extends FieldTestBase {
    */
   function testFieldSettingsForm() {
 
-    $storage_settings = $this->fieldStorage->getSettings();
-
     $storage_types = [
       'boolean',
       'varchar',
@@ -390,8 +337,7 @@ class FieldTypeTest extends FieldTestBase {
 
       $storage_settings['storage']['first']['type'] = $storage_types[$i];
       $storage_settings['storage']['second']['type'] = $storage_types[$i + 1];
-      $this->fieldStorage->setSettings($storage_settings);
-      $this->fieldStorage->save();
+      $this->saveFieldStorageSettings($storage_settings);
       $this->drupalGet($this->fieldAdminPath);
 
       foreach (['first', 'second'] as $subfield) {
@@ -482,6 +428,71 @@ class FieldTypeTest extends FieldTestBase {
   }
 
   /**
+   * Test allowed values validation.
+   */
+  protected function testAllowedValuesValidation() {
+
+    $maxlength = mt_rand(1, 100);
+    $storage_settings['storage']['first']['type'] = 'varchar';
+    $storage_settings['storage']['first']['maxlength'] = $maxlength;
+    $storage_settings['storage']['second']['type'] = 'float';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $edit = [
+      'settings[first][list]' => 1,
+      'settings[first][allowed_values]' => str_repeat('a', $maxlength + 1),
+      'settings[second][list]' => 1,
+      'settings[second][allowed_values]' => implode("\n", [123, 'abc', 789]),
+    ];
+    $this->drupalPostForm($this->fieldAdminPath, $edit, t('Save settings'));
+
+    $this->assertErrorMessage(t('Allowed values list: each key must be a string at most @maxlength characters long.', ['@maxlength' => $maxlength]));
+    $this->assertErrorMessage(t('Allowed values list: each key must be a valid integer or decimal.'));
+
+    $edit = [
+      'settings[first][allowed_values]' => str_repeat('a', $maxlength),
+      'settings[second][allowed_values]' => implode("\n", [123, 456, 789]),
+    ];
+    $this->drupalPostForm($this->fieldAdminPath, $edit, t('Save settings'));
+    $this->assertNoErrorMessages();
+    $this->assertStatusMessage(t('Saved @field_name configuration.', ['@field_name' => $this->fieldName]));
+
+    $storage_settings['storage']['first']['type'] = 'int';
+    $storage_settings['storage']['second']['type'] = 'numeric';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $edit = [
+      'settings[first][allowed_values]' => implode("\n", [123, 'abc', 789]),
+      'settings[second][allowed_values]' => implode("\n", [123, 'abc', 789]),
+    ];
+    $this->drupalPostForm($this->fieldAdminPath, $edit, t('Save settings'));
+    $this->assertErrorMessage(t('Allowed values list: keys must be integers.'));
+    $this->assertErrorMessage(t('Allowed values list: each key must be a valid integer or decimal.'));
+
+    $edit = [
+      'settings[first][allowed_values]' => implode("\n", [123, 456, 789]),
+      'settings[second][allowed_values]' => implode("\n", [123, 456, 789]),
+    ];
+    $this->drupalPostForm($this->fieldAdminPath, $edit, t('Save settings'));
+    $this->assertNoErrorMessages();
+    $this->assertStatusMessage(t('Saved @field_name configuration.', ['@field_name' => $this->fieldName]));
+  }
+
+  /**
+   * Test required options.
+   */
+  protected function testRequiredOptions() {
+    $storage_settings['storage']['first']['type'] = 'int';
+    $storage_settings['storage']['second']['type'] = 'boolean';
+    $this->saveFieldStorageSettings($storage_settings);
+    $this->assertViolations([NULL, 1], [t('This value should not be blank.')]);
+
+    $settings['first']['required'] = FALSE;
+    $this->saveFieldSettings($settings);
+    $this->assertViolations([NULL, 0], []);
+  }
+
+  /**
    * Passes if range fields are found for a given subfield.
    */
   protected function assertRangeFields($subfield) {
@@ -520,12 +531,21 @@ class FieldTypeTest extends FieldTestBase {
   /**
    * Passes if all expected violations were found.
    *
-   * @param ConstraintViolationList $violations
-   *   List of violations to check.
+   * @param array $values
+   *   List of values to check.
    * @param array $expected_messages
    *   Expected violations messages.
    */
-  protected function assertViolations(ConstraintViolationList $violations, array $expected_messages) {
+  protected function assertViolations(array $values, array $expected_messages) {
+
+    $node = Node::create(['type' => $this->contentTypeId]);
+    $node->{$this->fieldName} = [
+      'first' => $values[0],
+      'second' => $values[1],
+    ];
+
+    $violations = $node->{$this->fieldName}->validate();
+
     if (count($violations) == count($expected_messages)) {
       foreach ($violations as $index => $violation) {
         $message = strip_tags($violations[$index]->getMessage());
@@ -533,7 +553,6 @@ class FieldTypeTest extends FieldTestBase {
       }
     }
     elseif (count($violations) > count($expected_messages)) {
-      debug(count($violations) . '!=' . count($expected_messages));
       $this->error('Unexpected violations were found');
     }
     else {
