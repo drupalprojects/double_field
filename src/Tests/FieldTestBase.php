@@ -9,7 +9,8 @@ namespace Drupal\double_field\Tests;
 
 use Drupal\simpletest\WebTestBase;
 use Drupal\Component\Utility\NestedArray;
-
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
 
 /**
  * Tests the creation of text fields.
@@ -30,9 +31,10 @@ abstract class FieldTestBase extends WebTestBase {
    */
   protected $contentTypeId;
 
-
   /**
    * {@inheritdoc}
+   *
+   * This option breaks tests by some reasons.
    */
   protected $strictConfigSchema = FALSE;
 
@@ -44,35 +46,39 @@ abstract class FieldTestBase extends WebTestBase {
   protected $fieldName;
 
   /**
-   * @var
-   */
-  protected $contentTypeAdminPath;
-
-  /**
-   * @var
+   * A path to field settings form.
+   *
+   * @var string
    */
   protected $fieldAdminPath;
 
   /**
-   * @var
+   * A path to field storage settings form.
+   *
+   * @var string
    */
   protected $fieldStorageAdminPath;
 
   /**
-   * @var
+   * A path to node add form.
+   *
+   * @var string
    */
   protected $nodeAddPath;
 
   /**
-   * @var \Drupal\field\Entity\FieldConfig
+   * Field storage instance.
+   *
+   * @var FieldStorageConfig
    */
   protected $fieldStorage;
 
   /**
-   * @var \Drupal\field\Entity\FieldConfig
+   * Field instance.
+   *
+   * @var FieldConfig
    */
   protected $field;
-
 
   /**
    * Modules to enable.
@@ -91,15 +97,21 @@ abstract class FieldTestBase extends WebTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->contentTypeId = $this->drupalCreateContentType(['type' => 'page'])
-      ->id();
+    $this->contentTypeId = $this->drupalCreateContentType(['type' => $this->randomMachineName()])->id();
+    $this->fieldName = strtolower($this->randomMachineName());
+    $this->fieldAdminPath = sprintf(
+      'admin/structure/types/manage/%s/fields/node.%s.%s',
+      $this->contentTypeId, $this->contentTypeId,
+      $this->fieldName
+    );
+    $this->fieldStorageAdminPath = $this->fieldAdminPath . '/storage';
+    $this->nodeAddPath = 'node/add/' . $this->contentTypeId;
 
     $this->adminUser = $this->drupalCreateUser([
       // @TODO: Remove unused permissions.
       'administer content types',
       'administer site configuration',
       'administer node fields',
-      'access content overview',
       'administer nodes',
       'administer node form display',
       'edit any ' . $this->contentTypeId . ' content',
@@ -107,8 +119,7 @@ abstract class FieldTestBase extends WebTestBase {
     ]);
     $this->drupalLogin($this->adminUser);
 
-    $this->fieldName = strtolower($this->randomMachineName());
-
+    // Create a field storage for testing.
     $storage_settings['storage'] = [
       'first' => [
         'type' => 'varchar',
@@ -124,32 +135,36 @@ abstract class FieldTestBase extends WebTestBase {
       ],
     ];
 
-    $this->fieldStorage = entity_create('field_storage_config', [
+    $this->fieldStorage = FieldStorageConfig::create([
       'field_name' => $this->fieldName,
       'entity_type' => 'node',
       'type' => 'double_field',
       'settings' => $storage_settings,
     ]);
     $this->fieldStorage->save();
-    $this->field = entity_create('field_config', [
+
+    // Create a field storage for testing.
+    $this->field = FieldConfig::create([
       'field_storage' => $this->fieldStorage,
       'bundle' => $this->contentTypeId,
       'required' => TRUE,
     ]);
     $this->field->save();
-    $this->contentTypeAdminPath = sprintf('admin/structure/types/manage/%s', $this->contentTypeId);
-    $this->fieldAdminPath = sprintf('%s/fields/node.%s.%s', $this->contentTypeAdminPath, $this->contentTypeId, $this->fieldName);
-    $this->fieldStorageAdminPath = sprintf('%s/storage', $this->fieldAdminPath);
-    $this->nodeAddPath = sprintf('node/add/%s', $this->contentTypeId);
   }
 
   /**
    * Finds Drupal messages on the page.
+   *
+   * @param string $type
+   *   A message type (e.g. status, warning, error).
+   *
+   * @return array
+   *   List of found messages.
    */
   protected function getMessages($type) {
     $messages = [];
 
-    $xpath = '//div[@aria-label="' . ucfirst($type) .' message"]';
+    $xpath = '//div[@aria-label="' . ucfirst($type) . ' message"]';
     // Error messages have one more wrapper.
     if ($type == 'error') {
       $xpath .= '/div[@role="alert"]';
@@ -211,7 +226,6 @@ abstract class FieldTestBase extends WebTestBase {
       $expression = isset($attributes[$expected_attribute]) && $attributes[$expected_attribute] == $value;
       $this->assertTrue($expression, sprintf('Valid attribute "%s" was found', $expected_attribute));
     }
-
   }
 
   /**
@@ -226,17 +240,24 @@ abstract class FieldTestBase extends WebTestBase {
   }
 
   /**
-   * @param array $settings
+   * Saves field settings.
    */
   protected function saveFieldSettings(array $settings) {
+    $persisted_settings = $this->field->getSettings();
+    // Override allowed values instead of merging.
+    foreach (['first', 'second'] as $subfield) {
+      if (isset($persisted_settings[$subfield]['allowed_values'], $settings[$subfield]['allowed_values'])) {
+        unset($persisted_settings[$subfield]['allowed_values']);
+      }
+    }
     $this->field->setSettings(
-      NestedArray::mergeDeep($this->field->getSettings(), $settings)
+      NestedArray::mergeDeep($persisted_settings, $settings)
     );
     $this->field->save();
   }
 
   /**
-   * @param array $settings
+   * Saves storage settings.
    */
   protected function saveFieldStorageSettings(array $settings) {
     $this->fieldStorage->setSettings(

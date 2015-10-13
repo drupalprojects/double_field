@@ -48,7 +48,6 @@ class DoubleField extends FieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
 
-    $element = [];
     $settings = $this->getSettings();
 
     foreach (['first', 'second'] as $subfield) {
@@ -62,18 +61,18 @@ class DoubleField extends FieldItemBase {
         '#type' => 'select',
         '#title' => t('Field type'),
         '#default_value' => $settings['storage'][$subfield]['type'],
+        '#disabled' => $has_data,
         '#required' => TRUE,
         '#options' => $this->subfieldTypes(),
-        '#disabled' => $has_data,
       ];
 
       $element['storage'][$subfield]['maxlength'] = [
         '#type' => 'number',
         '#title' => t('Maximum length'),
-        '#default_value' => $settings['storage'][$subfield]['maxlength'],
-        '#required' => TRUE,
         '#description' => t('The maximum length of the subfield in characters.'),
+        '#default_value' => $settings['storage'][$subfield]['maxlength'],
         '#disabled' => $has_data,
+        '#required' => TRUE,
         '#min' => 1,
         '#states' => [
           'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'varchar']],
@@ -83,12 +82,12 @@ class DoubleField extends FieldItemBase {
       $element['storage'][$subfield]['precision'] = [
         '#type' => 'number',
         '#title' => t('Precision'),
+        '#description' => t('The total number of digits to store in the database, including those to the right of the decimal.'),
+        '#default_value' => $settings['storage'][$subfield]['precision'],
+        '#disabled' => $has_data,
+        '#required' => TRUE,
         '#min' => 10,
         '#max' => 32,
-        '#default_value' => $settings['storage'][$subfield]['precision'],
-        '#required' => TRUE,
-        '#description' => t('The total number of digits to store in the database, including those to the right of the decimal.'),
-        '#disabled' => $has_data,
         '#states' => [
           'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']],
         ],
@@ -97,12 +96,12 @@ class DoubleField extends FieldItemBase {
       $element['storage'][$subfield]['scale'] = [
         '#type' => 'number',
         '#title' => t('Scale'),
+        '#description' => t('The number of digits to the right of the decimal.'),
+        '#default_value' => $settings['storage'][$subfield]['scale'],
+        '#disabled' => $has_data,
+        '#required' => TRUE,
         '#min' => 0,
         '#max' => 10,
-        '#default_value' => $settings['storage'][$subfield]['scale'],
-        '#required' => TRUE,
-        '#description' => t('The number of digits to the right of the decimal.'),
-        '#disabled' => $has_data,
         '#states' => [
           'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']],
         ],
@@ -118,9 +117,7 @@ class DoubleField extends FieldItemBase {
    */
   public static function defaultFieldSettings() {
 
-    $settings = [];
     foreach (['first', 'second'] as $subfield) {
-
       $settings[$subfield] = [
         'min' => '',
         'max' => '',
@@ -147,6 +144,8 @@ class DoubleField extends FieldItemBase {
 
       $type = $settings['storage'][$subfield]['type'];
 
+      $is_numeric = in_array($type, ['int', 'float', 'numeric']);
+
       $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
       $title .= ' - ' . $types[$type];
 
@@ -170,64 +169,62 @@ class DoubleField extends FieldItemBase {
           '#default_value' => $settings[$subfield]['list'],
         ];
 
+        $description[] = t('The possible values this field can contain. Enter one value per line, in the format key|label.');
+        $description[] = t('The label will be used in displayed values and edit forms.');
+        $description[] = t('The label is optional: if a line contains a single item, it will be used as key and label.');
+
         $element[$subfield]['allowed_values'] = [
           '#type' => 'textarea',
           '#title' => t('Allowed values list'),
+          '#description' => implode('<br/>', $description),
           '#default_value' => $this->allowedValuesString($settings[$subfield]['allowed_values']),
           '#rows' => 10,
           '#element_validate' => [[get_class($this), 'validateAllowedValues']],
+          // @see: DoubleField::validateAllowedValues()
           '#storage_type' => $type,
           '#storage_maxlength' => $settings['storage'][$subfield]['maxlength'],
           '#field_name' => $this->getFieldDefinition()->getName(),
           '#entity_type' => $this->getEntity()->getEntityTypeId(),
           '#allowed_values' => $settings[$subfield]['allowed_values'],
           '#states' => [
-            'invisible' => [
-              ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
-            ],
+            'invisible' => [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
           ],
-          '#description' => $this->allowedValuesDescription(),
         ];
       }
 
-      $element[$subfield]['min'] = [
-        '#type' => 'number',
-        '#title' => t('Minimum'),
-        '#default_value' => $settings[$subfield]['min'],
-        '#description' => t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
-        '#access' => in_array($type, ['int', 'float', 'numeric']),
-        '#states' => [
-          'visible' => [
-            ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
+      if (in_array($type, ['int', 'float', 'numeric'])) {
+        $element[$subfield]['min'] = [
+          '#type' => 'number',
+          '#title' => t('Minimum'),
+          '#description' => t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
+          '#default_value' => isset($settings[$subfield]['min']) ? $settings[$subfield]['min'] : NULL,
+          '#states' => [
+            'visible' => [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
           ],
-        ],
-      ];
-
-      $element[$subfield]['max'] = [
-        '#type' => 'number',
-        '#title' => t('Maximum'),
-        '#default_value' => $settings[$subfield]['max'],
-        '#description' => t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
-        '#access' => in_array($type, ['int', 'float', 'numeric']),
-        '#states' => [
-          'visible' => [
-            ":input[name='settings[$subfield][list]']" => ['checked' => FALSE],
+        ];
+        $element[$subfield]['max'] = [
+          '#type' => 'number',
+          '#title' => t('Maximum'),
+          '#description' => t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
+          '#default_value' => isset($settings[$subfield]['max']) ? $settings[$subfield]['max'] : NULL,
+          '#states' => [
+            'visible' => [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
           ],
-        ],
-      ];
+        ];
+      }
 
-      $element[$subfield]['on_label'] = [
-        '#type' => 'textfield',
-        '#title' => t('"On" label'),
-        '#default_value' => $settings[$subfield]['on_label'],
-        '#access' => $type == 'boolean',
-      ];
-      $element[$subfield]['off_label'] = [
-        '#type' => 'textfield',
-        '#title' => t('"Off" label'),
-        '#default_value' => $settings[$subfield]['off_label'],
-        '#access' => $type == 'boolean',
-      ];
+      if ($type == 'boolean') {
+        $element[$subfield]['on_label'] = [
+          '#type' => 'textfield',
+          '#title' => t('"On" label'),
+          '#default_value' => $settings[$subfield]['on_label'],
+        ];
+        $element[$subfield]['off_label'] = [
+          '#type' => 'textfield',
+          '#title' => t('"Off" label'),
+          '#default_value' => $settings[$subfield]['off_label'],
+        ];
+      }
 
     }
 
@@ -264,7 +261,8 @@ class DoubleField extends FieldItemBase {
         $subconstrains[$subfield]['Length']['max'] = $settings['storage'][$subfield]['maxlength'];
       }
 
-      if (in_array($subfield_type, ['int', 'float', 'numeric'])) {
+      // Allowed values take precedence over the range constraints.
+      if (!$settings[$subfield]['list'] && in_array($subfield_type, ['int', 'float', 'numeric'])) {
         if (is_numeric($settings[$subfield]['min'])) {
           $subconstrains[$subfield]['Range']['min'] = $settings[$subfield]['min'];
         }
@@ -349,27 +347,17 @@ class DoubleField extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  protected function allowedValuesDescription() {
-    $description[] = t('The possible values this field can contain. Enter one value per line, in the format key|label.');
-    $description[] = t('The key is the stored value, and must be numeric. The label will be used in displayed values and edit forms.');
-    $description[] = t('The label is optional: if a line contains a single number, it will be used as key and label.');
-    $description[] = t('Lists of labels are also accepted (one label per line), only if the field does not hold any values yet. Numeric keys will be automatically generated from the positions in the list.');
-    return implode('<br/>', $description);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function isEmpty() {
-    $is_empty = TRUE;
     foreach (['first', 'second'] as $subfield) {
-      $is_empty = $is_empty && ($this->{$subfield} === NULL || $this->{$subfield} === '');
+      if ($this->{$subfield} !== NULL && $this->{$subfield} !== '') {
+        return FALSE;
+      }
     }
-    return $is_empty;
+    return TRUE;
   }
 
   /**
-   * Element validate callback for options field allowed values.
+   * Element validate callback for subfield allowed values.
    *
    * @param array $element
    *   An associative array containing the properties and children of the
@@ -382,7 +370,7 @@ class DoubleField extends FieldItemBase {
   public static function validateAllowedValues(array $element, FormStateInterface $form_state) {
     $values = static::extractAllowedValues($element['#value']);
 
-    // Check that keys are valid for the field type.
+    // Check if keys are valid for the field type.
     foreach ($values as $key => $value) {
       switch ($element['#storage_type']) {
 
@@ -476,7 +464,7 @@ class DoubleField extends FieldItemBase {
   }
 
   /**
-   * Returns available subfield types.
+   * Returns available subfield storage types.
    */
   public static function subfieldTypes() {
     $type_options = [
@@ -500,12 +488,41 @@ class DoubleField extends FieldItemBase {
       'text' => ['string', t('String')],
       'int' => ['integer', t('Integer')],
       'float' => ['float', t('FLoat')],
-      // What is proper primitive type
-      // for decimal subfields?
       'numeric' => ['float', t('FLoat')],
     ];
     return $type_options;
   }
 
-}
+  /**
+   * {@inheritdoc}
+   */
+  public static function fieldSettingsToConfigData(array $settings) {
+    foreach (['first', 'second'] as $subfield) {
+      $structured_values = array();
+      foreach ($settings[$subfield]['allowed_values'] as $value => $label) {
+        $structured_values[] = array(
+          'value' => $value,
+          'label' => $label,
+        );
+      }
+      $settings[$subfield]['allowed_values'] = $structured_values;
+    }
+    return $settings;
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function fieldSettingsFromConfigData(array $settings) {
+    foreach (['first', 'second'] as $subfield) {
+      $structured_values = array();
+      foreach ($settings[$subfield]['allowed_values'] as $item) {
+        $structured_values[$item['value']] = $item['label'];
+      }
+      $settings[$subfield]['allowed_values'] = $structured_values;
+
+    }
+    return $settings;
+  }
+
+}

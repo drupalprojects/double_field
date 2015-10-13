@@ -17,9 +17,94 @@ use Drupal\node\Entity\Node;
 class FieldTypeTest extends FieldTestBase {
 
   /**
+   * Passes if range fields are found for a given subfield.
+   */
+  protected function assertRangeFields($subfield) {
+    $states['visible'][":input[name='settings[$subfield][list]']"]['checked'] = FALSE;
+
+    $min_field = $this->xpath("//input[@name='settings[$subfield][min]']")[0];
+    $expected_attributes = [
+      'type' => 'number',
+      'data-drupal-states' => json_encode($states, JSON_HEX_APOS),
+    ];
+    $this->assertAttributes($min_field->attributes(), $expected_attributes);
+
+    $max_field = $this->xpath("//input[@name='settings[$subfield][max]']")[0];
+    $expected_attributes = [
+      'type' => 'number',
+      'data-drupal-states' => json_encode($states, JSON_HEX_APOS),
+    ];
+    $this->assertAttributes($max_field->attributes(), $expected_attributes);
+  }
+
+  /**
+   * Passes if allowed values textarea is found for a given subfield.
+   */
+  protected function assertAllowedValues($subfield) {
+    $list_field = $this->xpath("//input[@name='settings[$subfield][list]']")[0];
+    // List checkbox should be unchecked by default.
+    $this->assertTrue($list_field->attributes()['checked'] == NULL, 'List checkbox is not checked.');
+    $allowed_values_field = $this->xpath("//textarea[@name='settings[$subfield][allowed_values]']")[0];
+    $states['invisible'] = [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]];
+    $expected_attributes = [
+      'rows' => 10,
+      'data-drupal-states' => json_encode($states, JSON_HEX_APOS),
+    ];
+    $this->assertAttributes($allowed_values_field->attributes(), $expected_attributes);
+  }
+
+  /**
+   * Passes if all expected violations were found.
+   *
+   * @param array $values
+   *   List of values to validate.
+   * @param array $expected_messages
+   *   Expected violation messages.
+   */
+  protected function assertViolations(array $values, array $expected_messages) {
+
+    $node = Node::create(['type' => $this->contentTypeId]);
+    $node->{$this->fieldName} = [
+      'first' => $values[0],
+      'second' => $values[1],
+    ];
+
+    $violations = $node->{$this->fieldName}->validate();
+
+    foreach ($violations as $index => $violation) {
+      $message = strip_tags($violations[$index]->getMessage());
+
+      $key = array_search($message, $expected_messages);
+      if ($key !== FALSE) {
+        $this->pass('Violation was found: ' . $expected_messages[$key]);
+        unset($expected_messages[$key]);
+      }
+      else {
+        $this->error('Unexpected violation was found: ' . $message);
+      }
+
+    }
+
+    foreach ($expected_messages as $message) {
+      $this->error('Expected violation was not found: ' . $message);
+    }
+
+  }
+
+  /**
+   * Passes if no violations were found.
+   *
+   * @param array $values
+   *   List of values to validate.
+   */
+  protected function assertNoViolations(array $values) {
+    $this->assertViolations($values, []);
+  }
+
+  /**
    * Test field storage settings.
    */
-  function testFieldStorageSettings() {
+  public function testFieldStorageSettings() {
 
     $maxlength = mt_rand(1, 50);
 
@@ -30,7 +115,8 @@ class FieldTypeTest extends FieldTestBase {
     $this->saveFieldStorageSettings($storage_settings);
 
     $values = [
-      123,
+      // The valid boolean value is 0 or 1.
+      mt_rand(2, 100),
       $this->randomString($maxlength + 1)
     ];
     $expected_messages = [
@@ -44,7 +130,7 @@ class FieldTypeTest extends FieldTestBase {
       mt_rand(0, 1),
       $this->randomString($maxlength)
     ];
-    $this->assertViolations($values, []);
+    $this->assertNoViolations($values);
 
     // -- Text (long) and integer.
     $storage_settings['storage']['first']['type'] = 'text';
@@ -52,8 +138,10 @@ class FieldTypeTest extends FieldTestBase {
     $this->saveFieldStorageSettings($storage_settings);
 
     $values = [
+      // Text storage has no restrictions.
       $this->randomString(1000),
-      'abc',
+      // Float value should not be accepted.
+      123.456,
     ];
     $expected_messages = [
       t('This value should be of the correct primitive type.'),
@@ -65,14 +153,17 @@ class FieldTypeTest extends FieldTestBase {
       $this->randomString(1000),
       mt_rand(0, 1000)
     ];
-    $this->assertViolations($values, []);
+    $this->assertNoViolations($values);
 
     // -- Float and numeric.
     $storage_settings['storage']['first']['type'] = 'float';
     $storage_settings['storage']['second']['type'] = 'numeric';
     $this->saveFieldStorageSettings($storage_settings);
 
+    // --
     $values = [
+      // We cannot use random strings here because they may consist
+      // only of digits.
       'abc',
       'abc'
     ];
@@ -86,14 +177,14 @@ class FieldTypeTest extends FieldTestBase {
       mt_rand(0, 1000) + mt_rand(),
       mt_rand(0, 1000) + mt_rand(),
     ];
-    $this->assertViolations($values, []);
+    $this->assertNoViolations($values);
 
   }
 
   /**
    * Test field storage settings.
    */
-  function testFieldStorageSettingsForm() {
+  public function testFieldStorageSettingsForm() {
     $this->drupalGet($this->fieldStorageAdminPath);
 
     $expected_options = [
@@ -132,25 +223,26 @@ class FieldTypeTest extends FieldTestBase {
     ];
 
     foreach (['first', 'second'] as $subfield) {
-      $select = $this->xpath('//select[@name="settings[storage][' . $subfield . '][type]"]')[0];
+      $select = $this->xpath("//select[@name='settings[storage][$subfield][type]']")[0];
       $options = $this->getAllOptions($select);
       foreach ($options as $index => $option) {
         $this->assertTrue($expected_options[$index] == $option->attributes()['value'], 'Option found');
       }
+      $this->assertTrue(count($expected_options) == count($options), 'Unexpected options were not found');
 
       $maxlength_states['visible'] = [":input[name='settings[storage][$subfield][type]']" => ['value' => 'varchar']];
       $expected_maxlength_attributes['data-drupal-states'] = json_encode($maxlength_states, JSON_HEX_APOS);
-      $maxlength_field = $this->xpath(sprintf('//input[@name="settings[storage][%s][maxlength]"]', $subfield))[0];
+      $maxlength_field = $this->xpath("//input[@name='settings[storage][$subfield][maxlength]']")[0];
       $this->assertAttributes($maxlength_field->attributes(), $expected_maxlength_attributes);
 
       $precision_states['visible'] = [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']];
       $expected_precision_attributes['data-drupal-states'] = json_encode($precision_states, JSON_HEX_APOS);
-      $precision_field = $this->xpath(sprintf('//input[@name="settings[storage][%s][precision]"]', $subfield))[0];
+      $precision_field = $this->xpath("//input[@name='settings[storage][$subfield][precision]']")[0];
       $this->assertAttributes($precision_field->attributes(), $expected_precision_attributes);
 
       $scale_states['visible'] = [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']];
       $expected_scale_attributes['data-drupal-states'] = json_encode($precision_states, JSON_HEX_APOS);
-      $scale_field = $this->xpath(sprintf('//input[@name="settings[storage][%s][scale]"]', $subfield))[0];
+      $scale_field = $this->xpath("//input[@name='settings[storage][$subfield][scale]']")[0];
       $this->assertAttributes($scale_field->attributes(), $expected_scale_attributes);
     }
 
@@ -162,39 +254,38 @@ class FieldTypeTest extends FieldTestBase {
       'settings[storage][second][precision]' => 30,
       'settings[storage][second][scale]' => 5,
     ];
-    $this->drupalPostForm(NULL, $edit, t('Save field settings'));
+    $this->drupalPostForm($this->fieldStorageAdminPath, $edit, t('Save field settings'));
 
-    $this->assertStatusMessage(sprintf('Updated field %s field settings.', $this->fieldName));
+    $this->assertStatusMessage(t('Updated field @field_name field settings.', ['@field_name' => $this->fieldName]));
 
     $this->drupalGet($this->fieldStorageAdminPath);
 
     $first_select = $this->xpath('//select[@name="settings[storage][first][type]"]')[0];
     $this->assertTrue($this->getSelectedItem($first_select)[0] == 'varchar', 'First selected type is varchar');
 
-    $first_maxlength =$this->xpath('//input[@name="settings[storage][first][maxlength]"]')[0];
+    $first_maxlength = $this->xpath('//input[@name="settings[storage][first][maxlength]"]')[0];
     $this->assertTrue($first_maxlength->attributes()['value'] == 15, 'First maxlength value is valid.');
 
     $second_select = $this->xpath('//select[@name="settings[storage][second][type]"]')[0];
     $this->assertTrue($this->getSelectedItem($second_select)[0] == 'numeric', 'Second selected type is numeric');
 
-    $second_precision =$this->xpath('//input[@name="settings[storage][second][precision]"]')[0];
+    $second_precision = $this->xpath('//input[@name="settings[storage][second][precision]"]')[0];
     $this->assertTrue($second_precision->attributes()['value'] == 30, 'Second precision value is valid.');
 
-    $second_scale =$this->xpath('//input[@name="settings[storage][second][scale]"]')[0];
+    $second_scale = $this->xpath('//input[@name="settings[storage][second][scale]"]')[0];
     $this->assertTrue($second_scale->attributes()['value'] == 5, 'Second scale value is valid.');
   }
 
   /**
    * Test field settings.
    */
-  function testFieldSettings() {
+  public function testFieldSettings() {
 
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
     $storage_settings['storage']['second']['type'] = 'varchar';
     $this->saveFieldStorageSettings($storage_settings);
 
-    $settings = $this->field->getSettings();
     $settings['second']['list'] = TRUE;
     $settings['second']['allowed_values'] = [
       'aaa' => 'Aaa',
@@ -204,13 +295,16 @@ class FieldTypeTest extends FieldTestBase {
     $this->saveFieldSettings($settings);
 
     $expected_messages = [
-      t('This value should not be blank.'),
       t('The value you selected is not a valid choice.'),
     ];
-    $this->assertViolations([NULL, 'abc'], $expected_messages);
+    $this->assertViolations([1, 'abc'], $expected_messages);
 
-    $values = [0, array_rand($settings['second']['allowed_values'])];
-    $this->assertViolations($values, []);
+    $values = [
+      // Boolean has no field level settings that may cause violations.
+      0,
+      array_rand($settings['second']['allowed_values'])
+    ];
+    $this->assertNoViolations($values);
 
     // -- Integer.
     $storage_settings['storage']['first']['type'] = 'int';
@@ -219,7 +313,6 @@ class FieldTypeTest extends FieldTestBase {
 
     $min_limit = mt_rand(-1000, 1000);
     $max_limit = mt_rand($min_limit, $min_limit + 1000);
-    $settings = $this->field->getSettings();
     $settings['first']['list'] = FALSE;
     $settings['first']['min'] = $min_limit;
     $settings['first']['max'] = $max_limit;
@@ -229,8 +322,8 @@ class FieldTypeTest extends FieldTestBase {
     $this->saveFieldSettings($settings);
 
     $values = [
-      mt_rand($min_limit - 1000, $min_limit - 1),
-      mt_rand($max_limit + 1, $max_limit + 1000),
+      $min_limit - mt_rand(0, 100),
+      $max_limit + mt_rand(0, 100),
     ];
     $expected_messages = [
       t('This value should be @min_limit or more.', ['@min_limit' => $min_limit]),
@@ -242,10 +335,9 @@ class FieldTypeTest extends FieldTestBase {
       mt_rand($min_limit, $max_limit),
       mt_rand($min_limit, $max_limit),
     ];
-    $this->assertViolations($values, []);
+    $this->assertNoViolations($values);
 
     // -- Float and numeric.
-    // --
     $storage_settings['storage']['first']['type'] = 'float';
     $storage_settings['storage']['second']['type'] = 'numeric';
     $this->saveFieldStorageSettings($storage_settings);
@@ -262,8 +354,8 @@ class FieldTypeTest extends FieldTestBase {
     $this->saveFieldSettings($settings);
 
     $values = [
-      mt_rand($min_limit - 1000, $min_limit - 1),
-      mt_rand($max_limit + 1, $max_limit + 1000),
+      $min_limit - mt_rand(0, 100),
+      $max_limit + mt_rand(0, 100),
     ];
     $expected_messages = [
       t('This value should be @min_limit or more.', ['@min_limit' => $min_limit]),
@@ -272,57 +364,37 @@ class FieldTypeTest extends FieldTestBase {
     $this->assertViolations($values, $expected_messages);
 
     // --
-/*  @TODO: Fix 'key contains a dot which is not supported' exception.
     $settings['first']['list'] = TRUE;
     $settings['first']['allowed_values'] = [
       '-12.379' => 'Aaa',
-      '04565' => 'Bbb',
+      '4565' => 'Bbb',
       '93577285' => 'Ccc',
     ];
     $settings['second']['list'] = TRUE;
     $settings['second']['allowed_values'] = [
       '-245' => 'Aaa',
-      '1987' => 'Bbb',
+      'sssssss' => 'Bbb',
       '7738854' => 'Ccc',
     ];
-    $this->field->setSettings($settings);
-    $this->field->save();
+    $settings['second']['max'] = $max_limit;
+    $this->saveFieldSettings($settings);
 
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => 123.356,
-      'second' => 300.12,
+    $values = [
+      123.356,
+      300.12,
     ];
-
-    $violations = $node->{$this->fieldName}->validate();
     $expected_messages = [
       t('The value you selected is not a valid choice.'),
       t('The value you selected is not a valid choice.'),
     ];
-    $this->assertViolations($violations, $expected_messages);
-
-    // --
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => 111,
-      'second' => 222,
-    ];
-
-    $violations = $node->{$this->fieldName}->validate();
-    $this->assertViolations($violations, []);
-
-    foreach ($violations as $index => $violation) {
-      $message = strip_tags($violations[$index]->getMessage());
-      debug($message);
-    }
- */
-
+    $this->assertViolations($values, $expected_messages);
+    $this->assertNoViolations([4565, 7738854]);
   }
 
   /**
    * Test field settings form.
    */
-  function testFieldSettingsForm() {
+  public function testFieldSettingsForm() {
 
     $storage_types = [
       'boolean',
@@ -351,7 +423,7 @@ class FieldTypeTest extends FieldTestBase {
         switch ($storage_settings['storage'][$subfield]['type']) {
 
           case 'boolean':
-            $this->assertTrue($summary_type  == 'Boolean', 'Summary type is correct');
+            $this->assertTrue($summary_type == 'Boolean', 'Summary type is correct');
 
             $on_label_field = $this->xpath("//input[@name='settings[$subfield][on_label]']")[0];
             $expected_attributes = [
@@ -374,24 +446,24 @@ class FieldTypeTest extends FieldTestBase {
             break;
 
           case 'text':
-            $this->assertTrue($summary_type  == 'Text (long)', 'Summary type is correct');
+            $this->assertTrue($summary_type == 'Text (long)', 'Summary type is correct');
             $this->assertNoFieldByXPath("//textarea[@name='settings[$subfield][allowed_values]']", NULL, 'Allowed values field is absent');
             break;
 
           case 'int':
-            $this->assertTrue($summary_type  == 'Integer', 'Summary type is correct');
+            $this->assertTrue($summary_type == 'Integer', 'Summary type is correct');
             $this->assertAllowedValues($subfield);
             $this->assertRangeFields($subfield);
             break;
 
           case 'float':
-            $this->assertTrue($summary_type  == 'Float', 'Summary type is correct');
+            $this->assertTrue($summary_type == 'Float', 'Summary type is correct');
             $this->assertRangeFields($subfield);
             $this->assertAllowedValues($subfield);
             break;
 
           case 'numeric':
-            $this->assertTrue($summary_type  == 'Decimal', 'Summary type is correct');
+            $this->assertTrue($summary_type == 'Decimal', 'Summary type is correct');
             $this->assertRangeFields($subfield);
             $this->assertAllowedValues($subfield);
             break;
@@ -414,24 +486,25 @@ class FieldTypeTest extends FieldTestBase {
     $this->drupalGet($this->fieldAdminPath);
 
     $first_list_field = $this->xpath('//input[@name="settings[first][list]"]')[0];
-    $this->assertTrue($first_list_field->attributes()['checked'] == 'checked', 'First list field is checked');
+    $this->assertTrue($first_list_field->attributes()['checked'] == 'checked', 'First list field is checked.');
 
     $first_allowed_values_field = $this->xpath('//textarea[@name="settings[first][allowed_values]"]')[0];
-    $this->assertTrue($first_allowed_values_field == '123|Aaa', 'Found valid allowed values ');
+    $this->assertTrue($first_allowed_values_field == '123|Aaa', 'Valid allowed values were found.');
 
     $first_min_field = $this->xpath('//input[@name="settings[second][min]"]')[0];
-    $this->assertTrue($first_min_field->attributes()['value'] == 10, 'Min value is correct');
+    $this->assertTrue($first_min_field->attributes()['value'] == 10, 'Min value is correct.');
 
     $first_max_field = $this->xpath('//input[@name="settings[second][max]"]')[0];
-    $this->assertTrue($first_max_field->attributes()['value'] == 20, 'Max value is correct');
+    $this->assertTrue($first_max_field->attributes()['value'] == 20, 'Max value is correct.');
 
   }
 
   /**
    * Test allowed values validation.
    */
-  protected function testAllowedValuesValidation() {
+  public function testAllowedValuesValidation() {
 
+    // --
     $maxlength = mt_rand(1, 100);
     $storage_settings['storage']['first']['type'] = 'varchar';
     $storage_settings['storage']['first']['maxlength'] = $maxlength;
@@ -440,6 +513,7 @@ class FieldTypeTest extends FieldTestBase {
 
     $edit = [
       'settings[first][list]' => 1,
+      // Random sting may content '|' character.
       'settings[first][allowed_values]' => str_repeat('a', $maxlength + 1),
       'settings[second][list]' => 1,
       'settings[second][allowed_values]' => implode("\n", [123, 'abc', 789]),
@@ -457,6 +531,7 @@ class FieldTypeTest extends FieldTestBase {
     $this->assertNoErrorMessages();
     $this->assertStatusMessage(t('Saved @field_name configuration.', ['@field_name' => $this->fieldName]));
 
+    // --
     $storage_settings['storage']['first']['type'] = 'int';
     $storage_settings['storage']['second']['type'] = 'numeric';
     $this->saveFieldStorageSettings($storage_settings);
@@ -481,7 +556,7 @@ class FieldTypeTest extends FieldTestBase {
   /**
    * Test required options.
    */
-  protected function testRequiredOptions() {
+  public function testRequiredOptions() {
     $storage_settings['storage']['first']['type'] = 'int';
     $storage_settings['storage']['second']['type'] = 'boolean';
     $this->saveFieldStorageSettings($storage_settings);
@@ -489,75 +564,8 @@ class FieldTypeTest extends FieldTestBase {
 
     $settings['first']['required'] = FALSE;
     $this->saveFieldSettings($settings);
-    $this->assertViolations([NULL, 0], []);
-  }
-
-  /**
-   * Passes if range fields are found for a given subfield.
-   */
-  protected function assertRangeFields($subfield) {
-    $states['visible'][":input[name='settings[$subfield][list]']"]['checked'] = FALSE;
-
-    $min_field = $this->xpath("//input[@name='settings[$subfield][min]']")[0];
-    $expected_attributes = [
-      'type' => 'number',
-      'data-drupal-states' => json_encode($states, JSON_HEX_APOS),
-    ];
-    $this->assertAttributes($min_field->attributes(), $expected_attributes);
-
-    $max_field = $this->xpath("//input[@name='settings[$subfield][max]']")[0];
-    $expected_attributes = [
-      'type' => 'number',
-      'data-drupal-states' => json_encode($states, JSON_HEX_APOS),
-    ];
-    $this->assertAttributes($max_field->attributes(), $expected_attributes);
-  }
-
-  /**
-   * Passes if allowed values textarea is found for a given subfield.
-   */
-  protected function assertAllowedValues($subfield) {
-    $list_field = $this->xpath("//input[@name='settings[$subfield][list]']")[0];
-    $this->assertTrue($list_field->attributes()['checked'] == NULL, 'List checkbox is checked');
-    $allowed_values_field = $this->xpath("//textarea[@name='settings[$subfield][allowed_values]']")[0];
-    $states['invisible'] = [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]];
-    $expected_attributes = [
-      'rows' => 10,
-      'data-drupal-states' => json_encode($states, JSON_HEX_APOS),
-    ];
-    $this->assertAttributes($allowed_values_field->attributes(), $expected_attributes);
-  }
-
-  /**
-   * Passes if all expected violations were found.
-   *
-   * @param array $values
-   *   List of values to check.
-   * @param array $expected_messages
-   *   Expected violations messages.
-   */
-  protected function assertViolations(array $values, array $expected_messages) {
-
-    $node = Node::create(['type' => $this->contentTypeId]);
-    $node->{$this->fieldName} = [
-      'first' => $values[0],
-      'second' => $values[1],
-    ];
-
-    $violations = $node->{$this->fieldName}->validate();
-
-    if (count($violations) == count($expected_messages)) {
-      foreach ($violations as $index => $violation) {
-        $message = strip_tags($violations[$index]->getMessage());
-        $this->assertTrue($message == $expected_messages[$index], 'Violation found: ' . $expected_messages[$index]);
-      }
-    }
-    elseif (count($violations) > count($expected_messages)) {
-      $this->error('Unexpected violations were found');
-    }
-    else {
-      $this->error('Not all violations were found');
-    }
+    // Zero should not be treated as empty value.
+    $this->assertNoViolations([NULL, 0]);
   }
 
 }
