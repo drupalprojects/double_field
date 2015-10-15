@@ -31,7 +31,7 @@ class DoubleField extends WidgetBase {
   public static function defaultSettings() {
 
     foreach (['first', 'second'] as $subfield) {
-
+      // @TODO: Covert this to one-level array.
       $settings[$subfield] = [
         'type' => 'textfield',
         'prefix' => '',
@@ -43,13 +43,9 @@ class DoubleField extends WidgetBase {
         'checkbox' => [
           'label' => t('Ok'),
         ],
-        'select' => [
-          'allowed_values' => [],
-        ],
         'textarea' => [
           'cols' => 10,
           'rows' => 5,
-          'resizable' => TRUE,
           'placeholder' => '',
         ],
       ];

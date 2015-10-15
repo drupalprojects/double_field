@@ -11,6 +11,7 @@ use Drupal\simpletest\WebTestBase;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\double_field\Plugin\Field\FieldWidget\DoubleField;
 
 /**
  * Tests the creation of text fields.
@@ -150,6 +151,8 @@ abstract class FieldTestBase extends WebTestBase {
       'required' => TRUE,
     ]);
     $this->field->save();
+
+    $this->saveFormatterSettings(['style' => 'block']);
   }
 
   /**
@@ -264,6 +267,49 @@ abstract class FieldTestBase extends WebTestBase {
       NestedArray::mergeDeep($this->fieldStorage->getSettings(), $settings)
     );
     $this->fieldStorage->save();
+  }
+
+  /**
+   * Saves widget settings.
+   */
+  protected function saveWidgetSettings(array $settings) {
+
+    /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay $form_display */
+    $form_display = \Drupal::entityManager()
+      ->getStorage('entity_form_display')
+      ->load('node.' . $this->contentTypeId . '.default');
+
+    $options = [
+      'type' => 'double_field',
+      'weight' => 100,
+      'settings' => NestedArray::mergeDeep(DoubleField::defaultSettings(), $settings),
+      'third_party_settings' => [],
+    ];
+
+    $form_display->setComponent($this->fieldName, $options);
+    $form_display->save();
+
+  }
+
+  /**
+   * Saves formatter settings.
+   */
+  protected function saveFormatterSettings(array $settings) {
+    /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $view_display */
+    $view_display = \Drupal::entityManager()
+      ->getStorage('entity_view_display')
+      ->load("node.{$this->contentTypeId}.default");
+
+    $options = [
+      'label' => 'hidden',
+      'type' => 'unformatted_list',
+      'weight' => 100,
+      'settings' => $settings,
+      'third_party_settings' => [],
+    ];
+
+    $view_display->setComponent($this->fieldName, $options);
+    $view_display->save();
   }
 
 }
