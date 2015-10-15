@@ -144,8 +144,6 @@ class DoubleField extends FieldItemBase {
 
       $type = $settings['storage'][$subfield]['type'];
 
-      $is_numeric = in_array($type, ['int', 'float', 'numeric']);
-
       $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
       $title .= ' - ' . $types[$type];
 
@@ -189,6 +187,16 @@ class DoubleField extends FieldItemBase {
           '#states' => [
             'invisible' => [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
           ],
+        ];
+      }
+      else {
+        $element[$subfield]['list'] = [
+          '#type' => 'value',
+          '#default_value' => FALSE,
+        ];
+        $element[$subfield]['allowed_values'] = [
+          '#type' => 'value',
+          '#default_value' => [],
         ];
       }
 
