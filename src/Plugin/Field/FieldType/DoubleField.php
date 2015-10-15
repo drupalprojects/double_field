@@ -220,6 +220,13 @@ class DoubleField extends FieldItemBase {
           ],
         ];
       }
+      else {
+        $element[$subfield]['min'] =
+        $element[$subfield]['max'] = [
+          '#type' => 'value',
+          '#default_value' => ''
+        ];
+      }
 
       if ($type == 'boolean') {
         $element[$subfield]['on_label'] = [

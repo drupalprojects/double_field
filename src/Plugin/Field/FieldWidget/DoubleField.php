@@ -97,7 +97,7 @@ class DoubleField extends WidgetBase {
         '#title' => t('Widget'),
         '#default_value' => $settings[$subfield]['type'],
         '#required' => TRUE,
-        '#options' => $this->getSubwidgets($field_settings[$subfield]),
+        '#options' => $this->getSubwidgets($type, $field_settings[$subfield]['list']),
       ];
 
       $type_selector = "select[name='fields[$field_name][settings_edit_form][settings][$subfield][type]'";
@@ -266,6 +266,14 @@ class DoubleField extends WidgetBase {
           }
           break;
 
+        case 'radios':
+          $label = $field_settings[$subfield]['required'] ? t('- Select a value -') : t('- None -');
+          $widget[$subfield]['#options'] = ['' => $label];
+          if ($field_settings[$subfield]['list']) {
+            $widget[$subfield]['#options'] += $field_settings[$subfield]['allowed_values'];
+          }
+          break;
+
         case 'textarea':
           if ($settings[$subfield]['textarea']['cols']) {
             $widget[$subfield]['#cols'] = $settings[$subfield]['textarea']['cols'];
@@ -285,6 +293,7 @@ class DoubleField extends WidgetBase {
             'float',
             'numeric'
           ])) {
+
             if ($field_settings[$subfield]['min']) {
               $widget[$subfield]['#min'] = $field_settings[$subfield]['min'];
             }
@@ -322,17 +331,46 @@ class DoubleField extends WidgetBase {
   /**
    * Returns available subwidgets.
    */
-  protected function getSubwidgets() {
-    $available_subwidgets = [
-      'textfield' => t('Textfield'),
-      'select' => t('Select list'),
-      'checkbox' => t('Checkbox'),
-      'textarea' => t('Text area'),
-      'email' => t('Email'),
-      'number' => t('Number'),
-    ];
+  protected function getSubwidgets($subfield_type, $list) {
 
-    return $available_subwidgets;
+    if ($list) {
+      $subwidgets['select'] = t('Select list');
+      $subwidgets['radios'] = t('Radio buttons');
+    }
+
+    switch ($subfield_type) {
+
+      case 'boolean':
+        $subwidgets['checkbox'] = t('Checkbox');
+        break;
+
+      case 'varchar':
+        $subwidgets['checkbox'] = t('Textfield');
+        $subwidgets['email'] = t('Email');
+        $subwidgets['number'] = t('Number');
+        break;
+
+      case 'text':
+        $subwidgets['textarea'] = t('Text area');
+        break;
+
+      case 'int':
+        $subwidgets['number'] = t('Number');
+        $subwidgets['textfield'] = t('Textfield');
+        break;
+
+      case 'float':
+        $subwidgets['number'] = t('Number');
+        $subwidgets['textfield'] = t('Textfield');
+        break;
+
+      case 'numeric':
+        $subwidgets['number'] = t('Number');
+        $subwidgets['textfield'] = t('Textfield');
+        break;
+    }
+
+    return $subwidgets;
   }
 
   /**
