@@ -251,11 +251,17 @@ class DoubleField extends FieldItemBase {
    */
   public function getConstraints() {
 
-    $settings = $this->getSettings();
-
     $constraint_manager = \Drupal::typedDataManager()
       ->getValidationConstraintManager();
     $constraints = parent::getConstraints();
+
+    $entity = $this->getParent()->getParent()->getValue();
+    // Do not add constants for default value element on field settings form.
+    if (!$entity->isValidationRequired()) {
+      return [];
+    }
+
+    $settings = $this->getSettings();
 
     $subconstrains = [];
     foreach (['first', 'second'] as $subfield) {
