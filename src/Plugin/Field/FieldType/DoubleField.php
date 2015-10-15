@@ -248,18 +248,14 @@ class DoubleField extends FieldItemBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @TODO: Find a way to disable constraints for default field values.
    */
   public function getConstraints() {
 
     $constraint_manager = \Drupal::typedDataManager()
       ->getValidationConstraintManager();
     $constraints = parent::getConstraints();
-
-    $entity = $this->getParent()->getParent()->getValue();
-    // Do not add constants for default value element on field settings form.
-    if (!$entity->isValidationRequired()) {
-      return [];
-    }
 
     $settings = $this->getSettings();
 

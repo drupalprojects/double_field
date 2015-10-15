@@ -182,14 +182,26 @@ class DoubleField extends WidgetBase {
    */
   public function settingsSummary() {
     $settings = $this->getSettings();
-    $summary = [];
+    $field_settings = $this->getFieldSettings();
 
+    $subfield_types = DoubleFieldItem::subfieldTypes();
+
+    $summary = [];
     if ($settings['inline']) {
       $summary[] = t('Display as inline element');
     }
 
     foreach (['first', 'second'] as $subfield) {
-      $summary[] = new FormattableMarkup('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
+
+      $subfield_type = $subfield_types[$field_settings['storage'][$subfield]['type']];
+
+      $summary[] = new FormattableMarkup(
+        '<br/><b>@subfield - @subfield_type</b>',
+        [
+          '@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield')),
+          '@subfield_type' => strtolower($subfield_type),
+        ]
+      );
       $summary[] = t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
       switch ($settings[$subfield]['type']) {
         case 'textfield':
