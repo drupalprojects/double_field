@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\double_field\Tests\FieldTestBase.
+ * Contains \Drupal\double_field\Tests\TestBase.
  */
 
 namespace Drupal\double_field\Tests;
@@ -16,7 +16,7 @@ use Drupal\double_field\Plugin\Field\FieldWidget\DoubleField;
 /**
  * Tests the creation of text fields.
  */
-abstract class FieldTestBase extends WebTestBase {
+abstract class TestBase extends WebTestBase {
 
   /**
    * A user with relevant administrative privileges.

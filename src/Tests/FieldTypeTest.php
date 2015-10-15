@@ -14,7 +14,7 @@ use Drupal\node\Entity\Node;
  *
  * @group double_field
  */
-class FieldTypeTest extends FieldTestBase {
+class FieldTypeTest extends TestBase {
 
   /**
    * Passes if range fields are found for a given subfield.

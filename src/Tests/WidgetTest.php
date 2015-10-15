@@ -12,7 +12,7 @@ namespace Drupal\double_field\Tests;
  *
  * @group double_field
  */
-class WidgetTest extends FieldTestBase {
+class WidgetTest extends TestBase {
 
   /**
    * Test widget form.
