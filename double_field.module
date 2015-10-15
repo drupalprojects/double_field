@@ -1,3 +1,4 @@
+
 <?php
 
 /**
@@ -75,6 +76,30 @@ function double_field_prepare_items(&$vars) {
       if ($item->{$subfield}) {
         $vars['items'][$delta][$subfield] = $item->{$subfield};
       }
+    }
+
+  }
+
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ *
+ * @param \Drupal\field\Entity\FieldStorageConfig $entity
+ *   The entity object.
+ */
+function double_field_field_storage_config_update(Drupal\Core\Entity\EntityInterface $entity) {
+
+  /** @var \Drupal\field\Entity\FieldStorageConfig  $entity */
+  if ($entity->getType() == 'double_field') {
+    $settings = $entity->getSettings();
+    $original_settings = $entity->original->getSettings();
+
+    $first_type_is_changed = $settings['storage']['first']['type'] != $original_settings['storage']['first']['type'];
+    $second_type_is_changed = $settings['storage']['second']['type'] != $original_settings['storage']['second']['type'];
+
+    if ($first_type_is_changed || $second_type_is_changed) {
+      // @TODO: Change field widgets and display a notice.
     }
 
   }
