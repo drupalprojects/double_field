@@ -100,11 +100,9 @@ abstract class TestBase extends WebTestBase {
 
     $this->contentTypeId = $this->drupalCreateContentType(['type' => $this->randomMachineName()])->id();
     $this->fieldName = strtolower($this->randomMachineName());
-    $this->fieldAdminPath = sprintf(
-      'admin/structure/types/manage/%s/fields/node.%s.%s',
-      $this->contentTypeId, $this->contentTypeId,
-      $this->fieldName
-    );
+    $this->contentTypeAdminPath = 'admin/structure/types/manage/' . $this->contentTypeId;
+    $this->fieldAdminPath = "{$this->contentTypeAdminPath}/fields/node.{$this->contentTypeId}.{$this->fieldName}";
+    $this->formDisplayAdminPath = $this->contentTypeAdminPath . '/form-display';
     $this->fieldStorageAdminPath = $this->fieldAdminPath . '/storage';
     $this->nodeAddPath = 'node/add/' . $this->contentTypeId;
 
@@ -152,6 +150,7 @@ abstract class TestBase extends WebTestBase {
     ]);
     $this->field->save();
 
+    $this->saveWidgetSettings([]);
     $this->saveFormatterSettings(['style' => 'block']);
   }
 
@@ -310,6 +309,43 @@ abstract class TestBase extends WebTestBase {
 
     $view_display->setComponent($this->fieldName, $options);
     $view_display->save();
+  }
+
+
+  /**
+   * Checks to see if two arrays are identical.
+   *
+   * @param array $object1
+   *   The first object to check.
+   * @param array $object2
+   *   The second object to check.
+   * @param $message
+   *   (optional) A message to display with the assertion.
+   *
+   * @return
+   *   TRUE if the assertion succeeded, FALSE otherwise.
+   */
+  protected function assertIdenticalArray(array $array1, array $array2, $message = '') {
+    $identical = TRUE;
+    foreach ($array1 as $key => $value) {
+      $identical = $identical && isset($array2[$key]) && $array2[$key] == $value;
+      if (isset($array2[$key]) && $array2[$key] == $value);
+      else {
+        debug($key);
+      }
+    }
+    return $this->assertTrue($identical, $message);
+  }
+
+  /**
+   * @param array $axes
+   */
+  protected function assertAxes(array $axes) {
+    foreach ($axes as $axis) {
+      $elements = $this->xpath($axis);
+      $message = "Xpath $axis is valid.";
+      $this->assertEqual(count($elements), 1, $message);
+    }
   }
 
 }

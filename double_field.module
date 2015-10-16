@@ -36,7 +36,7 @@ function template_preprocess_double_field_item(&$vars) {
   }
 
   foreach (['first', 'second'] as $subfield) {
-    if ($elements['#item']->{$subfield}) {
+    if ($elements['#item']->{$subfield} || (string) $elements['#item']->{$subfield} == '0') {
       $vars['item'][$subfield] = $elements['#item']->{$subfield};
     }
   }
@@ -73,7 +73,7 @@ function double_field_prepare_items(&$vars) {
   foreach ($elements['#items'] as $delta => $item) {
 
     foreach (['first', 'second'] as $subfield) {
-      if ($item->{$subfield}) {
+      if ($item->{$subfield} || (string) $item->{$subfield} == '0') {
         $vars['items'][$delta][$subfield] = $item->{$subfield};
       }
     }

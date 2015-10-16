@@ -15,6 +15,16 @@ namespace Drupal\double_field\Tests;
 class WidgetTest extends TestBase {
 
   /**
+   * Passes if expected field values were found on the page.
+   */
+  protected function assertFieldValues($first_value, $second_value) {
+    $value = (string) $this->xpath("//div[@class='double-field-first']")[0];
+    $this->assertTrue($value == $first_value, 'First value is correct.');
+    $value = (string) $this->xpath("//div[@class='double-field-second']")[0];
+    $this->assertTrue($value == $second_value, 'Second value is correct.');
+  }
+
+  /**
    * Test widget form.
    */
   public function testWidgetForm() {
@@ -142,7 +152,7 @@ class WidgetTest extends TestBase {
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
-      $this->fieldName . '[0][first]' => mt_rand($instance_settings['first']['min'], $instance_settings['first']['max']),
+      $this->fieldName . '[0][first]' => 0,//mt_rand($instance_settings['first']['min'], $instance_settings['first']['max']),
       $this->fieldName . '[0][second]' => mt_rand($instance_settings['second']['min'], $instance_settings['second']['max']),
     ];
 
@@ -169,13 +179,278 @@ class WidgetTest extends TestBase {
   }
 
   /**
-   * Passes if expected field values were found on the page.
+   * Test widget settings form.
    */
-  protected function assertFieldValues($first_value, $second_value) {
-    $value = (string) $this->xpath("//div[@class='double-field-first']")[0];
-    $this->assertTrue($value == $first_value, 'First value is correct.');
-    $value = (string) $this->xpath("//div[@class='double-field-second']")[0];
-    $this->assertTrue($value == $second_value, 'Second value is correct.');
+  public function testWidgetSettingsForm() {
+
+    $name_prefix = "fields[{$this->fieldName}][settings_edit_form][settings]";
+
+    $default_axes = [
+      "//input[@name='{$name_prefix}[first][prefix]']",
+      "//input[@name='{$name_prefix}[first][suffix]']",
+      "//input[@name='{$name_prefix}[second][prefix]']",
+      "//input[@name='{$name_prefix}[second][suffix]']",
+    ];
+
+    // -- Boolean and varchar.
+    $storage_settings['storage']['first']['type'] = 'boolean';
+    $storage_settings['storage']['second']['type'] = 'varchar';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $widget_settings['first']['type'] = 'boolean';
+    $widget_settings['second']['type'] = 'textfield';
+    $this->saveWidgetSettings($widget_settings);
+
+
+    $this->drupalGet($this->formDisplayAdminPath);
+
+    // Click on the widget settings button to open the widget settings form.
+    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+
+    $axes = $default_axes;
+    $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='checkbox']";
+    $axes[] = "//summary[text()='First subfield - Boolean']";
+    $axes[] = "//input[@name='{$name_prefix}[first][checkbox][label]' and @value='Ok']";
+    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
+    $axes[] = "//summary[text()='Second subfield - Text']";
+    $axes[] = "//input[@name='{$name_prefix}[second][textfield][size]']";
+    $axes[] = "//input[@name='{$name_prefix}[second][textfield][placeholder]']";
+    $this->assertAxes($axes);
+
+    $edit = [
+      $name_prefix . '[inline]' => 1,
+      $name_prefix . '[first][checkbox][label]' => $this->randomMachineName(),
+      $name_prefix . '[first][prefix]' => $this->randomMachineName(),
+      $name_prefix . '[first][suffix]' => $this->randomMachineName(),
+      $name_prefix . '[second][textfield][size]' => mt_rand(1, 10),
+      $name_prefix . '[second][textfield][placeholder]' => $this->randomMachineName(),
+      $name_prefix . '[second][prefix]' => $this->randomMachineName(),
+      $name_prefix . '[second][suffix]' => $this->randomMachineName(),
+    ];
+
+    $this->drupalPostAjaxForm(NULL, $edit, $this->fieldName . '_plugin_settings_update');
+    $this->drupalPostForm(NULL, [], t('Save'));
+
+    $summary = $this->xpath("//tr[@id='$this->fieldName']//div[@class='field-plugin-summary']")[0]->asXML();
+
+    // Remove wrapper.
+    $summary = str_replace(['<div class="field-plugin-summary">', '</div>'], '', $summary);
+    $summary_items = explode('<br/>', $summary);
+    $expected_summary_items = [
+      t('Display as inline element'),
+      '',
+      '<b>First subfield - boolean</b>',
+      t('Widget: !first_widget', ['!first_widget' => 'checkbox']),
+      t('Label: !label', ['!label' => $edit[$name_prefix . '[first][checkbox][label]']]),
+      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
+      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
+      '',
+      '<b>Second subfield - text</b>',
+      t('Widget: !widget', ['!widget' => 'textfield']),
+      t('Size: !size', ['!size' => $edit[$name_prefix . '[second][textfield][size]']]),
+      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[second][textfield][placeholder]']]),
+      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[second][prefix]']]),
+      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[second][suffix]']]),
+    ];
+
+    $this->assertIdenticalArray($summary_items, $expected_summary_items, 'Valid summary was found.');
+
+    // -- Text and integer.
+    $storage_settings['storage']['first']['type'] = 'text';
+    $storage_settings['storage']['second']['type'] = 'int';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $widget_settings['first']['type'] = 'textarea';
+    $widget_settings['second']['type'] = 'number';
+    $this->saveWidgetSettings($widget_settings);
+
+
+    $this->drupalGet($this->formDisplayAdminPath);
+
+    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+
+    $axes = $default_axes;
+    $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='textarea' and @selected]";
+    $axes[] = "//summary[text()='First subfield - Text (long)']";
+    $axes[] = "//input[@name='{$name_prefix}[first][textarea][cols]']";
+    $axes[] = "//input[@name='{$name_prefix}[first][textarea][rows]']";
+    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='number' and @selected]";
+    $axes[] = "//summary[text()='Second subfield - Integer']";
+    $this->assertAxes($axes);
+
+    $edit = [
+      $name_prefix . '[inline]' => 1,
+      $name_prefix . '[first][textarea][cols]' => mt_rand(1, 10),
+      $name_prefix . '[first][textarea][rows]' => mt_rand(1, 10),
+      $name_prefix . '[first][textarea][placeholder]' => $this->randomMachineName(),
+      $name_prefix . '[first][prefix]' => $this->randomMachineName(),
+      $name_prefix . '[first][suffix]' => $this->randomMachineName(),
+      $name_prefix . '[second][prefix]' => $this->randomMachineName(),
+      $name_prefix . '[second][suffix]' => $this->randomMachineName(),
+    ];
+
+    $this->drupalPostAjaxForm(NULL, $edit, $this->fieldName . '_plugin_settings_update');
+    $this->drupalPostForm(NULL, [], t('Save'));
+
+    $summary = $this->xpath("//tr[@id='$this->fieldName']//div[@class='field-plugin-summary']")[0]->asXML();
+
+    $summary = str_replace(['<div class="field-plugin-summary">', '</div>'], '', $summary);
+    $summary_items = explode('<br/>', $summary);
+    $expected_summary_items = [
+      t('Display as inline element'),
+      '',
+      '<b>First subfield - text (long)</b>',
+      t('Widget: !widget', ['!widget' => 'textarea']),
+      t('Columns: !cols', ['!cols' => $edit[$name_prefix . '[first][textarea][cols]']]),
+      t('Rows: !rows', ['!rows' => $edit[$name_prefix . '[first][textarea][rows]']]),
+      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[first][textarea][placeholder]']]),
+      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
+      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
+      '',
+      '<b>Second subfield - integer</b>',
+      t('Widget: !widget', ['!widget' => 'number']),
+      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[second][prefix]']]),
+      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[second][suffix]']]),
+    ];
+
+    $this->assertIdenticalArray($summary_items, $expected_summary_items, 'Valid summary was found.');
+
+    // -- Float and decimal.
+    $storage_settings['storage']['first']['type'] = 'float';
+    $storage_settings['storage']['second']['type'] = 'numeric';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $widget_settings['first']['type'] = 'number';
+    $widget_settings['second']['type'] = 'textfield';
+    $this->saveWidgetSettings($widget_settings);
+
+    $this->drupalGet($this->formDisplayAdminPath);
+
+    // Click on the widget settings button to open the widget settings form.
+    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+
+    $axes = $default_axes;
+    $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='number' and @selected]";
+    $axes[] = "//summary[text()='First subfield - Float']";
+    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
+    $axes[] = "//summary[text()='Second subfield - Decimal']";
+    $this->assertAxes($axes);
+
+  }
+
+  /**
+   * Test validaion.
+   */
+  protected function testValidation() {
+
+    // -- Varchar.
+    $maxlength = 10;
+    $storage_settings['storage']['first']['type'] = 'varchar';
+    $storage_settings['storage']['first']['maxlength'] = $maxlength;
+    $storage_settings['storage']['second']['type'] = 'varchar';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $widget_settings['first']['type'] = 'textfield';
+    $widget_settings['second']['type'] = 'email';
+    $this->saveWidgetSettings($widget_settings);
+
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first]' => $this->randomMachineName($maxlength + 1),
+      $this->fieldName . '[0][second]' => 'not@valid@email',
+    ];
+
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $max_length_error_message = t(
+      '@field_name cannot be longer than @max_length characters but is currently @actual_length characters long.',
+      ['@field_name' => $this->fieldName, '@max_length' => $maxlength, '@actual_length' => strlen($edit[$this->fieldName . '[0][first]'])]
+    );
+    $this->assertErrorMessage($max_length_error_message);
+    $this->assertErrorMessage(t('The email address @email is not valid.', ['@email' => 'not@valid@email']));
+
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first]' => $this->randomMachineName($maxlength),
+      $this->fieldName . '[0][second]' => 'test@exampe.com',
+    ];
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->assertNoErrorMessages();
+
+
+    $field_settings['first']['list'] = TRUE;
+    $field_settings['first']['allowed_values'] = [
+      'aaa' => 'Aaa',
+      'bbb' => 'Bbb',
+      'ccc' => 'Ccc',
+    ];
+    $this->saveFieldSettings($field_settings);
+
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first]' => 'ddd',
+    ];
+
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->assertErrorMessage(t('The value you selected is not a valid choice.'));
+    $this->assertErrorMessage(t('This value should not be blank.'));
+
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first]' => array_rand($field_settings['first']['allowed_values']),
+      $this->fieldName . '[0][second]' => 'test@exampe.com',
+    ];
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->assertNoErrorMessages();
+
+    $this->deleteNodes();
+
+    // -- Integer and float.
+    $storage_settings['storage']['first']['type'] = 'int';
+    $storage_settings['storage']['first']['maxlength'] = 3;
+    $storage_settings['storage']['second']['type'] = 'float';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $field_settings['first']['list'] = FALSE;
+    $field_settings['first']['min'] = mt_rand(-100, 100);
+    $field_settings['first']['max'] = mt_rand($field_settings['first']['min'], 100);
+    $field_settings['second']['min'] = mt_rand(-100, 100);
+    $field_settings['second']['max'] = mt_rand($field_settings['second']['min'], 100);
+    $this->saveFieldSettings($field_settings);
+
+    $widget_settings['first']['type'] = 'textfield';
+    $widget_settings['second']['type'] = 'number';
+    $this->saveWidgetSettings($widget_settings);
+
+    $this->drupalGet($this->nodeAddPath);
+
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first]' => $field_settings['first']['min'] - 1,
+      $this->fieldName . '[0][second]' => $field_settings['second']['max'] + 1,
+    ];
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $error_message = t(
+      '@field_name must be lower than or equal to @max.',
+      ['@field_name' => $this->fieldName, '@max' => $field_settings['second']['max']]
+    );
+    $this->assertErrorMessage($error_message);
+    $this->assertEqual(1, count($this->getMessages('error')), 'There should be only one error message');
+
+    $edit[$this->fieldName . '[0][second]'] = mt_rand($field_settings['second']['min'], $field_settings['second']['max']);
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+
+    // This error comes from primitive type constraint because, textfield form
+    // element does not support min and max properties.
+    $error_message = t(
+      'This value should be @min or more.',
+      ['@min' => $field_settings['first']['min']]
+    );
+    $this->assertErrorMessage($error_message);
+    $this->assertEqual(1, count($this->getMessages('error')), 'There should be only one error message');
+
+    $edit[$this->fieldName . '[0][first]'] = mt_rand($field_settings['first']['min'], $field_settings['first']['max']);
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->assertNoErrorMessages();
   }
 
 }

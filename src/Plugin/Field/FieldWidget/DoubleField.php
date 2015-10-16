@@ -254,6 +254,7 @@ class DoubleField extends WidgetBase {
       switch ($settings[$subfield]['type']) {
 
         case 'textfield':
+          $widget[$subfield]['#maxlength'] = $field_settings['storage'][$subfield]['maxlength'];
           if ($settings[$subfield]['textfield']['size']) {
             $widget[$subfield]['#size'] = $settings[$subfield]['textfield']['size'];
           }
@@ -353,7 +354,7 @@ class DoubleField extends WidgetBase {
         break;
 
       case 'varchar':
-        $subwidgets['checkbox'] = t('Textfield');
+        $subwidgets['textfield'] = t('Textfield');
         $subwidgets['email'] = t('Email');
         $subwidgets['number'] = t('Number');
         break;
