@@ -106,7 +106,8 @@ class FieldTypeTest extends TestBase {
    */
   public function testFieldStorageSettings() {
 
-    $maxlength = mt_rand(1, 50);
+    // Not random to avoid different plural form in messages.
+    $maxlength = 50;
 
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
@@ -505,7 +506,7 @@ class FieldTypeTest extends TestBase {
   public function testAllowedValuesValidation() {
 
     // --
-    $maxlength = mt_rand(1, 100);
+    $maxlength = 50;
     $storage_settings['storage']['first']['type'] = 'varchar';
     $storage_settings['storage']['first']['maxlength'] = $maxlength;
     $storage_settings['storage']['second']['type'] = 'float';

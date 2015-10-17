@@ -398,15 +398,15 @@ class WidgetTest extends TestBase {
 
     // -- Integer and float.
     $storage_settings['storage']['first']['type'] = 'int';
-    $storage_settings['storage']['first']['maxlength'] = 3;
+    $storage_settings['storage']['first']['maxlength'] = NULL;
     $storage_settings['storage']['second']['type'] = 'float';
     $this->saveFieldStorageSettings($storage_settings);
 
     $field_settings['first']['list'] = FALSE;
     $field_settings['first']['min'] = mt_rand(-1000, 1000);
-    $field_settings['first']['max'] = $field_settings['first']['min'] + mt_rand(0, 1000);
+    $field_settings['first']['max'] = $field_settings['first']['min'] + mt_rand(1, 1000);
     $field_settings['second']['min'] = mt_rand(-1000, 1000);
-    $field_settings['second']['max'] = $field_settings['second']['min'] + mt_rand(0, 1000);
+    $field_settings['second']['max'] = $field_settings['second']['min'] + mt_rand(1, 1000);
     $this->saveFieldSettings($field_settings);
 
     $widget_settings['first']['type'] = 'textfield';
@@ -417,8 +417,7 @@ class WidgetTest extends TestBase {
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
-      // 1000 length is longer then 3.
-      $this->fieldName . '[0][first]' => 1000,
+      $this->fieldName . '[0][first]' => 100,
       $this->fieldName . '[0][second]' => $field_settings['second']['max'] + 1,
     ];
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
@@ -427,16 +426,11 @@ class WidgetTest extends TestBase {
       ['@field_name' => $this->fieldName, '@max' => $field_settings['second']['max']]
     );
     $this->assertErrorMessage($error_message);
-    $error_message = t(
-      '@field_name cannot be longer than 3 characters but is currently 4 characters long.',
-      ['@field_name' => $this->fieldName, '@max' => $field_settings['second']['max']]
-    );
-    $this->assertErrorMessage($error_message);
-    $this->assertEqual(2, count($this->getMessages('error')), 'There should be only one error message');
+    $this->assertEqual(1, count($this->getMessages('error')), 'There should be only one error message');
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
-      $this->fieldName . '[0][first]' => 100,
+      $this->fieldName . '[0][first]' =>  $field_settings['first']['min'] - 1,
       $this->fieldName . '[0][second]' => mt_rand($field_settings['second']['min'], $field_settings['second']['max']),
     ];
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
