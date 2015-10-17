@@ -54,6 +54,14 @@ abstract class TestBase extends WebTestBase {
   protected $fieldAdminPath;
 
   /**
+   * A path to form display settings form.
+   *
+   * @var string
+   */
+  protected $formDisplayAdminPath;
+
+
+  /**
    * A path to field storage settings form.
    *
    * @var string
@@ -315,30 +323,26 @@ abstract class TestBase extends WebTestBase {
   /**
    * Checks to see if two arrays are identical.
    *
-   * @param array $object1
-   *   The first object to check.
-   * @param array $object2
-   *   The second object to check.
-   * @param $message
+   * @param array $array1
+   *   The first array to check.
+   * @param array $array2
+   *   The second array to check.
+   * @param string $message
    *   (optional) A message to display with the assertion.
    *
-   * @return
+   * @return bool
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   protected function assertIdenticalArray(array $array1, array $array2, $message = '') {
     $identical = TRUE;
     foreach ($array1 as $key => $value) {
       $identical = $identical && isset($array2[$key]) && $array2[$key] == $value;
-      if (isset($array2[$key]) && $array2[$key] == $value);
-      else {
-        debug($key);
-      }
     }
     return $this->assertTrue($identical, $message);
   }
 
   /**
-   * @param array $axes
+   * Passes if all given xpath axes are valid.
    */
   protected function assertAxes(array $axes) {
     foreach ($axes as $axis) {

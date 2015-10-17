@@ -43,7 +43,7 @@ class WidgetTest extends TestBase {
 
     $this->drupalGet($this->nodeAddPath);
 
-    $this->assertFieldByXPath("//input[@type='checkbox' and @name='{$this->fieldName}[0][first]']", NULL, 'Checkbox found.');
+    $this->assertFieldByXPath("//input[@type='checkbox' and @name='{$this->fieldName}[0][first]']", NULL, 'Checkbox was found.');
     $label = (string) $this->xpath("//label[@for='edit-{$this->fieldName}-0-first']")[0];
     $this->assertTrue($label == $widget_settings['first']['checkbox']['label'], 'Checkbox label is correct.');
 
@@ -58,14 +58,15 @@ class WidgetTest extends TestBase {
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
-      $this->fieldName . '[0][first]' => 1,
+      $this->fieldName . '[0][first]' => (bool) mt_rand(0, 1),
       $this->fieldName . '[0][second]' => $this->randomMachineName(),
     ];
-
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
 
-    $this->assertFieldValues('On', $edit[$this->fieldName . '[0][second]']);
-
+    $this->assertFieldValues(
+      $edit[$this->fieldName . '[0][first]'] ? 'On' : 'Off',
+      $edit[$this->fieldName . '[0][second]']
+    );
     $this->deleteNodes();
 
     // -- Text and integer.
@@ -73,8 +74,8 @@ class WidgetTest extends TestBase {
     $storage_settings['storage']['second']['type'] = 'int';
     $this->saveFieldStorageSettings($storage_settings);
 
-    $instance_settings['second']['min'] = mt_rand(-100, 0);
-    $instance_settings['second']['max'] = mt_rand(1, 100);
+    $instance_settings['second']['min'] = mt_rand(-1000, 0);
+    $instance_settings['second']['max'] = mt_rand(1, 1000);
     $this->saveFieldSettings($instance_settings);
 
     $this->drupalGet($this->fieldAdminPath);
@@ -120,10 +121,10 @@ class WidgetTest extends TestBase {
     $storage_settings['storage']['second']['type'] = 'numeric';
     $this->saveFieldStorageSettings($storage_settings);
 
-    $instance_settings['first']['min'] = mt_rand(-100, 0);
-    $instance_settings['first']['max'] = mt_rand(1, 100);
-    $instance_settings['second']['min'] = mt_rand(-100, 0);
-    $instance_settings['second']['max'] = mt_rand(1, 100);
+    $instance_settings['first']['min'] = mt_rand(-1000, 0);
+    $instance_settings['first']['max'] = mt_rand(1, 1000);
+    $instance_settings['second']['min'] = mt_rand(-1000, 0);
+    $instance_settings['second']['max'] = mt_rand(1, 1000);
     $this->saveFieldSettings($instance_settings);
 
     $widget_settings['first']['type'] = 'number';
@@ -152,7 +153,7 @@ class WidgetTest extends TestBase {
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
-      $this->fieldName . '[0][first]' => 0,//mt_rand($instance_settings['first']['min'], $instance_settings['first']['max']),
+      $this->fieldName . '[0][first]' => mt_rand($instance_settings['first']['min'], $instance_settings['first']['max']),
       $this->fieldName . '[0][second]' => mt_rand($instance_settings['second']['min'], $instance_settings['second']['max']),
     ];
 
@@ -186,6 +187,7 @@ class WidgetTest extends TestBase {
     $name_prefix = "fields[{$this->fieldName}][settings_edit_form][settings]";
 
     $default_axes = [
+      "//input[@name='{$name_prefix}[inline]' and @type='checkbox']",
       "//input[@name='{$name_prefix}[first][prefix]']",
       "//input[@name='{$name_prefix}[first][suffix]']",
       "//input[@name='{$name_prefix}[second][prefix]']",
@@ -200,7 +202,6 @@ class WidgetTest extends TestBase {
     $widget_settings['first']['type'] = 'boolean';
     $widget_settings['second']['type'] = 'textfield';
     $this->saveWidgetSettings($widget_settings);
-
 
     $this->drupalGet($this->formDisplayAdminPath);
 
@@ -218,7 +219,7 @@ class WidgetTest extends TestBase {
     $this->assertAxes($axes);
 
     $edit = [
-      $name_prefix . '[inline]' => 1,
+      $name_prefix . '[inline]' => TRUE,
       $name_prefix . '[first][checkbox][label]' => $this->randomMachineName(),
       $name_prefix . '[first][prefix]' => $this->randomMachineName(),
       $name_prefix . '[first][suffix]' => $this->randomMachineName(),
@@ -238,13 +239,11 @@ class WidgetTest extends TestBase {
     $summary_items = explode('<br/>', $summary);
     $expected_summary_items = [
       t('Display as inline element'),
-      '',
       '<b>First subfield - boolean</b>',
       t('Widget: !first_widget', ['!first_widget' => 'checkbox']),
       t('Label: !label', ['!label' => $edit[$name_prefix . '[first][checkbox][label]']]),
       t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
       t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
-      '',
       '<b>Second subfield - text</b>',
       t('Widget: !widget', ['!widget' => 'textfield']),
       t('Size: !size', ['!size' => $edit[$name_prefix . '[second][textfield][size]']]),
@@ -264,9 +263,7 @@ class WidgetTest extends TestBase {
     $widget_settings['second']['type'] = 'number';
     $this->saveWidgetSettings($widget_settings);
 
-
     $this->drupalGet($this->formDisplayAdminPath);
-
     $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
 
     $axes = $default_axes;
@@ -279,7 +276,7 @@ class WidgetTest extends TestBase {
     $this->assertAxes($axes);
 
     $edit = [
-      $name_prefix . '[inline]' => 1,
+      $name_prefix . '[inline]' => FALSE,
       $name_prefix . '[first][textarea][cols]' => mt_rand(1, 10),
       $name_prefix . '[first][textarea][rows]' => mt_rand(1, 10),
       $name_prefix . '[first][textarea][placeholder]' => $this->randomMachineName(),
@@ -297,8 +294,6 @@ class WidgetTest extends TestBase {
     $summary = str_replace(['<div class="field-plugin-summary">', '</div>'], '', $summary);
     $summary_items = explode('<br/>', $summary);
     $expected_summary_items = [
-      t('Display as inline element'),
-      '',
       '<b>First subfield - text (long)</b>',
       t('Widget: !widget', ['!widget' => 'textarea']),
       t('Columns: !cols', ['!cols' => $edit[$name_prefix . '[first][textarea][cols]']]),
@@ -306,7 +301,6 @@ class WidgetTest extends TestBase {
       t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[first][textarea][placeholder]']]),
       t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
       t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
-      '',
       '<b>Second subfield - integer</b>',
       t('Widget: !widget', ['!widget' => 'number']),
       t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[second][prefix]']]),
@@ -335,11 +329,10 @@ class WidgetTest extends TestBase {
     $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
     $axes[] = "//summary[text()='Second subfield - Decimal']";
     $this->assertAxes($axes);
-
   }
 
   /**
-   * Test validaion.
+   * Test validation.
    */
   protected function testValidation() {
 
@@ -361,11 +354,11 @@ class WidgetTest extends TestBase {
     ];
 
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
-    $max_length_error_message = t(
+    $error_message = t(
       '@field_name cannot be longer than @max_length characters but is currently @actual_length characters long.',
       ['@field_name' => $this->fieldName, '@max_length' => $maxlength, '@actual_length' => strlen($edit[$this->fieldName . '[0][first]'])]
     );
-    $this->assertErrorMessage($max_length_error_message);
+    $this->assertErrorMessage($error_message);
     $this->assertErrorMessage(t('The email address @email is not valid.', ['@email' => 'not@valid@email']));
 
     $edit = [
@@ -375,7 +368,6 @@ class WidgetTest extends TestBase {
     ];
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
     $this->assertNoErrorMessages();
-
 
     $field_settings['first']['list'] = TRUE;
     $field_settings['first']['allowed_values'] = [
@@ -411,10 +403,10 @@ class WidgetTest extends TestBase {
     $this->saveFieldStorageSettings($storage_settings);
 
     $field_settings['first']['list'] = FALSE;
-    $field_settings['first']['min'] = mt_rand(-100, 100);
-    $field_settings['first']['max'] = mt_rand($field_settings['first']['min'], 100);
-    $field_settings['second']['min'] = mt_rand(-100, 100);
-    $field_settings['second']['max'] = mt_rand($field_settings['second']['min'], 100);
+    $field_settings['first']['min'] = mt_rand(-1000, 1000);
+    $field_settings['first']['max'] = $field_settings['first']['min'] + mt_rand(0, 1000);
+    $field_settings['second']['min'] = mt_rand(-1000, 1000);
+    $field_settings['second']['max'] = $field_settings['second']['min'] + mt_rand(0, 1000);
     $this->saveFieldSettings($field_settings);
 
     $widget_settings['first']['type'] = 'textfield';
@@ -425,7 +417,8 @@ class WidgetTest extends TestBase {
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
-      $this->fieldName . '[0][first]' => $field_settings['first']['min'] - 1,
+      // 1000 length is longer then 3.
+      $this->fieldName . '[0][first]' => 1000,
       $this->fieldName . '[0][second]' => $field_settings['second']['max'] + 1,
     ];
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
@@ -434,9 +427,18 @@ class WidgetTest extends TestBase {
       ['@field_name' => $this->fieldName, '@max' => $field_settings['second']['max']]
     );
     $this->assertErrorMessage($error_message);
-    $this->assertEqual(1, count($this->getMessages('error')), 'There should be only one error message');
+    $error_message = t(
+      '@field_name cannot be longer than 3 characters but is currently 4 characters long.',
+      ['@field_name' => $this->fieldName, '@max' => $field_settings['second']['max']]
+    );
+    $this->assertErrorMessage($error_message);
+    $this->assertEqual(2, count($this->getMessages('error')), 'There should be only one error message');
 
-    $edit[$this->fieldName . '[0][second]'] = mt_rand($field_settings['second']['min'], $field_settings['second']['max']);
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first]' => 100,
+      $this->fieldName . '[0][second]' => mt_rand($field_settings['second']['min'], $field_settings['second']['max']),
+    ];
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
 
     // This error comes from primitive type constraint because, textfield form

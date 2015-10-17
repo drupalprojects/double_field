@@ -188,11 +188,10 @@ class DoubleField extends WidgetBase {
     }
 
     foreach (['first', 'second'] as $subfield) {
-
       $subfield_type = $subfield_types[$field_settings['storage'][$subfield]['type']];
 
       $summary[] = new FormattableMarkup(
-        '<br/><b>@subfield - @subfield_type</b>',
+        '<b>@subfield - @subfield_type</b>',
         [
           '@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield')),
           '@subfield_type' => strtolower($subfield_type),

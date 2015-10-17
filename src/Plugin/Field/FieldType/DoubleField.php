@@ -240,6 +240,17 @@ class DoubleField extends FieldItemBase {
           '#default_value' => $settings[$subfield]['off_label'],
         ];
       }
+      else {
+        $element[$subfield]['on_label'] = [
+          '#type' => 'value',
+          '#default_value' => $settings[$subfield]['on_label'],
+        ];
+        $element[$subfield]['off_label'] = [
+          '#type' => 'value',
+          '#default_value' => $settings[$subfield]['off_label'],
+        ];
+      }
+
 
     }
 
