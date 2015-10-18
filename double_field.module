@@ -1,4 +1,3 @@
-
 <?php
 
 /**
@@ -12,6 +11,7 @@
 function double_field_theme() {
   $templates = [
     'item',
+    'subfield',
     'definition_list',
     'accordion',
     'tabs',
@@ -26,71 +26,54 @@ function double_field_theme() {
  * Prepares variables for double-field-item template.
  */
 function template_preprocess_double_field_item(&$vars) {
+  $vars['settings'] = $vars['elements']['#settings'];
+  $vars['item']['first'] = $vars['elements']['#item']->first;
+  $vars['item']['second'] = $vars['elements']['#item']->second;
+}
+
+/**
+ * Prepares variables for double-field-item template.
+ */
+function template_preprocess_double_field_subfield(&$vars) {
 
   $elements = &$vars['elements'];
 
-  $vars['style'] = $elements['#settings']['style'];
-  $vars['settings'] = $elements['#settings'];
-  if ($vars['style'] == 'inline') {
-    $vars['attributes']['class'][] = 'container-inline';
-  }
-
-  foreach (['first', 'second'] as $subfield) {
-    if ($elements['#item']->{$subfield} || (string) $elements['#item']->{$subfield} == '0') {
-      $vars['item'][$subfield] = $elements['#item']->{$subfield};
-    }
-  }
-
+  $vars['index'] = $index = $elements['#index'];
+  $vars['prefix'] = $elements['#settings'][$index]['prefix'];
+  $vars['value'] = $elements['#subfield'];
+  $vars['suffix'] = $elements['#settings'][$index]['suffix'];
 }
 
 /**
  * Prepares variables for double-field-definition-list template.
  */
 function template_preprocess_double_field_definition_list(&$vars) {
-  double_field_prepare_items($vars);
+  $vars['settings'] = $vars['elements']['#settings'];
+  $vars['items'] = $vars['elements']['#items'];
 }
 
 /**
  * Prepares variables for double-field-accordion template.
  */
 function template_preprocess_double_field_accordion(&$vars) {
-  double_field_prepare_items($vars);
+  $vars['settings'] = $vars['elements']['#settings'];
+  $vars['items'] = $vars['elements']['#items'];
 }
 
 /**
  * Prepares variables for double-field-definition-tabs template.
  */
 function template_preprocess_double_field_tabs(&$vars) {
-  double_field_prepare_items($vars);
-}
-
-/**
- * Prepare items.
- */
-function double_field_prepare_items(&$vars) {
-  $elements = &$vars['elements'];
-
-  foreach ($elements['#items'] as $delta => $item) {
-
-    foreach (['first', 'second'] as $subfield) {
-      if ($item->{$subfield} || (string) $item->{$subfield} == '0') {
-        $vars['items'][$delta][$subfield] = $item->{$subfield};
-      }
-    }
-
-  }
-
+  $vars['settings'] = $vars['elements']['#settings'];
+  $vars['items'] = $vars['elements']['#items'];
 }
 
 /**
  * Implements hook_ENTITY_TYPE_update().
- *
- * @param \Drupal\field\Entity\FieldStorageConfig $entity
- *   The entity object.
  */
 function double_field_field_storage_config_update(Drupal\Core\Entity\EntityInterface $entity) {
 
-  /** @var \Drupal\field\Entity\FieldStorageConfig  $entity */
+  /* @var \Drupal\field\Entity\FieldStorageConfig  $entity */
   if ($entity->getType() == 'double_field') {
     $settings = $entity->getSettings();
     $original_settings = $entity->original->getSettings();

@@ -68,8 +68,8 @@ class Details extends Base {
 
     foreach ($items as $delta => $item) {
       $element[$delta] = array(
-        '#title' => $item->first,
-        '#value' => $item->second,
+        '#title' => $settings['first']['prefix'] . $item->first . $settings['first']['suffix'],
+        '#value' => $settings['second']['prefix'] . $item->second . $settings['second']['suffix'],
         '#type' => 'details',
         '#open' => $settings['open'],
       );

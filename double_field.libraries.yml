@@ -1,3 +1,11 @@
-dialog:
+accordion:
   js:
-    js/dialog.js: {}
+    js/accordion.js: {}
+  dependencies:
+    - core/jquery.ui.accordion
+tabs:
+  js:
+    js/tabs.js: {}
+  dependencies:
+    - core/jquery.ui.tabs
+

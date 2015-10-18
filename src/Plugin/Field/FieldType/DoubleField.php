@@ -221,8 +221,7 @@ class DoubleField extends FieldItemBase {
         ];
       }
       else {
-        $element[$subfield]['min'] =
-        $element[$subfield]['max'] = [
+        $element[$subfield]['min'] = $element[$subfield]['max'] = [
           '#type' => 'value',
           '#default_value' => ''
         ];
@@ -250,7 +249,6 @@ class DoubleField extends FieldItemBase {
           '#default_value' => $settings[$subfield]['off_label'],
         ];
       }
-
 
     }
 

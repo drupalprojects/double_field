@@ -32,7 +32,7 @@ class Tabs extends Base {
       '#theme' => 'double_field_tabs',
       '#items' => $items,
       '#settings' => $settings,
-      '#attached' => ['library' => ['core/jquery.ui.tabs']],
+      '#attached' => ['library' => ['double_field/tabs']],
     );
 
     return $element;

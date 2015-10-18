@@ -25,9 +25,7 @@ class HtmlList extends ListBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return [
-      'list_type' => 'ul',
-    ] + parent::defaultSettings();
+    return ['list_type' => 'ul'] + parent::defaultSettings();
   }
 
   /**
@@ -59,7 +57,6 @@ class HtmlList extends ListBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-
     $summary[] = t('List type: %list_type', ['%list_type' => $this->getSetting('list_type')]);
     return array_merge($summary, parent::settingsSummary());
   }
@@ -68,8 +65,8 @@ class HtmlList extends ListBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
+    $this->prepareItems($items);
 
-    $element = parent::viewElements($items, $langcode);
     $settings = $this->getSettings();
 
     if ($settings['list_type'] == 'dl') {
@@ -86,6 +83,9 @@ class HtmlList extends ListBase {
           '#item' => $item,
           '#theme' => 'double_field_item',
         ];
+        if ($settings['style'] == 'inline') {
+          $list_items[$delta]['#wrapper_attributes']['class'] = 'container-inline';
+        }
       }
       $element[0] = [
         '#theme' => 'item_list',

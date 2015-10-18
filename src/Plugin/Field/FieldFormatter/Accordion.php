@@ -25,14 +25,13 @@ class Accordion extends Base {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
 
-    $settings = $this->getSettings();
     $this->prepareItems($items);
 
     $element[0] = [
       '#theme' => 'double_field_accordion',
       '#items' => $items,
-      '#settings' => $settings,
-      '#attached' => ['library' => ['core/jquery.ui.accordion']],
+      '#settings' => $this->getSettings(),
+      '#attached' => ['library' => ['double_field/accordion']],
     ];
 
     return $element;

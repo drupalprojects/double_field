@@ -11,7 +11,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- *
+ * Base class for list formatters.
  */
 abstract class ListBase extends Base {
 
@@ -37,8 +37,6 @@ abstract class ListBase extends Base {
       '#options' => [
         'inline' => t('Inline'),
         'block' => t('Block'),
-        'link' => t('Link'),
-        'dialog' => t('Dialog'),
       ],
       '#default_value' => isset($settings['style']) ? $settings['style'] : 'inline',
     ];
@@ -58,24 +56,5 @@ abstract class ListBase extends Base {
 
     return array_merge($summary, parent::settingsSummary());
   }
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
-    $this->prepareItems($items);
-    $element = [];
-
-    if ($this->getSetting('style') == 'dialog') {
-      $element['#attached']['library'] = ['core/jquery.ui.tabs'];
-      $element['#attached']['library'] = ['core/jquery.ui.effects.explode'];
-      $element['#attached']['library'] = ['double_field/dialog'];
-      //$element['#attached']['js'][] = drupal_get_path('module', 'double_field') . '/js/dialog.js';
-    }
-
-    return $element;
-  }
-
 
 }

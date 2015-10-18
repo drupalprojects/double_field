@@ -111,8 +111,14 @@ class Table extends Base {
         $row[]['#markup'] = $delta + 1;
       }
 
-      $row[]['#markup'] = $item->first;
-      $row[]['#markup'] = $item->second;
+      foreach (['first', 'second'] as $index) {
+        $row[] = [
+          '#theme' => 'double_field_subfield',
+          '#settings' => $settings,
+          '#subfield' => $item->{$index},
+          '#index' => $index,
+        ];
+      }
 
       $table[$delta] = $row;
 

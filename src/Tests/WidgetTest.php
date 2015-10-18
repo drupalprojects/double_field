@@ -18,9 +18,9 @@ class WidgetTest extends TestBase {
    * Passes if expected field values were found on the page.
    */
   protected function assertFieldValues($first_value, $second_value) {
-    $value = (string) $this->xpath("//div[@class='double-field-first']")[0];
+    $value = trim($this->xpath("//div[@class='double-field-first']")[0]);
     $this->assertTrue($value == $first_value, 'First value is correct.');
-    $value = (string) $this->xpath("//div[@class='double-field-second']")[0];
+    $value = trim($this->xpath("//div[@class='double-field-second']")[0]);
     $this->assertTrue($value == $second_value, 'Second value is correct.');
   }
 
@@ -430,7 +430,7 @@ class WidgetTest extends TestBase {
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
-      $this->fieldName . '[0][first]' =>  $field_settings['first']['min'] - 1,
+      $this->fieldName . '[0][first]' => $field_settings['first']['min'] - 1,
       $this->fieldName . '[0][second]' => mt_rand($field_settings['second']['min'], $field_settings['second']['max']),
     ];
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));

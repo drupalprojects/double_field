@@ -1,14 +1,14 @@
-<div{{ attributes }}>
-  {% if style == 'link' %}
-    <a href="{{ item.first }}">{{ item.second }}</a>
-  {% elseif style == 'dialog' %}
-    <a href="#" class="double-field-dialog-link">{{ item.first }}</a>
-    <div class="double-field-dialog-item hidden" title="{{ item.first }}">
-      {{ item.second }}
-    </div>
-  {% else %}
-    {% for subfield, value in item %}
-      <div class="double-field-{{ subfield }}">{{ value }}</div>
-    {% endfor %}
-  {% endif %}
-</div>
+{% for subfield, subitem in item %}
+  <div class="double-field-{{ subfield }}">
+    {% if settings[subfield].prefix %}
+      <span class="double-field-prefix">{{ settings[subfield].prefix }}</span>
+    {% endif %}
+    {{ subitem }}
+    {% if settings[subfield].suffix  %}
+      <span class="double-field-suffix">{{ settings[subfield].suffix }}</span>
+    {% endif %}
+  </div>
+{% endfor %}
+
+
+

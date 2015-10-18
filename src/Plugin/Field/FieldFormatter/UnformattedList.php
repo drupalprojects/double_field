@@ -8,6 +8,7 @@
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FieldItemInterface;
 
 /**
  * Plugin implementations for 'double_field' formatter.
@@ -24,11 +25,13 @@ class UnformattedList extends ListBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
+    $this->prepareItems($items);
 
-    $element = parent::viewElements($items, $langcode);
-
+    $settings = $this->getSettings();
     foreach ($items as $delta => $item) {
-
+      if ($settings['style'] == 'inline') {
+        $item->_attributes = ['class' => 'container-inline'];
+      }
       $element[$delta] = [
         '#settings' => $this->getSettings(),
         '#item' => $item,
@@ -37,7 +40,6 @@ class UnformattedList extends ListBase {
     }
 
     return $element;
-
   }
 
 }
