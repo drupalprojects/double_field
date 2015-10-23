@@ -24,8 +24,8 @@ abstract class Base extends FormatterBase {
     $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings[$subfield] = [
-        // Hidden option especially useful to display data with views module.
-        'hidden' => 0,
+        // Hidden option useful to display data with views module.
+        'hidden' => FALSE,
         'prefix' => '',
         'suffix' => '',
       ];
@@ -96,11 +96,11 @@ abstract class Base extends FormatterBase {
   protected function prepareItems(FieldItemListInterface &$items) {
 
     $field_settings = $this->getFieldSettings();
+    $settings = $this->getSettings();
 
     foreach ($items as $delta => $item) {
       foreach (['first', 'second'] as $subfield) {
-
-        if ($this->getSetting('hidden')) {
+        if ($settings[$subfield]['hidden']) {
           $item->{$subfield} = FALSE;
         }
         else {

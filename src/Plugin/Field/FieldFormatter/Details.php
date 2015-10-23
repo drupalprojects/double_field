@@ -72,6 +72,7 @@ class Details extends Base {
         '#value' => $settings['second']['prefix'] . $item->second . $settings['second']['suffix'],
         '#type' => 'details',
         '#open' => $settings['open'],
+        '#attributes' => ['class' => ['double-field-details']],
       );
 
     }

@@ -78,6 +78,7 @@ class HtmlList extends ListBase {
     }
     else {
       foreach ($items as $delta => $item) {
+
         $list_items[$delta] = [
           '#settings' => $settings,
           '#item' => $item,
@@ -94,8 +95,9 @@ class HtmlList extends ListBase {
       ];
     }
 
-    return $element;
+    $element[0]['#attributes']['class'][] = 'double-field-list';
 
+    return $element;
   }
 
 }

@@ -12,11 +12,14 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\double_field\Plugin\Field\FieldWidget\DoubleField;
+use Drupal\double_field\Plugin\Field\FieldFormatter\Base as BaseFormatter;
 
 /**
  * Tests the creation of text fields.
  */
 abstract class TestBase extends WebTestBase {
+
+  const CARDINALITY = 5;
 
   /**
    * A user with relevant administrative privileges.
@@ -60,6 +63,12 @@ abstract class TestBase extends WebTestBase {
    */
   protected $formDisplayAdminPath;
 
+  /**
+   * A path to display settings form.
+   *
+   * @var string
+   */
+  protected $displayAdminPath;
 
   /**
    * A path to field storage settings form.
@@ -67,6 +76,13 @@ abstract class TestBase extends WebTestBase {
    * @var string
    */
   protected $fieldStorageAdminPath;
+
+  /**
+   * A path to content type settings form.
+   *
+   * @var string
+   */
+  protected $contentTypeAdminPath;
 
   /**
    * A path to node add form.
@@ -90,6 +106,13 @@ abstract class TestBase extends WebTestBase {
   protected $field;
 
   /**
+   * The values of the field.
+   *
+   * @var array
+   */
+  protected $values;
+
+  /**
    * Modules to enable.
    *
    * @var array
@@ -110,8 +133,9 @@ abstract class TestBase extends WebTestBase {
     $this->fieldName = strtolower($this->randomMachineName());
     $this->contentTypeAdminPath = 'admin/structure/types/manage/' . $this->contentTypeId;
     $this->fieldAdminPath = "{$this->contentTypeAdminPath}/fields/node.{$this->contentTypeId}.{$this->fieldName}";
-    $this->formDisplayAdminPath = $this->contentTypeAdminPath . '/form-display';
     $this->fieldStorageAdminPath = $this->fieldAdminPath . '/storage';
+    $this->formDisplayAdminPath = $this->contentTypeAdminPath . '/form-display';
+    $this->displayAdminPath = $this->contentTypeAdminPath . '/display';
     $this->nodeAddPath = 'node/add/' . $this->contentTypeId;
 
     $this->adminUser = $this->drupalCreateUser([
@@ -121,6 +145,7 @@ abstract class TestBase extends WebTestBase {
       'administer node fields',
       'administer nodes',
       'administer node form display',
+      'administer node display',
       'edit any ' . $this->contentTypeId . ' content',
       'delete any ' . $this->contentTypeId . ' content',
     ]);
@@ -159,7 +184,14 @@ abstract class TestBase extends WebTestBase {
     $this->field->save();
 
     $this->saveWidgetSettings([]);
-    $this->saveFormatterSettings(['style' => 'block']);
+    $this->saveFormatterSettings('unformatted_list', ['style' => 'block']);
+
+    for ($delta = 0; $delta < self::CARDINALITY; $delta++) {
+      $this->values[$delta] = [
+        'first' => $this->randomMachineName(),
+        'second' => $this->randomMachineName(),
+      ];
+    }
   }
 
   /**
@@ -301,7 +333,8 @@ abstract class TestBase extends WebTestBase {
   /**
    * Saves formatter settings.
    */
-  protected function saveFormatterSettings(array $settings) {
+  protected function saveFormatterSettings($formatter, array $settings = []) {
+
     /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $view_display */
     $view_display = \Drupal::entityManager()
       ->getStorage('entity_view_display')
@@ -309,14 +342,24 @@ abstract class TestBase extends WebTestBase {
 
     $options = [
       'label' => 'hidden',
-      'type' => 'unformatted_list',
+      'type' => $formatter,
       'weight' => 100,
-      'settings' => $settings,
+      'settings' => NestedArray::mergeDeep(BaseFormatter::defaultSettings(), $settings),
       'third_party_settings' => [],
     ];
 
     $view_display->setComponent($this->fieldName, $options);
     $view_display->save();
+  }
+
+  /**
+   * Returns formatter options.
+   */
+  protected function getFormatterOptions() {
+    $view_display = \Drupal::entityManager()
+      ->getStorage('entity_view_display')
+      ->load("node.{$this->contentTypeId}.default");
+    return $view_display->getComponent($this->fieldName);
   }
 
 

@@ -27,6 +27,8 @@ class UnformattedList extends ListBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $this->prepareItems($items);
 
+    $element['#attributes']['class'][] = 'double-field-unformatted-list';
+
     $settings = $this->getSettings();
     foreach ($items as $delta => $item) {
       if ($settings['style'] == 'inline') {

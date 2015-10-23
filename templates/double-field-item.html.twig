@@ -1,14 +1,14 @@
 {% for subfield, subitem in item %}
-  <div class="double-field-{{ subfield }}">
-    {% if settings[subfield].prefix %}
-      <span class="double-field-prefix">{{ settings[subfield].prefix }}</span>
+    {% if subitem %}
+        <div class="double-field-{{ subfield }}">
+            {% if settings[subfield].prefix %}
+                <span class="double-field-prefix">{{ settings[subfield].prefix }}</span>
+            {% endif %}
+            {{ subitem }}
+            {% if settings[subfield].suffix %}
+                <span class="double-field-suffix">{{ settings[subfield].suffix }}</span>
+            {% endif %}
+        </div>
     {% endif %}
-    {{ subitem }}
-    {% if settings[subfield].suffix  %}
-      <span class="double-field-suffix">{{ settings[subfield].suffix }}</span>
-    {% endif %}
-  </div>
 {% endfor %}
-
-
 

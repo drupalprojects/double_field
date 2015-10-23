@@ -94,6 +94,7 @@ class Table extends Base {
     $this->prepareItems($items);
 
     $table = ['#type' => 'table'];
+    $table['#attributes']['class'][] = 'double-field-table';
 
     if ($settings['first_column_label'] || $settings['second_column_label']) {
       if ($settings['number_column']) {
@@ -111,13 +112,18 @@ class Table extends Base {
         $row[]['#markup'] = $delta + 1;
       }
 
-      foreach (['first', 'second'] as $index) {
-        $row[] = [
-          '#theme' => 'double_field_subfield',
-          '#settings' => $settings,
-          '#subfield' => $item->{$index},
-          '#index' => $index,
-        ];
+      foreach (['first', 'second'] as $subfield) {
+        if ($settings[$subfield]['hidden']) {
+          $row[]['#markup'] = '';
+        }
+        else {
+          $row[] = [
+            '#theme' => 'double_field_subfield',
+            '#settings' => $settings,
+            '#subfield' => $item->{$subfield},
+            '#index' => $subfield,
+          ];
+        }
       }
 
       $table[$delta] = $row;
