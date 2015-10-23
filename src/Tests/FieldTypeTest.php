@@ -323,8 +323,8 @@ class FieldTypeTest extends TestBase {
     $this->saveFieldSettings($settings);
 
     $values = [
-      $min_limit - mt_rand(0, 100),
-      $max_limit + mt_rand(0, 100),
+      $min_limit - 1,
+      $max_limit + 1,
     ];
     $expected_messages = [
       t('This value should be @min_limit or more.', ['@min_limit' => $min_limit]),
