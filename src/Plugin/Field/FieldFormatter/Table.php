@@ -45,6 +45,7 @@ class Table extends Base {
       '#type' => 'checkbox',
       '#title' => t('Enable row number column'),
       '#default_value' => $settings['number_column'],
+      // @TODO: Remove this.
       '#attributes' => array('id' => 'number_column'),
     );
     $element['number_column_label'] = array(
@@ -113,6 +114,7 @@ class Table extends Base {
       }
 
       foreach (['first', 'second'] as $subfield) {
+
         if ($settings[$subfield]['hidden']) {
           $row[]['#markup'] = '';
         }

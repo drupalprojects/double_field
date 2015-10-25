@@ -11,6 +11,7 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\double_field\Plugin\Field\FieldType\DoubleField as DoubleFieldItem;
 
 /**
  * Base class for Double field formatters.
@@ -40,11 +41,19 @@ abstract class Base extends FormatterBase {
   public function settingsForm(array $form, FormStateInterface $form_state) {
 
     $settings = $this->getSettings();
+    $field_settings = $this->getFieldSettings();
+    $types = DoubleFieldItem::subfieldTypes();
 
     // General settings.
     foreach (['first', 'second'] as $subfield) {
+
+      $type = $field_settings['storage'][$subfield]['type'];
+
+      $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
+      $title .= ' - ' . $types[$type];
+
       $element[$subfield] = [
-        '#title' => $subfield == 'first' ? t('First subfield') : t('Second subfield'),
+        '#title' => $title,
         '#type' => 'details',
       ];
       $element[$subfield]['hidden'] = [
@@ -75,9 +84,21 @@ abstract class Base extends FormatterBase {
   public function settingsSummary() {
 
     $settings = $this->getSettings();
+    $field_settings = $this->getFieldSettings();
+
+    $subfield_types = DoubleFieldItem::subfieldTypes();
 
     foreach (['first', 'second'] as $subfield) {
-      $summary[] = new FormattableMarkup('<br/><b>@subfield</b>', ['@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield'))]);
+      $subfield_type = $subfield_types[$field_settings['storage'][$subfield]['type']];
+
+      $summary[] = new FormattableMarkup(
+        '<b>@subfield - @subfield_type</b>',
+        [
+          '@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield')),
+          '@subfield_type' => strtolower($subfield_type),
+        ]
+      );
+
       $summary[] = t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? t('yes') : t('no')]);
 
       $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
@@ -100,6 +121,7 @@ abstract class Base extends FormatterBase {
 
     foreach ($items as $delta => $item) {
       foreach (['first', 'second'] as $subfield) {
+
         if ($settings[$subfield]['hidden']) {
           $item->{$subfield} = FALSE;
         }
@@ -120,7 +142,6 @@ abstract class Base extends FormatterBase {
           }
 
         }
-
       }
       $items[$delta] = $item;
     }

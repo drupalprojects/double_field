@@ -181,6 +181,8 @@ class WidgetTest extends TestBase {
 
   /**
    * Test widget settings form.
+   *
+   * @TODO: Cleanup.
    */
   public function testWidgetSettingsForm() {
 

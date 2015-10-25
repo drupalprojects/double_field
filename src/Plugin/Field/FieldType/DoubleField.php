@@ -275,6 +275,7 @@ class DoubleField extends FieldItemBase {
 
       if (!in_array($subfield_type, ['boolean', 'text']) && $settings[$subfield]['list'] && $settings[$subfield]['allowed_values']) {
         $allowed_values = array_keys($settings[$subfield]['allowed_values']);
+        // @TODO: Fix this.
         $allowed_values[] = '';
         $subconstrains[$subfield]['AllowedValues'] = $allowed_values;
       }
