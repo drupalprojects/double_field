@@ -181,20 +181,21 @@ class WidgetTest extends TestBase {
 
   /**
    * Test widget settings form.
-   *
-   * @TODO: Cleanup.
    */
   public function testWidgetSettingsForm() {
 
     $name_prefix = "fields[{$this->fieldName}][settings_edit_form][settings]";
 
-    $default_axes = [
+    $general_axes = [
       "//input[@name='{$name_prefix}[inline]' and @type='checkbox']",
-      "//input[@name='{$name_prefix}[first][prefix]']",
-      "//input[@name='{$name_prefix}[first][suffix]']",
-      "//input[@name='{$name_prefix}[second][prefix]']",
-      "//input[@name='{$name_prefix}[second][suffix]']",
     ];
+
+    foreach (['first', 'second'] as $subfield) {
+      $general_axes[] = "//input[@name='{$name_prefix}[{$subfield}][prefix]']";
+      $general_axes[] = "//input[@name='{$name_prefix}[{$subfield}][suffix]']";
+      $general_edit["{$name_prefix}[{$subfield}][prefix]"] = $this->randomMachineName();
+      $general_edit["{$name_prefix}[{$subfield}][suffix]"] = $this->randomMachineName();
+    }
 
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
@@ -210,7 +211,7 @@ class WidgetTest extends TestBase {
     // Click on the widget settings button to open the widget settings form.
     $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
 
-    $axes = $default_axes;
+    $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='checkbox']";
     $axes[] = "//summary[text()='First subfield - Boolean']";
     $axes[] = "//input[@name='{$name_prefix}[first][checkbox][label]' and @value='Ok']";
@@ -220,15 +221,11 @@ class WidgetTest extends TestBase {
     $axes[] = "//input[@name='{$name_prefix}[second][textfield][placeholder]']";
     $this->assertAxes($axes);
 
-    $edit = [
+    $edit = $general_edit + [
       $name_prefix . '[inline]' => TRUE,
       $name_prefix . '[first][checkbox][label]' => $this->randomMachineName(),
-      $name_prefix . '[first][prefix]' => $this->randomMachineName(),
-      $name_prefix . '[first][suffix]' => $this->randomMachineName(),
       $name_prefix . '[second][textfield][size]' => mt_rand(1, 10),
       $name_prefix . '[second][textfield][placeholder]' => $this->randomMachineName(),
-      $name_prefix . '[second][prefix]' => $this->randomMachineName(),
-      $name_prefix . '[second][suffix]' => $this->randomMachineName(),
     ];
 
     $this->drupalPostAjaxForm(NULL, $edit, $this->fieldName . '_plugin_settings_update');
@@ -268,7 +265,7 @@ class WidgetTest extends TestBase {
     $this->drupalGet($this->formDisplayAdminPath);
     $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
 
-    $axes = $default_axes;
+    $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='textarea' and @selected]";
     $axes[] = "//summary[text()='First subfield - Text (long)']";
     $axes[] = "//input[@name='{$name_prefix}[first][textarea][cols]']";
@@ -277,15 +274,11 @@ class WidgetTest extends TestBase {
     $axes[] = "//summary[text()='Second subfield - Integer']";
     $this->assertAxes($axes);
 
-    $edit = [
+    $edit = $general_edit + [
       $name_prefix . '[inline]' => FALSE,
       $name_prefix . '[first][textarea][cols]' => mt_rand(1, 10),
       $name_prefix . '[first][textarea][rows]' => mt_rand(1, 10),
       $name_prefix . '[first][textarea][placeholder]' => $this->randomMachineName(),
-      $name_prefix . '[first][prefix]' => $this->randomMachineName(),
-      $name_prefix . '[first][suffix]' => $this->randomMachineName(),
-      $name_prefix . '[second][prefix]' => $this->randomMachineName(),
-      $name_prefix . '[second][suffix]' => $this->randomMachineName(),
     ];
 
     $this->drupalPostAjaxForm(NULL, $edit, $this->fieldName . '_plugin_settings_update');
@@ -325,7 +318,7 @@ class WidgetTest extends TestBase {
     // Click on the widget settings button to open the widget settings form.
     $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
 
-    $axes = $default_axes;
+    $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='number' and @selected]";
     $axes[] = "//summary[text()='First subfield - Float']";
     $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";

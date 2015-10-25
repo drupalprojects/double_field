@@ -327,9 +327,9 @@ class FormatterTest extends TestBase {
       ];
 
       $hidden = $settings[$subfield]['hidden'] ? '@checked' : 'not(@checked)';
-      $default_axes[] = "//input[@name='{$name_prefix}[{$subfield}][hidden]' and $hidden]";
-      $default_axes[] = "//input[@name='{$name_prefix}[{$subfield}][prefix]' and @value='{$settings[$subfield]['prefix']}']";
-      $default_axes[] = "//input[@name='{$name_prefix}[{$subfield}][suffix]' and @value='{$settings[$subfield]['suffix']}']";
+      $general_axes[] = "//input[@name='{$name_prefix}[{$subfield}][hidden]' and $hidden]";
+      $general_axes[] = "//input[@name='{$name_prefix}[{$subfield}][prefix]' and @value='{$settings[$subfield]['prefix']}']";
+      $general_axes[] = "//input[@name='{$name_prefix}[{$subfield}][suffix]' and @value='{$settings[$subfield]['suffix']}']";
 
       $this->generalSettingsEdit["{$name_prefix}[{$subfield}][hidden]"] = (bool) mt_rand(0, 1);
       $this->generalSettingsEdit["{$name_prefix}[{$subfield}][prefix]"] = $this->randomMachineName();
@@ -348,7 +348,7 @@ class FormatterTest extends TestBase {
 
     // Click on the settings button to open the formatter settings form.
     $this->drupalPostAjaxForm($this->displayAdminPath, [], $this->fieldName . '_settings_edit');
-    $this->assertAxes($default_axes);
+    $this->assertAxes($general_axes);
 
     $this->assertSummary();
 
@@ -357,7 +357,7 @@ class FormatterTest extends TestBase {
 
     // Click on the settings button to open the formatter settings form.
     $this->drupalPostAjaxForm($this->displayAdminPath, [], $this->fieldName . '_settings_edit');
-    $this->assertAxes($default_axes);
+    $this->assertAxes($general_axes);
 
     $this->assertSummary();
 
@@ -371,7 +371,7 @@ class FormatterTest extends TestBase {
     // Click on the settings button to open the formatter settings form.
     $this->drupalPostAjaxForm($this->displayAdminPath, [], $this->fieldName . '_settings_edit');
 
-    $axes = $default_axes;
+    $axes = $general_axes;
     $number_column = $settings['number_column'] ? '@checked' : 'not(@checked)';
     $axes[] = "//input[@name='{$name_prefix}[number_column]' and {$number_column}]";
     $axes[] = "//input[@name='{$name_prefix}[number_column_label]' and @value='{$settings['number_column_label']}']";
@@ -400,7 +400,7 @@ class FormatterTest extends TestBase {
     $settings['open'] = (bool) mt_rand(0, 1);
     $this->saveFormatterSettings('details', $settings);
 
-    $axes = $default_axes;
+    $axes = $general_axes;
     $open = $settings['open'] ? '@checked' : 'not(@checked)';
     $axes[] = "//input[@name='{$name_prefix}[open]' and {$open}]";
 
@@ -423,7 +423,7 @@ class FormatterTest extends TestBase {
     $settings['list_type'] = array_rand($list_types);
     $this->saveFormatterSettings('html_list', $settings);
 
-    $axes = $default_axes;
+    $axes = $general_axes;
     $axes[] = "//input[@name='{$name_prefix}[list_type]' and @value='{$settings['list_type']}']";
 
     $this->drupalPostAjaxForm($this->displayAdminPath, [], $this->fieldName . '_settings_edit');
@@ -442,7 +442,7 @@ class FormatterTest extends TestBase {
     $this->saveFormatterSettings('unformatted_list', $settings);
 
     $this->drupalPostAjaxForm($this->displayAdminPath, [], $this->fieldName . '_settings_edit');
-    $this->assertAxes($default_axes);
+    $this->assertAxes($general_axes);
     // TODO: Test inline setting summary.
     $expected_items = [(string) t('Display style: !style', ['!style' => 'inline'])];
     $this->assertSummary([], $expected_items);

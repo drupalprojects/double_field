@@ -314,12 +314,11 @@ class FieldTypeTest extends TestBase {
 
     $min_limit = mt_rand(-1000, 1000);
     $max_limit = mt_rand($min_limit, $min_limit + 1000);
-    $settings['first']['list'] = FALSE;
-    $settings['first']['min'] = $min_limit;
-    $settings['first']['max'] = $max_limit;
-    $settings['second']['list'] = FALSE;
-    $settings['second']['min'] = $min_limit;
-    $settings['second']['max'] = $max_limit;
+    foreach (['first', 'second'] as $subfield) {
+      $settings[$subfield]['list'] = FALSE;
+      $settings[$subfield]['min'] = $min_limit;
+      $settings[$subfield]['max'] = $max_limit;
+    }
     $this->saveFieldSettings($settings);
 
     $values = [
@@ -346,12 +345,11 @@ class FieldTypeTest extends TestBase {
     $min_limit = mt_rand(-1000, 1000);
     $max_limit = mt_rand($min_limit, $min_limit + 1000);
     $settings = $this->field->getSettings();
-    $settings['first']['list'] = FALSE;
-    $settings['first']['min'] = $min_limit;
-    $settings['first']['max'] = $max_limit;
-    $settings['second']['list'] = FALSE;
-    $settings['second']['min'] = $min_limit;
-    $settings['second']['max'] = $max_limit;
+    foreach (['first', 'second'] as $subfield) {
+      $settings[$subfield]['list'] = FALSE;
+      $settings[$subfield]['min'] = $min_limit;
+      $settings[$subfield]['max'] = $max_limit;
+    }
     $this->saveFieldSettings($settings);
 
     $values = [

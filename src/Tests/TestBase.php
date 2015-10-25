@@ -19,6 +19,9 @@ use Drupal\double_field\Plugin\Field\FieldFormatter\Base as BaseFormatter;
  */
 abstract class TestBase extends WebTestBase {
 
+  /**
+   * Field cardinality.
+   */
   const CARDINALITY = 5;
 
   /**
@@ -139,15 +142,12 @@ abstract class TestBase extends WebTestBase {
     $this->nodeAddPath = 'node/add/' . $this->contentTypeId;
 
     $this->adminUser = $this->drupalCreateUser([
-      // @TODO: Remove unused permissions.
       'administer content types',
-      'administer site configuration',
       'administer node fields',
       'administer nodes',
       'administer node form display',
       'administer node display',
-      'edit any ' . $this->contentTypeId . ' content',
-      'delete any ' . $this->contentTypeId . ' content',
+      "delete any {$this->contentTypeId} content",
     ]);
     $this->drupalLogin($this->adminUser);
 
@@ -312,7 +312,6 @@ abstract class TestBase extends WebTestBase {
    * Saves widget settings.
    */
   protected function saveWidgetSettings(array $settings) {
-
     /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay $form_display */
     $form_display = \Drupal::entityManager()
       ->getStorage('entity_form_display')
@@ -327,7 +326,6 @@ abstract class TestBase extends WebTestBase {
 
     $form_display->setComponent($this->fieldName, $options);
     $form_display->save();
-
   }
 
   /**
@@ -362,9 +360,8 @@ abstract class TestBase extends WebTestBase {
     return $view_display->getComponent($this->fieldName);
   }
 
-
   /**
-   * Checks to see if two arrays are identical.
+   * Passes if two arrays are identical.
    *
    * @param array $array1
    *   The first array to check.
@@ -389,9 +386,7 @@ abstract class TestBase extends WebTestBase {
    */
   protected function assertAxes(array $axes) {
     foreach ($axes as $axis) {
-      $elements = $this->xpath($axis);
-      $message = "Xpath $axis is valid.";
-      $this->assertEqual(count($elements), 1, $message);
+      $this->assertEqual(count($this->xpath($axis)), 1, t('Found valid xpath: !xpath', ['!xpath' => $axis]));
     }
   }
 
