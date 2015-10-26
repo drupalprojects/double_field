@@ -161,7 +161,7 @@ class DoubleField extends FieldItemBase {
         '#default_value' => $settings[$subfield]['required'],
       ];
 
-      if (in_array($type, ['string', 'int', 'float', 'numeric', 'email'])) {
+      if (in_array($type, ['string', 'integer', 'float', 'numeric', 'email'])) {
         $element[$subfield]['list'] = [
           '#type' => 'checkbox',
           '#title' => t('Limit allowed values'),
@@ -201,7 +201,7 @@ class DoubleField extends FieldItemBase {
         ];
       }
 
-      if (in_array($type, ['int', 'float', 'numeric'])) {
+      if (in_array($type, ['integer', 'float', 'numeric'])) {
         $element[$subfield]['min'] = [
           '#type' => 'number',
           '#title' => t('Minimum'),
@@ -290,7 +290,7 @@ class DoubleField extends FieldItemBase {
       }
 
       // Allowed values take precedence over the range constraints.
-      if (!$settings[$subfield]['list'] && in_array($subfield_type, ['int', 'float', 'numeric'])) {
+      if (!$settings[$subfield]['list'] && in_array($subfield_type, ['integer', 'float', 'numeric'])) {
         if (is_numeric($settings[$subfield]['min'])) {
           $subconstrains[$subfield]['Range']['min'] = $settings[$subfield]['min'];
         }
@@ -327,7 +327,6 @@ class DoubleField extends FieldItemBase {
       $type = $settings['storage'][$subfield]['type'];
 
       $columns[$subfield] = [
-        'type' => $type,
         'not null' => FALSE,
         'description' => ucfirst($subfield) . ' subfield value.',
       ];
@@ -339,11 +338,17 @@ class DoubleField extends FieldItemBase {
           break;
 
         case 'text':
+          $columns[$subfield]['type'] = 'text';
           $columns[$subfield]['size'] = 'big';
           break;
 
-        case 'int':
+        case 'integer':
+          $columns[$subfield]['type'] = 'int';
+          $columns[$subfield]['size'] = 'normal';
+          break;
+
         case 'float':
+          $columns[$subfield]['type'] = 'float';
           $columns[$subfield]['size'] = 'normal';
           break;
 
@@ -352,7 +357,8 @@ class DoubleField extends FieldItemBase {
           $columns[$subfield]['size'] = 'tiny';
           break;
 
-        case 'decimal':
+        case 'numeric':
+          $columns[$subfield]['type'] = 'numeric';
           $columns[$subfield]['precision'] = $settings['storage'][$subfield]['precision'];
           $columns[$subfield]['scale'] = $settings['storage'][$subfield]['scale'];
           break;
@@ -425,7 +431,7 @@ class DoubleField extends FieldItemBase {
           }
           break;
 
-        case 'int':
+        case 'integer':
           // @see \Drupal\options\Plugin\Field\FieldType\ListIntegerItem::validateAllowedValue()
           if (!preg_match('/^-?\d+$/', $key)) {
             $form_state->setError($element, ('Allowed values list: keys must be integers.'));
@@ -511,7 +517,7 @@ class DoubleField extends FieldItemBase {
       'boolean' => t('Boolean'),
       'string' => t('Text'),
       'text' => t('Text (long)'),
-      'int' => t('Integer'),
+      'integer' => t('Integer'),
       'float' => t('Float'),
       'numeric' => t('Decimal'),
       'email' => t('Email'),
@@ -527,7 +533,7 @@ class DoubleField extends FieldItemBase {
       'boolean' => ['integer', t('Integer')],
       'string' => ['string', t('String')],
       'text' => ['string', t('String')],
-      'int' => ['integer', t('Integer')],
+      'integer' => ['integer', t('Integer')],
       'float' => ['float', t('FLoat')],
       'numeric' => ['float', t('FLoat')],
       'email' => ['email', t('Email')],

@@ -283,7 +283,7 @@ class DoubleField extends WidgetBase {
         case 'number':
 
           if (in_array($field_settings['storage'][$subfield]['type'], [
-            'int',
+            'integer',
             'float',
             'numeric'
           ])) {
@@ -347,7 +347,7 @@ class DoubleField extends WidgetBase {
         $subwidgets['textarea'] = t('Text area');
         break;
 
-      case 'int':
+      case 'integer':
       case 'float':
       case 'numeric':
         $subwidgets['number'] = t('Number');

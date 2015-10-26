@@ -135,7 +135,7 @@ class FieldTypeTest extends TestBase {
 
     // -- Text (long) and integer.
     $storage_settings['storage']['first']['type'] = 'text';
-    $storage_settings['storage']['second']['type'] = 'int';
+    $storage_settings['storage']['second']['type'] = 'integer';
     $this->saveFieldStorageSettings($storage_settings);
 
     $values = [
@@ -213,7 +213,7 @@ class FieldTypeTest extends TestBase {
       'boolean',
       'string',
       'text',
-      'int',
+      'integer',
       'float',
       'numeric',
       'email',
@@ -330,8 +330,8 @@ class FieldTypeTest extends TestBase {
     $this->assertNoViolations($values);
 
     // -- Integer.
-    $storage_settings['storage']['first']['type'] = 'int';
-    $storage_settings['storage']['second']['type'] = 'int';
+    $storage_settings['storage']['first']['type'] = 'integer';
+    $storage_settings['storage']['second']['type'] = 'integer';
     $this->saveFieldStorageSettings($storage_settings);
 
     $min_limit = mt_rand(-1000, 1000);
@@ -421,7 +421,7 @@ class FieldTypeTest extends TestBase {
       'boolean',
       'string',
       'text',
-      'int',
+      'integer',
       'float',
       'numeric',
     ];
@@ -471,7 +471,7 @@ class FieldTypeTest extends TestBase {
             $this->assertNoFieldByXPath("//textarea[@name='settings[$subfield][allowed_values]']", NULL, 'Allowed values field is absent');
             break;
 
-          case 'int':
+          case 'integer':
             $this->assertTrue($summary_type == 'Integer', 'Summary type is correct');
             $this->assertAllowedValues($subfield);
             $this->assertRangeFields($subfield);
@@ -553,7 +553,7 @@ class FieldTypeTest extends TestBase {
     $this->assertStatusMessage(t('Saved @field_name configuration.', ['@field_name' => $this->fieldName]));
 
     // --
-    $storage_settings['storage']['first']['type'] = 'int';
+    $storage_settings['storage']['first']['type'] = 'integer';
     $storage_settings['storage']['second']['type'] = 'numeric';
     $this->saveFieldStorageSettings($storage_settings);
 
@@ -578,7 +578,7 @@ class FieldTypeTest extends TestBase {
    * Test required options.
    */
   public function testRequiredOptions() {
-    $storage_settings['storage']['first']['type'] = 'int';
+    $storage_settings['storage']['first']['type'] = 'integer';
     $storage_settings['storage']['second']['type'] = 'boolean';
     $this->saveFieldStorageSettings($storage_settings);
     $this->assertViolations([NULL, 1], [t('This value should not be blank.')]);

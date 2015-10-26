@@ -71,7 +71,7 @@ class WidgetTest extends TestBase {
 
     // -- Text and integer.
     $storage_settings['storage']['first']['type'] = 'text';
-    $storage_settings['storage']['second']['type'] = 'int';
+    $storage_settings['storage']['second']['type'] = 'integer';
     $this->saveFieldStorageSettings($storage_settings);
 
     $instance_settings['second']['min'] = mt_rand(-1000, 0);
@@ -255,7 +255,7 @@ class WidgetTest extends TestBase {
 
     // -- Text and integer.
     $storage_settings['storage']['first']['type'] = 'text';
-    $storage_settings['storage']['second']['type'] = 'int';
+    $storage_settings['storage']['second']['type'] = 'integer';
     $this->saveFieldStorageSettings($storage_settings);
 
     $widget_settings['first']['type'] = 'textarea';
@@ -392,7 +392,7 @@ class WidgetTest extends TestBase {
     $this->deleteNodes();
 
     // -- Integer and float.
-    $storage_settings['storage']['first']['type'] = 'int';
+    $storage_settings['storage']['first']['type'] = 'integer';
     $storage_settings['storage']['first']['maxlength'] = NULL;
     $storage_settings['storage']['second']['type'] = 'float';
     $this->saveFieldStorageSettings($storage_settings);
