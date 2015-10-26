@@ -336,7 +336,7 @@ class DoubleField extends WidgetBase {
         $subwidgets['checkbox'] = t('Checkbox');
         break;
 
-      case 'varchar':
+      case 'string':
       case 'email':
         $subwidgets['textfield'] = t('Textfield');
         $subwidgets['email'] = t('Email');

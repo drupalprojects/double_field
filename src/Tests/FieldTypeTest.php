@@ -111,7 +111,7 @@ class FieldTypeTest extends TestBase {
 
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
-    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['second']['type'] = 'string';
     $storage_settings['storage']['second']['maxlength'] = $maxlength;
     $this->saveFieldStorageSettings($storage_settings);
 
@@ -182,7 +182,7 @@ class FieldTypeTest extends TestBase {
 
     // -- Email.
     $storage_settings['storage']['first']['type'] = 'email';
-    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
     // --
@@ -211,7 +211,7 @@ class FieldTypeTest extends TestBase {
 
     $expected_options = [
       'boolean',
-      'varchar',
+      'string',
       'text',
       'int',
       'float',
@@ -253,7 +253,7 @@ class FieldTypeTest extends TestBase {
       }
       $this->assertTrue(count($expected_options) == count($options), 'Unexpected options were not found');
 
-      $maxlength_states['visible'] = [":input[name='settings[storage][$subfield][type]']" => ['value' => 'varchar']];
+      $maxlength_states['visible'] = [":input[name='settings[storage][$subfield][type]']" => ['value' => 'string']];
       $expected_maxlength_attributes['data-drupal-states'] = json_encode($maxlength_states, JSON_HEX_APOS);
       $maxlength_field = $this->xpath("//input[@name='settings[storage][$subfield][maxlength]']")[0];
       $this->assertAttributes($maxlength_field->attributes(), $expected_maxlength_attributes);
@@ -271,7 +271,7 @@ class FieldTypeTest extends TestBase {
 
     // Submit some example settings and check whether they are accepted.
     $edit = [
-      'settings[storage][first][type]' => 'varchar',
+      'settings[storage][first][type]' => 'string',
       'settings[storage][first][maxlength]' => 15,
       'settings[storage][second][type]' => 'numeric',
       'settings[storage][second][precision]' => 30,
@@ -284,7 +284,7 @@ class FieldTypeTest extends TestBase {
     $this->drupalGet($this->fieldStorageAdminPath);
 
     $first_select = $this->xpath('//select[@name="settings[storage][first][type]"]')[0];
-    $this->assertTrue($this->getSelectedItem($first_select)[0] == 'varchar', 'First selected type is varchar');
+    $this->assertTrue($this->getSelectedItem($first_select)[0] == 'string', 'First selected type is varchar');
 
     $first_maxlength = $this->xpath('//input[@name="settings[storage][first][maxlength]"]')[0];
     $this->assertTrue($first_maxlength->attributes()['value'] == 15, 'First maxlength value is valid.');
@@ -306,7 +306,7 @@ class FieldTypeTest extends TestBase {
 
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
-    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
     $settings['second']['list'] = TRUE;
@@ -419,7 +419,7 @@ class FieldTypeTest extends TestBase {
 
     $storage_types = [
       'boolean',
-      'varchar',
+      'string',
       'text',
       'int',
       'float',
@@ -461,7 +461,7 @@ class FieldTypeTest extends TestBase {
             $this->assertAttributes($off_label_field->attributes(), $expected_attributes);
             break;
 
-          case 'varchar':
+          case 'string':
             $this->assertTrue($summary_type == 'Text', 'Summary type is correct');
             $this->assertAllowedValues($subfield);
             break;
@@ -527,7 +527,7 @@ class FieldTypeTest extends TestBase {
 
     // --
     $maxlength = 50;
-    $storage_settings['storage']['first']['type'] = 'varchar';
+    $storage_settings['storage']['first']['type'] = 'string';
     $storage_settings['storage']['first']['maxlength'] = $maxlength;
     $storage_settings['storage']['second']['type'] = 'float';
     $this->saveFieldStorageSettings($storage_settings);

@@ -154,13 +154,13 @@ abstract class TestBase extends WebTestBase {
     // Create a field storage for testing.
     $storage_settings['storage'] = [
       'first' => [
-        'type' => 'varchar',
+        'type' => 'string',
         'maxlength' => 50,
         'precision' => 10,
         'scale' => 2,
       ],
       'second' => [
-        'type' => 'varchar',
+        'type' => 'string',
         'maxlength' => 50,
         'precision' => 10,
         'scale' => 2,

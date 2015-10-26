@@ -31,7 +31,7 @@ class WidgetTest extends TestBase {
 
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
-    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
     $widget_settings['first']['type'] = 'checkbox';
@@ -199,7 +199,7 @@ class WidgetTest extends TestBase {
 
     // -- Boolean and varchar.
     $storage_settings['storage']['first']['type'] = 'boolean';
-    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
     $widget_settings['first']['type'] = 'boolean';
@@ -333,9 +333,9 @@ class WidgetTest extends TestBase {
 
     // -- Varchar.
     $maxlength = 10;
-    $storage_settings['storage']['first']['type'] = 'varchar';
+    $storage_settings['storage']['first']['type'] = 'string';
     $storage_settings['storage']['first']['maxlength'] = $maxlength;
-    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
     $widget_settings['first']['type'] = 'textfield';

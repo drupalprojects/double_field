@@ -34,7 +34,7 @@ class DoubleField extends FieldItemBase {
 
     foreach (['first', 'second'] as $subfield) {
       $settings['storage'][$subfield] = [
-        'type' => 'varchar',
+        'type' => 'string',
         'maxlength' => 255,
         'precision' => 10,
         'scale' => 2,
@@ -76,7 +76,7 @@ class DoubleField extends FieldItemBase {
         '#required' => TRUE,
         '#min' => 1,
         '#states' => [
-          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'varchar']],
+          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'string']],
         ],
       ];
 
@@ -161,7 +161,7 @@ class DoubleField extends FieldItemBase {
         '#default_value' => $settings[$subfield]['required'],
       ];
 
-      if (in_array($type, ['varchar', 'int', 'float', 'numeric', 'email'])) {
+      if (in_array($type, ['string', 'int', 'float', 'numeric', 'email'])) {
         $element[$subfield]['list'] = [
           '#type' => 'checkbox',
           '#title' => t('Limit allowed values'),
@@ -285,7 +285,7 @@ class DoubleField extends FieldItemBase {
         $subconstrains[$subfield]['AllowedValues'] = [0, 1];
       }
 
-      if ($subfield_type == 'varchar') {
+      if ($subfield_type == 'string') {
         $subconstrains[$subfield]['Length']['max'] = $settings['storage'][$subfield]['maxlength'];
       }
 
@@ -325,19 +325,16 @@ class DoubleField extends FieldItemBase {
     foreach (['first', 'second'] as $subfield) {
 
       $type = $settings['storage'][$subfield]['type'];
-      // @TODO: Fix this.
-      if ($type == 'email') {
-        $type = 'varchar';
-        $settings['storage'][$subfield]['maxlength'] = Email::EMAIL_MAX_LENGTH;
-      }
 
       $columns[$subfield] = [
-        'type' => $type == 'boolean' ? 'int' : $type,
+        'type' => $type,
         'not null' => FALSE,
         'description' => ucfirst($subfield) . ' subfield value.',
       ];
+
       switch ($type) {
-        case 'varchar':
+        case 'string':
+          $columns[$subfield]['type'] = 'varchar';
           $columns[$subfield]['length'] = $settings['storage'][$subfield]['maxlength'];
           break;
 
@@ -351,12 +348,18 @@ class DoubleField extends FieldItemBase {
           break;
 
         case 'boolean':
+          $columns[$subfield]['type'] = 'int';
           $columns[$subfield]['size'] = 'tiny';
           break;
 
         case 'decimal':
           $columns[$subfield]['precision'] = $settings['storage'][$subfield]['precision'];
           $columns[$subfield]['scale'] = $settings['storage'][$subfield]['scale'];
+          break;
+
+        case 'email':
+          $columns[$subfield]['type'] = 'varchar';
+          $columns[$subfield]['length'] = Email::EMAIL_MAX_LENGTH;
           break;
       }
     }
@@ -411,7 +414,7 @@ class DoubleField extends FieldItemBase {
     foreach ($values as $key => $value) {
       switch ($element['#storage_type']) {
 
-        case 'varchar':
+        case 'string':
           // @see \Drupal\options\Plugin\Field\FieldType\ListStringItem::validateAllowedValue()
           if (Unicode::strlen($key) > $element['#storage_maxlength']) {
             $error_message = t(
@@ -506,7 +509,7 @@ class DoubleField extends FieldItemBase {
   public static function subfieldTypes() {
     $type_options = [
       'boolean' => t('Boolean'),
-      'varchar' => t('Text'),
+      'string' => t('Text'),
       'text' => t('Text (long)'),
       'int' => t('Integer'),
       'float' => t('Float'),
@@ -522,7 +525,7 @@ class DoubleField extends FieldItemBase {
   protected static function subfieldPrimiriveTypes() {
     $type_options = [
       'boolean' => ['integer', t('Integer')],
-      'varchar' => ['string', t('String')],
+      'string' => ['string', t('String')],
       'text' => ['string', t('String')],
       'int' => ['integer', t('Integer')],
       'float' => ['float', t('FLoat')],

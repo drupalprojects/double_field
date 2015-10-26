@@ -276,8 +276,8 @@ class FormatterTest extends TestBase {
    */
   public function testListLabels() {
 
-    $storage_settings['storage']['first']['type'] = 'varchar';
-    $storage_settings['storage']['second']['type'] = 'varchar';
+    $storage_settings['storage']['first']['type'] = 'string';
+    $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
     $field_settings['first']['list'] = TRUE;
