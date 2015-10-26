@@ -307,7 +307,6 @@ class DoubleField extends WidgetBase {
    * {@inheritdoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-
     $settings = $this->getSettings();
 
     foreach ($values as $delta => $value) {
@@ -319,7 +318,6 @@ class DoubleField extends WidgetBase {
     }
 
     return $values;
-
   }
 
   /**
@@ -339,6 +337,7 @@ class DoubleField extends WidgetBase {
         break;
 
       case 'varchar':
+      case 'email':
         $subwidgets['textfield'] = t('Textfield');
         $subwidgets['email'] = t('Email');
         $subwidgets['number'] = t('Number');
@@ -349,19 +348,12 @@ class DoubleField extends WidgetBase {
         break;
 
       case 'int':
-        $subwidgets['number'] = t('Number');
-        $subwidgets['textfield'] = t('Textfield');
-        break;
-
       case 'float':
-        $subwidgets['number'] = t('Number');
-        $subwidgets['textfield'] = t('Textfield');
-        break;
-
       case 'numeric':
         $subwidgets['number'] = t('Number');
         $subwidgets['textfield'] = t('Textfield');
         break;
+
     }
 
     return $subwidgets;
@@ -371,14 +363,7 @@ class DoubleField extends WidgetBase {
    * {@inheritdoc}
    */
   public function errorElement(array $element, ConstraintViolationInterface $violation, array $form, FormStateInterface $form_state) {
-
-    if (isset($violation->arrayPropertyPath[0])) {
-      return $element[$violation->arrayPropertyPath[0]];
-    }
-    else {
-      return FALSE;
-    }
-
+    return isset($violation->arrayPropertyPath[0]) ? $element[$violation->arrayPropertyPath[0]] : FALSE;
   }
 
 }

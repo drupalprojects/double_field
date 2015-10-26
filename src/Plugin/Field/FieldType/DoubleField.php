@@ -12,6 +12,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Render\Element\Email;
 
 /**
  * Plugin implementation of the 'double_field' field type.
@@ -160,7 +161,7 @@ class DoubleField extends FieldItemBase {
         '#default_value' => $settings[$subfield]['required'],
       ];
 
-      if (in_array($type, ['varchar', 'int', 'float', 'numeric'])) {
+      if (in_array($type, ['varchar', 'int', 'float', 'numeric', 'email'])) {
         $element[$subfield]['list'] = [
           '#type' => 'checkbox',
           '#title' => t('Limit allowed values'),
@@ -298,6 +299,10 @@ class DoubleField extends FieldItemBase {
         }
       }
 
+      if ($subfield_type == 'email') {
+        $subconstrains[$subfield]['Length']['max'] = Email::EMAIL_MAX_LENGTH;
+      }
+
       // This is applicable to all types.
       if ($settings[$subfield]['required']) {
         $subconstrains[$subfield]['NotBlank'] = [];
@@ -320,13 +325,18 @@ class DoubleField extends FieldItemBase {
     foreach (['first', 'second'] as $subfield) {
 
       $type = $settings['storage'][$subfield]['type'];
+      // @TODO: Fix this.
+      if ($type == 'email') {
+        $type = 'varchar';
+        $settings['storage'][$subfield]['maxlength'] = Email::EMAIL_MAX_LENGTH;
+      }
+
       $columns[$subfield] = [
         'type' => $type == 'boolean' ? 'int' : $type,
         'not null' => FALSE,
         'description' => ucfirst($subfield) . ' subfield value.',
       ];
-
-      switch ($settings['storage'][$subfield]['type']) {
+      switch ($type) {
         case 'varchar':
           $columns[$subfield]['length'] = $settings['storage'][$subfield]['maxlength'];
           break;
@@ -501,6 +511,7 @@ class DoubleField extends FieldItemBase {
       'int' => t('Integer'),
       'float' => t('Float'),
       'numeric' => t('Decimal'),
+      'email' => t('Email'),
     ];
     return $type_options;
   }
@@ -516,6 +527,7 @@ class DoubleField extends FieldItemBase {
       'int' => ['integer', t('Integer')],
       'float' => ['float', t('FLoat')],
       'numeric' => ['float', t('FLoat')],
+      'email' => ['email', t('Email')],
     ];
     return $type_options;
   }

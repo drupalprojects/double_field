@@ -180,6 +180,27 @@ class FieldTypeTest extends TestBase {
     ];
     $this->assertNoViolations($values);
 
+    // -- Email.
+    $storage_settings['storage']['first']['type'] = 'email';
+    $storage_settings['storage']['second']['type'] = 'varchar';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    // --
+    $values = [
+      'abc',
+      'abc'
+    ];
+    $expected_messages = [
+      t('This value is not a valid email address.'),
+    ];
+    $this->assertViolations($values, $expected_messages);
+
+    $values = [
+      'qwe@rty.ui',
+      'abc'
+    ];
+    $this->assertNoViolations($values);
+
   }
 
   /**
@@ -195,6 +216,7 @@ class FieldTypeTest extends TestBase {
       'int',
       'float',
       'numeric',
+      'email',
     ];
 
     $expected_maxlength_attributes = [
