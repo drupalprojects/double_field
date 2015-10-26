@@ -13,7 +13,7 @@ use Drupal\Core\Field\FieldItemListInterface;
  * Plugin implementations for 'accordion' formatter.
  *
  * @FieldFormatter(
- *  id = "accordion",
+ *  id = "double_field_accordion",
  *  label = @Translation("Accordion"),
  *  field_types = {"double_field"}
  * )

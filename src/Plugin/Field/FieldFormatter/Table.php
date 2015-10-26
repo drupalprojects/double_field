@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Plugin implementations for 'table' formatter.
  *
  * @FieldFormatter(
- *  id = "table",
+ *  id = "double_field_table",
  *  label = @Translation("Table"),
  *  field_types = {"double_field"}
  * )

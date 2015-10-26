@@ -13,7 +13,7 @@ use Drupal\Core\Field\FieldItemListInterface;
  * Plugin implementations for 'tabs' formatter.
  *
  * @FieldFormatter(
- *  id = "tabs",
+ *  id = "double_field_tabs",
  *  label = @Translation("Tabs"),
  *  field_types = {"double_field"}
  * )

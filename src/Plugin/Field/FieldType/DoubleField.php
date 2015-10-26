@@ -21,7 +21,7 @@ use Drupal\Component\Utility\Unicode;
  *   label = @Translation("Double field"),
  *   description = @Translation("Double field."),
  *   default_widget = "double_field",
- *   default_formatter = "unformatted_list"
+ *   default_formatter = "double_field_unformatted_list"
  * )
  */
 class DoubleField extends FieldItemBase {

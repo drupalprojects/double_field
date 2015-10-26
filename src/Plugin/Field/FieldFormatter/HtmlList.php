@@ -14,7 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Plugin implementations for 'html_list' formatter.
  *
  * @FieldFormatter(
- *  id = "html_list",
+ *  id = "double_field_html_list",
  *  label = @Translation("Html list"),
  *  field_types = {"double_field"}
  * )

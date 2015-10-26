@@ -340,7 +340,7 @@ abstract class TestBase extends WebTestBase {
 
     $options = [
       'label' => 'hidden',
-      'type' => $formatter,
+      'type' => 'double_field_' . $formatter,
       'weight' => 100,
       'settings' => NestedArray::mergeDeep(BaseFormatter::defaultSettings(), $settings),
       'third_party_settings' => [],
