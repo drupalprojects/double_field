@@ -121,7 +121,7 @@ class FieldTypeTest extends TestBase {
       $this->randomString($maxlength + 1)
     ];
     $expected_messages = [
-      t('The value you selected is not a valid choice.'),
+      t('This value should be of the correct primitive type.'),
       t('This value is too long. It should have @maxlength characters or less.', ['@maxlength' => $maxlength]),
     ];
     $this->assertViolations($values, $expected_messages);

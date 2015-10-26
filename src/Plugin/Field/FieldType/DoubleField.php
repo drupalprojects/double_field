@@ -281,10 +281,6 @@ class DoubleField extends FieldItemBase {
         $subconstrains[$subfield]['AllowedValues'] = $allowed_values;
       }
 
-      if ($subfield_type == 'boolean') {
-        $subconstrains[$subfield]['AllowedValues'] = [0, 1];
-      }
-
       if ($subfield_type == 'string') {
         $subconstrains[$subfield]['Length']['max'] = $settings['storage'][$subfield]['maxlength'];
       }
@@ -378,13 +374,22 @@ class DoubleField extends FieldItemBase {
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
 
-    $primitive_types = self::subfieldPrimiriveTypes();
+    $subfield_types = self::subfieldTypes();
 
     $settings = $field_definition->getSettings();
     foreach (['first', 'second'] as $subfield) {
+
       $subfield_type = $settings['storage'][$subfield]['type'];
-      $properties[$subfield] = DataDefinition::create($primitive_types[$subfield_type][0])
-        ->setLabel($primitive_types[$subfield_type][1]);
+      // Typed data are slightly different from schema the definition.
+      if ($subfield_type == 'text') {
+        $subfield_type = 'string';
+      }
+      elseif ($subfield_type == 'numeric') {
+        $subfield_type = 'float';
+      }
+
+      $properties[$subfield] = DataDefinition::create($subfield_type)
+        ->setLabel($subfield_types[$subfield_type]);
     }
 
     return $properties;
@@ -521,22 +526,6 @@ class DoubleField extends FieldItemBase {
       'float' => t('Float'),
       'numeric' => t('Decimal'),
       'email' => t('Email'),
-    ];
-    return $type_options;
-  }
-
-  /**
-   * Returns available primitive subfield types.
-   */
-  protected static function subfieldPrimiriveTypes() {
-    $type_options = [
-      'boolean' => ['integer', t('Integer')],
-      'string' => ['string', t('String')],
-      'text' => ['string', t('String')],
-      'integer' => ['integer', t('Integer')],
-      'float' => ['float', t('FLoat')],
-      'numeric' => ['float', t('FLoat')],
-      'email' => ['email', t('Email')],
     ];
     return $type_options;
   }
