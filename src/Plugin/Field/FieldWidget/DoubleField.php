@@ -31,30 +31,20 @@ class DoubleField extends WidgetBase {
   public static function defaultSettings() {
 
     foreach (['first', 'second'] as $subfield) {
-      // @TODO: Covert this to one-level array.
       $settings[$subfield] = [
         'type' => 'textfield',
         'prefix' => '',
         'suffix' => '',
-        'textfield' => [
-          'size' => 10,
-          'placeholder' => '',
-        ],
-        'checkbox' => [
-          'label' => t('Ok'),
-        ],
-        'textarea' => [
-          'cols' => 10,
-          'rows' => 5,
-          'placeholder' => '',
-        ],
+        'size' => 10,
+        'placeholder' => '',
+        'label' => t('Ok'),
+        'cols' => 10,
+        'rows' => 5,
       ];
-
     }
     $settings['inline'] = FALSE;
 
     return $settings + parent::defaultSettings();
-
   }
 
   /**
@@ -97,61 +87,56 @@ class DoubleField extends WidgetBase {
       ];
 
       $type_selector = "select[name='fields[$field_name][settings_edit_form][settings][$subfield][type]'";
-      $element[$subfield]['textfield']['size'] = [
+      $element[$subfield]['size'] = [
         '#type' => 'number',
         '#title' => t('Size'),
-        '#default_value' => $settings[$subfield]['textfield']['size'],
+        '#default_value' => $settings[$subfield]['size'],
         '#min' => 1,
         '#states' => [
           'visible' => [$type_selector => ['value' => 'textfield']],
         ],
       ];
 
-      $element[$subfield]['textfield']['placeholder'] = [
+      $element[$subfield]['placeholder'] = [
         '#type' => 'textfield',
         '#title' => t('Placeholder attribute'),
         '#description' => t('Pre-filled value that serves as a hint for the user regarding what to type.'),
-        '#default_value' => $settings[$subfield]['textfield']['placeholder'],
+        '#default_value' => $settings[$subfield]['placeholder'],
         '#states' => [
-          'visible' => [$type_selector => ['value' => 'textfield']],
+          'visible' => [
+            [$type_selector => ['value' => 'textfield']],
+            [$type_selector => ['value' => 'textarea']],
+          ],
         ],
       ];
 
-      $element[$subfield]['checkbox']['label'] = [
+      $element[$subfield]['label'] = [
         '#type' => 'textfield',
         '#title' => t('Label'),
-        '#default_value' => $settings[$subfield]['checkbox']['label'],
+        '#default_value' => $settings[$subfield]['label'],
         '#required' => TRUE,
         '#states' => [
           'visible' => [$type_selector => ['value' => 'checkbox']],
         ],
       ];
 
-      $element[$subfield]['textarea']['cols'] = [
+      $element[$subfield]['cols'] = [
         '#type' => 'number',
         '#title' => t('Columns'),
-        '#default_value' => $settings[$subfield]['textarea']['cols'],
+        '#default_value' => $settings[$subfield]['cols'],
         '#min' => 1,
         '#description' => t('How many columns wide the textarea should be'),
         '#states' => [
           'visible' => [$type_selector => ['value' => 'textarea']],
         ],
       ];
-      $element[$subfield]['textarea']['rows'] = [
+
+      $element[$subfield]['rows'] = [
         '#type' => 'number',
         '#title' => t('Rows'),
-        '#default_value' => $settings[$subfield]['textarea']['rows'],
+        '#default_value' => $settings[$subfield]['rows'],
         '#min' => 1,
         '#description' => t('How many rows high the textarea should be.'),
-        '#states' => [
-          'visible' => [$type_selector => ['value' => 'textarea']],
-        ],
-      ];
-      $element[$subfield]['textarea']['placeholder'] = [
-        '#type' => 'textfield',
-        '#title' => t('Placeholder attribute'),
-        '#description' => t('Pre-filled value that serves as a hint for the user regarding what to type.'),
-        '#default_value' => $settings[$subfield]['textarea']['placeholder'],
         '#states' => [
           'visible' => [$type_selector => ['value' => 'textarea']],
         ],
@@ -162,6 +147,7 @@ class DoubleField extends WidgetBase {
         '#title' => t('Prefix'),
         '#default_value' => $settings[$subfield]['prefix'],
       ];
+
       $element[$subfield]['suffix'] = [
         '#type' => 'textfield',
         '#title' => t('Suffix'),
@@ -200,21 +186,21 @@ class DoubleField extends WidgetBase {
       $summary[] = t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
       switch ($settings[$subfield]['type']) {
         case 'textfield':
-          $summary[] = t('Size: %size', ['%size' => $settings[$subfield]['textfield']['size']]);
-          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['textfield']['placeholder']]);
+          $summary[] = t('Size: %size', ['%size' => $settings[$subfield]['size']]);
+          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
           break;
 
         case 'checkbox':
-          $summary[] = t('Label: %label', ['%label' => $settings[$subfield]['checkbox']['label']]);
+          $summary[] = t('Label: %label', ['%label' => $settings[$subfield]['label']]);
           break;
 
         case 'select':
           break;
 
         case 'textarea':
-          $summary[] = t('Columns: %cols', ['%cols' => $settings[$subfield]['textarea']['cols']]);
-          $summary[] = t('Rows: %rows', ['%rows' => $settings[$subfield]['textarea']['rows']]);
-          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['textarea']['placeholder']]);
+          $summary[] = t('Columns: %cols', ['%cols' => $settings[$subfield]['cols']]);
+          $summary[] = t('Rows: %rows', ['%rows' => $settings[$subfield]['rows']]);
+          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
           break;
       }
       $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
@@ -254,16 +240,16 @@ class DoubleField extends WidgetBase {
 
         case 'textfield':
           $widget[$subfield]['#maxlength'] = $field_settings['storage'][$subfield]['maxlength'];
-          if ($settings[$subfield]['textfield']['size']) {
-            $widget[$subfield]['#size'] = $settings[$subfield]['textfield']['size'];
+          if ($settings[$subfield]['size']) {
+            $widget[$subfield]['#size'] = $settings[$subfield]['size'];
           }
-          if ($settings[$subfield]['textfield']['placeholder']) {
-            $widget[$subfield]['#placeholder'] = $settings[$subfield]['textfield']['placeholder'];
+          if ($settings[$subfield]['placeholder']) {
+            $widget[$subfield]['#placeholder'] = $settings[$subfield]['placeholder'];
           }
           break;
 
         case 'checkbox':
-          $widget[$subfield]['#title'] = $settings[$subfield]['checkbox']['label'];
+          $widget[$subfield]['#title'] = $settings[$subfield]['label'];
           break;
 
         case 'select':
@@ -283,14 +269,14 @@ class DoubleField extends WidgetBase {
           break;
 
         case 'textarea':
-          if ($settings[$subfield]['textarea']['cols']) {
-            $widget[$subfield]['#cols'] = $settings[$subfield]['textarea']['cols'];
+          if ($settings[$subfield]['cols']) {
+            $widget[$subfield]['#cols'] = $settings[$subfield]['cols'];
           }
-          if ($settings[$subfield]['textarea']['rows']) {
-            $widget[$subfield]['#rows'] = $settings[$subfield]['textarea']['rows'];
+          if ($settings[$subfield]['rows']) {
+            $widget[$subfield]['#rows'] = $settings[$subfield]['rows'];
           }
-          if ($settings[$subfield]['textarea']['placeholder']) {
-            $widget[$subfield]['#placeholder'] = $settings[$subfield]['textarea']['placeholder'];
+          if ($settings[$subfield]['placeholder']) {
+            $widget[$subfield]['#placeholder'] = $settings[$subfield]['placeholder'];
           }
           break;
 

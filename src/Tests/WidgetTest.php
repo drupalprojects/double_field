@@ -35,24 +35,24 @@ class WidgetTest extends TestBase {
     $this->saveFieldStorageSettings($storage_settings);
 
     $widget_settings['first']['type'] = 'checkbox';
-    $widget_settings['first']['checkbox']['label'] = $this->randomMachineName();
+    $widget_settings['first']['label'] = $this->randomMachineName();
     $widget_settings['second']['type'] = 'textfield';
-    $widget_settings['second']['textfield']['size'] = mt_rand(5, 30);
-    $widget_settings['second']['textfield']['placeholder'] = $this->randomMachineName();
+    $widget_settings['second']['size'] = mt_rand(5, 30);
+    $widget_settings['second']['placeholder'] = $this->randomMachineName();
     $this->saveWidgetSettings($widget_settings);
 
     $this->drupalGet($this->nodeAddPath);
 
     $this->assertFieldByXPath("//input[@type='checkbox' and @name='{$this->fieldName}[0][first]']", NULL, 'Checkbox was found.');
     $label = (string) $this->xpath("//label[@for='edit-{$this->fieldName}-0-first']")[0];
-    $this->assertTrue($label == $widget_settings['first']['checkbox']['label'], 'Checkbox label is correct.');
+    $this->assertTrue($label == $widget_settings['first']['label'], 'Checkbox label is correct.');
 
     $textfield = $this->xpath("//input[@name='{$this->fieldName}[0][second]']")[0];
     $expected_attributes = [
       'type' => 'text',
       'value' => '',
-      'size' => $widget_settings['second']['textfield']['size'],
-      'placeholder' => $widget_settings['second']['textfield']['placeholder'],
+      'size' => $widget_settings['second']['size'],
+      'placeholder' => $widget_settings['second']['placeholder'],
     ];
     $this->assertAttributes($textfield->attributes(), $expected_attributes);
 
@@ -81,9 +81,9 @@ class WidgetTest extends TestBase {
     $this->drupalGet($this->fieldAdminPath);
 
     $widget_settings['first']['type'] = 'textarea';
-    $widget_settings['first']['textarea']['cols'] = mt_rand(3, 50);
-    $widget_settings['first']['textarea']['rows'] = mt_rand(3, 50);
-    $widget_settings['first']['textarea']['placeholder'] = $this->randomMachineName();
+    $widget_settings['first']['cols'] = mt_rand(3, 50);
+    $widget_settings['first']['rows'] = mt_rand(3, 50);
+    $widget_settings['first']['placeholder'] = $this->randomMachineName();
     $widget_settings['second']['type'] = 'number';
     $this->saveWidgetSettings($widget_settings);
 
@@ -91,9 +91,9 @@ class WidgetTest extends TestBase {
 
     $textarea = $this->xpath("//textarea[@name='{$this->fieldName}[0][first]']")[0];
     $expected_attributes = [
-      'cols' => $widget_settings['first']['textarea']['cols'],
-      'rows' => $widget_settings['first']['textarea']['rows'],
-      'placeholder' => $widget_settings['first']['textarea']['placeholder'],
+      'cols' => $widget_settings['first']['cols'],
+      'rows' => $widget_settings['first']['rows'],
+      'placeholder' => $widget_settings['first']['placeholder'],
     ];
     $this->assertAttributes($textarea->attributes(), $expected_attributes);
 
@@ -129,8 +129,8 @@ class WidgetTest extends TestBase {
 
     $widget_settings['first']['type'] = 'number';
     $widget_settings['second']['type'] = 'textfield';
-    $widget_settings['second']['textfield']['size'] = mt_rand(5, 30);
-    $widget_settings['second']['textfield']['placeholder'] = $this->randomMachineName();
+    $widget_settings['second']['size'] = mt_rand(5, 30);
+    $widget_settings['second']['placeholder'] = $this->randomMachineName();
     $this->saveWidgetSettings($widget_settings);
 
     $this->drupalGet($this->nodeAddPath);
@@ -146,8 +146,8 @@ class WidgetTest extends TestBase {
     $textfield = $this->xpath("//input[@name='{$this->fieldName}[0][second]']")[0];
     $expected_attributes = [
       'type' => 'text',
-      'size' => $widget_settings['second']['textfield']['size'],
-      'placeholder' => $widget_settings['second']['textfield']['placeholder'],
+      'size' => $widget_settings['second']['size'],
+      'placeholder' => $widget_settings['second']['placeholder'],
     ];
     $this->assertAttributes($textfield->attributes(), $expected_attributes);
 
@@ -214,18 +214,18 @@ class WidgetTest extends TestBase {
     $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='checkbox']";
     $axes[] = "//summary[text()='First subfield - Boolean']";
-    $axes[] = "//input[@name='{$name_prefix}[first][checkbox][label]' and @value='Ok']";
+    $axes[] = "//input[@name='{$name_prefix}[first][label]' and @value='Ok']";
     $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
     $axes[] = "//summary[text()='Second subfield - Text']";
-    $axes[] = "//input[@name='{$name_prefix}[second][textfield][size]']";
-    $axes[] = "//input[@name='{$name_prefix}[second][textfield][placeholder]']";
+    $axes[] = "//input[@name='{$name_prefix}[second][size]']";
+    $axes[] = "//input[@name='{$name_prefix}[second][placeholder]']";
     $this->assertAxes($axes);
 
     $edit = $general_edit + [
       $name_prefix . '[inline]' => TRUE,
-      $name_prefix . '[first][checkbox][label]' => $this->randomMachineName(),
-      $name_prefix . '[second][textfield][size]' => mt_rand(1, 10),
-      $name_prefix . '[second][textfield][placeholder]' => $this->randomMachineName(),
+      $name_prefix . '[first][label]' => $this->randomMachineName(),
+      $name_prefix . '[second][size]' => mt_rand(1, 10),
+      $name_prefix . '[second][placeholder]' => $this->randomMachineName(),
     ];
 
     $this->drupalPostAjaxForm(NULL, $edit, $this->fieldName . '_plugin_settings_update');
@@ -240,13 +240,13 @@ class WidgetTest extends TestBase {
       t('Display as inline element'),
       '<b>First subfield - boolean</b>',
       t('Widget: !first_widget', ['!first_widget' => 'checkbox']),
-      t('Label: !label', ['!label' => $edit[$name_prefix . '[first][checkbox][label]']]),
+      t('Label: !label', ['!label' => $edit[$name_prefix . '[first][label]']]),
       t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
       t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
       '<b>Second subfield - text</b>',
       t('Widget: !widget', ['!widget' => 'textfield']),
-      t('Size: !size', ['!size' => $edit[$name_prefix . '[second][textfield][size]']]),
-      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[second][textfield][placeholder]']]),
+      t('Size: !size', ['!size' => $edit[$name_prefix . '[second][size]']]),
+      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[second][placeholder]']]),
       t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[second][prefix]']]),
       t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[second][suffix]']]),
     ];
@@ -268,17 +268,17 @@ class WidgetTest extends TestBase {
     $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='textarea' and @selected]";
     $axes[] = "//summary[text()='First subfield - Text (long)']";
-    $axes[] = "//input[@name='{$name_prefix}[first][textarea][cols]']";
-    $axes[] = "//input[@name='{$name_prefix}[first][textarea][rows]']";
+    $axes[] = "//input[@name='{$name_prefix}[first][cols]']";
+    $axes[] = "//input[@name='{$name_prefix}[first][rows]']";
     $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='number' and @selected]";
     $axes[] = "//summary[text()='Second subfield - Integer']";
     $this->assertAxes($axes);
 
     $edit = $general_edit + [
       $name_prefix . '[inline]' => FALSE,
-      $name_prefix . '[first][textarea][cols]' => mt_rand(1, 10),
-      $name_prefix . '[first][textarea][rows]' => mt_rand(1, 10),
-      $name_prefix . '[first][textarea][placeholder]' => $this->randomMachineName(),
+      $name_prefix . '[first][cols]' => mt_rand(1, 10),
+      $name_prefix . '[first][rows]' => mt_rand(1, 10),
+      $name_prefix . '[first][placeholder]' => $this->randomMachineName(),
     ];
 
     $this->drupalPostAjaxForm(NULL, $edit, $this->fieldName . '_plugin_settings_update');
@@ -291,9 +291,9 @@ class WidgetTest extends TestBase {
     $expected_summary_items = [
       '<b>First subfield - text (long)</b>',
       t('Widget: !widget', ['!widget' => 'textarea']),
-      t('Columns: !cols', ['!cols' => $edit[$name_prefix . '[first][textarea][cols]']]),
-      t('Rows: !rows', ['!rows' => $edit[$name_prefix . '[first][textarea][rows]']]),
-      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[first][textarea][placeholder]']]),
+      t('Columns: !cols', ['!cols' => $edit[$name_prefix . '[first][cols]']]),
+      t('Rows: !rows', ['!rows' => $edit[$name_prefix . '[first][rows]']]),
+      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[first][placeholder]']]),
       t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
       t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
       '<b>Second subfield - integer</b>',
