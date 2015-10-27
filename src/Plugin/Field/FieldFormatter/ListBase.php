@@ -43,6 +43,7 @@ abstract class ListBase extends Base {
    */
   public function settingsSummary() {
 
+    $summary = [];
     if ($this->getSetting('inline')) {
       $summary[] = t('Display as inline element');
     }
