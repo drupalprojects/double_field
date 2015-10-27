@@ -14,9 +14,9 @@ use Drupal\Core\Form\FormStateInterface;
  * Plugin implementations for 'html_list' formatter.
  *
  * @FieldFormatter(
- *  id = "double_field_html_list",
- *  label = @Translation("Html list"),
- *  field_types = {"double_field"}
+ *   id = "double_field_html_list",
+ *   label = @Translation("Html list"),
+ *   field_types = {"double_field"}
  * )
  */
 class HtmlList extends ListBase {
@@ -32,7 +32,6 @@ class HtmlList extends ListBase {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-
     $element['list_type'] = [
       '#type' => 'radios',
       '#title' => t('List type'),
@@ -60,7 +59,7 @@ class HtmlList extends ListBase {
     // Definition list does not support 'inline' option.
     $list_type = $this->getSetting('list_type');
     if ($list_type == 'dl') {
-      if (($key = array_search(t('Display as inline element'),  $parent_summary)) !== FALSE) {
+      if (($key = array_search(t('Display as inline element'), $parent_summary)) !== FALSE) {
         unset($parent_summary[$key]);
       }
     }

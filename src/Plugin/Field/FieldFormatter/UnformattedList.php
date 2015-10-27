@@ -14,9 +14,9 @@ use Drupal\Core\Field\FieldItemInterface;
  * Plugin implementations for 'double_field' formatter.
  *
  * @FieldFormatter(
- *  id = "double_field_unformatted_list",
- *  label = @Translation("Unformatted list"),
- *  field_types = {"double_field"}
+ *   id = "double_field_unformatted_list",
+ *   label = @Translation("Unformatted list"),
+ *   field_types = {"double_field"}
  * )
  */
 class UnformattedList extends ListBase {

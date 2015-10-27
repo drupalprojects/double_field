@@ -14,9 +14,9 @@ use Drupal\Core\Form\FormStateInterface;
  * Plugin implementations for 'details' formatter.
  *
  * @FieldFormatter(
- *  id = "double_field_details",
- *  label = @Translation("Details"),
- *  field_types = {"double_field"}
+ *   id = "double_field_details",
+ *   label = @Translation("Details"),
+ *   field_types = {"double_field"}
  * )
  */
 class Details extends Base {
