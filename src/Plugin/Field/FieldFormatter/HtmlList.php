@@ -49,7 +49,7 @@ class HtmlList extends ListBase {
     $element += parent::settingsForm($form, $form_state);
     $field_name = $this->fieldDefinition->getName();
 
-    $element['style']['#states']['invisible'] = [":input[name='fields[$field_name][settings_edit_form][settings][list_type]']" => ['value' => 'dl']];
+    $element['inline']['#states']['invisible'] = [":input[name='fields[$field_name][settings_edit_form][settings][list_type]']" => ['value' => 'dl']];
     return $element;
   }
 
@@ -84,7 +84,7 @@ class HtmlList extends ListBase {
           '#item' => $item,
           '#theme' => 'double_field_item',
         ];
-        if ($settings['style'] == 'inline') {
+        if ($settings['inline']) {
           $list_items[$delta]['#wrapper_attributes']['class'] = 'container-inline';
         }
       }

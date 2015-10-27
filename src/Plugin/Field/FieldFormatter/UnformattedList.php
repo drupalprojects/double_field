@@ -31,11 +31,11 @@ class UnformattedList extends ListBase {
 
     $settings = $this->getSettings();
     foreach ($items as $delta => $item) {
-      if ($settings['style'] == 'inline') {
+      if ($settings['inline']) {
         $item->_attributes = ['class' => 'container-inline'];
       }
       $element[$delta] = [
-        '#settings' => $this->getSettings(),
+        '#settings' => $settings,
         '#item' => $item,
         '#theme' => 'double_field_item',
       ];

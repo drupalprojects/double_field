@@ -19,9 +19,7 @@ abstract class ListBase extends Base {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return [
-      'style' => 'inline',
-    ] + parent::defaultSettings();
+    return ['inline' => TRUE] + parent::defaultSettings();
   }
 
   /**
@@ -31,14 +29,10 @@ abstract class ListBase extends Base {
 
     $settings = $this->getSettings();
 
-    $element['style'] = [
-      '#type' => 'select',
-      '#title' => t('Style'),
-      '#options' => [
-        'inline' => t('Inline'),
-        'block' => t('Block'),
-      ],
-      '#default_value' => isset($settings['style']) ? $settings['style'] : 'inline',
+    $element['inline'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Display as inline element'),
+      '#default_value' => $settings['inline'],
     ];
 
     return $element + parent::settingsForm($form, $form_state);
@@ -49,9 +43,8 @@ abstract class ListBase extends Base {
    */
   public function settingsSummary() {
 
-    $summary = [];
-    if ($this->getSetting('list_type') != 'dl') {
-      $summary[] = t('Display style: %value', ['%value' => $this->getSetting('style')]);
+    if ($this->getSetting('inline')) {
+      $summary[] = t('Display as inline element');
     }
 
     return array_merge($summary, parent::settingsSummary());

@@ -179,7 +179,7 @@ class FormatterTest extends TestBase {
 
     // Disable 'inline' option and check if the "container-inline" class has
     // been removed.
-    $settings['style'] = 'block';
+    $settings['inline'] = FALSE;
     $this->saveFormatterSettings('html_list', $settings);
     $this->drupalGet($node_path);
 
@@ -201,8 +201,9 @@ class FormatterTest extends TestBase {
     }
 
     // -- Unformatted list.
-    $settings['style'] = 'inline';
+    $settings['inline'] = TRUE;
     $this->saveFormatterSettings('unformatted_list', $settings);
+    $this->drupalGet($this->displayAdminPath);
     $this->drupalGet($node_path);
 
     for ($delta = 0; $delta < self::CARDINALITY; $delta++) {
@@ -216,7 +217,7 @@ class FormatterTest extends TestBase {
 
     // Disable 'inline' option and check if the "container-inline" class has
     // been removed.
-    $settings['style'] = 'block';
+    $settings['inline'] = FALSE;
     $this->saveFormatterSettings('unformatted_list', $settings);
     $this->drupalGet($node_path);
 
@@ -414,13 +415,13 @@ class FormatterTest extends TestBase {
     $this->assertSummary($edit, $expected_items);
 
     // -- HTML list.
-    // @TODO: Check inline setting.
     $list_types = [
       'ul' => t('Unordered list'),
       'ol' => t('Ordered list'),
       'dl' => t('Definition list'),
     ];
     $settings['list_type'] = array_rand($list_types);
+    $settings['inline'] = TRUE;
     $this->saveFormatterSettings('html_list', $settings);
 
     $axes = $general_axes;
@@ -433,8 +434,7 @@ class FormatterTest extends TestBase {
 
     $expected_items = [(string) t('List type: !list_type', ['!list_type' => $edit["{$name_prefix}[list_type]"]])];
     if ($edit["{$name_prefix}[list_type]"] != 'dl') {
-      // TODO: Test inline setting summary.
-      $expected_items[] = (string) t('Display style: !style', ['!style' => 'inline']);
+      $expected_items[] = (string) t('Display as inline element');
     }
     $this->assertSummary($edit, $expected_items);
 
@@ -443,8 +443,7 @@ class FormatterTest extends TestBase {
 
     $this->drupalPostAjaxForm($this->displayAdminPath, [], $this->fieldName . '_settings_edit');
     $this->assertAxes($general_axes);
-    // TODO: Test inline setting summary.
-    $expected_items = [(string) t('Display style: !style', ['!style' => 'inline'])];
+    $expected_items = [(string) t('Display as inline element')];
     $this->assertSummary([], $expected_items);
   }
 

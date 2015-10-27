@@ -184,7 +184,7 @@ abstract class TestBase extends WebTestBase {
     $this->field->save();
 
     $this->saveWidgetSettings([]);
-    $this->saveFormatterSettings('unformatted_list', ['style' => 'block']);
+    $this->saveFormatterSettings('unformatted_list', ['inline' => FALSE]);
 
     for ($delta = 0; $delta < self::CARDINALITY; $delta++) {
       $this->values[$delta] = [
