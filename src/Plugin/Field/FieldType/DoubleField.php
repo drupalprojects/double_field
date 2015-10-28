@@ -270,6 +270,7 @@ class DoubleField extends FieldItemBase {
     $settings = $this->getSettings();
 
     $subconstrains = [];
+    return [];
     foreach (['first', 'second'] as $subfield) {
 
       $subfield_type = $settings['storage'][$subfield]['type'];
@@ -319,6 +320,22 @@ class DoubleField extends FieldItemBase {
     foreach (['first', 'second'] as $subfield) {
 
       $type = $settings['storage'][$subfield]['type'];
+
+      if ($type == 'double_string') {
+        $columns[$subfield . '_1'] = [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+          'description' => ucfirst($subfield . '_1') . ' subfield value.',
+        ];
+        $columns[$subfield . '_2'] = [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+          'description' => ucfirst($subfield . '_1') . ' subfield value.',
+        ];
+        continue;
+      }
 
       $columns[$subfield] = [
         'not null' => FALSE,
@@ -378,6 +395,15 @@ class DoubleField extends FieldItemBase {
     foreach (['first', 'second'] as $subfield) {
 
       $subfield_type = $settings['storage'][$subfield]['type'];
+
+      if ($subfield_type == 'double_string') {
+        $properties[$subfield . '_1'] = DataDefinition::create('string')
+          ->setLabel('Text');
+        $properties[$subfield . '_2'] = DataDefinition::create('string')
+          ->setLabel('Text');
+        continue;
+      }
+
       // Typed data are slightly different from schema the definition.
       if ($subfield_type == 'text') {
         $subfield_type = 'string';
@@ -524,6 +550,7 @@ class DoubleField extends FieldItemBase {
       'float' => t('Float'),
       'numeric' => t('Decimal'),
       'email' => t('Email'),
+      'double_string' => t('Double text'),
     ];
     return $type_options;
   }

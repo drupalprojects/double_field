@@ -236,7 +236,22 @@ class DoubleField extends WidgetBase {
         '#subfield_settings' => $settings[$subfield],
       ];
 
+      $item = $items[$delta];
+
       switch ($settings[$subfield]['type']) {
+
+        case 'double_textfield':
+          $widget[$subfield . '_1'] = [
+            '#title' => '111',
+            '#type' => 'textfield',
+            '#default_value' => $items[$delta]->{$subfield . '_1'}
+          ];
+          $widget[$subfield . '_2'] = [
+            '#title' => '222',
+            '#type' => 'textfield',
+            '#default_value' => $items[$delta]->{$subfield . '_2'}
+          ];
+          break;
 
         case 'textfield':
           $widget[$subfield]['#maxlength'] = $field_settings['storage'][$subfield]['maxlength'];
@@ -306,7 +321,7 @@ class DoubleField extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function _massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     $settings = $this->getSettings();
 
     foreach ($values as $delta => $value) {
@@ -353,6 +368,9 @@ class DoubleField extends WidgetBase {
         $subwidgets['number'] = t('Number');
         $subwidgets['textfield'] = t('Textfield');
         break;
+
+      case 'double_string':
+        $subwidgets['double_textfield'] = t('Double textfield');
 
     }
 
