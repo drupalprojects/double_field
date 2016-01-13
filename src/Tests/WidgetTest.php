@@ -239,16 +239,16 @@ class WidgetTest extends TestBase {
     $expected_summary_items = [
       t('Display as inline element'),
       '<b>First subfield - boolean</b>',
-      t('Widget: !first_widget', ['!first_widget' => 'checkbox']),
-      t('Label: !label', ['!label' => $edit[$name_prefix . '[first][label]']]),
-      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
-      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
+      t('Widget: %first_widget', ['%first_widget' => 'checkbox']),
+      t('Label: %label', ['%label' => $edit[$name_prefix . '[first][label]']]),
+      t('Prefix: %prefix', ['%prefix' => $edit[$name_prefix . '[first][prefix]']]),
+      t('Suffix: %suffix', ['%suffix' => $edit[$name_prefix . '[first][suffix]']]),
       '<b>Second subfield - text</b>',
-      t('Widget: !widget', ['!widget' => 'textfield']),
-      t('Size: !size', ['!size' => $edit[$name_prefix . '[second][size]']]),
-      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[second][placeholder]']]),
-      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[second][prefix]']]),
-      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[second][suffix]']]),
+      t('Widget: %widget', ['%widget' => 'textfield']),
+      t('Size: %size', ['%size' => $edit[$name_prefix . '[second][size]']]),
+      t('Placeholder: %placeholder', ['%placeholder' => $edit[$name_prefix . '[second][placeholder]']]),
+      t('Prefix: %prefix', ['%prefix' => $edit[$name_prefix . '[second][prefix]']]),
+      t('Suffix: %suffix', ['%suffix' => $edit[$name_prefix . '[second][suffix]']]),
     ];
 
     $this->assertIdenticalArray($summary_items, $expected_summary_items, 'Valid summary was found.');
@@ -290,16 +290,16 @@ class WidgetTest extends TestBase {
     $summary_items = explode('<br/>', $summary);
     $expected_summary_items = [
       '<b>First subfield - text (long)</b>',
-      t('Widget: !widget', ['!widget' => 'textarea']),
-      t('Columns: !cols', ['!cols' => $edit[$name_prefix . '[first][cols]']]),
-      t('Rows: !rows', ['!rows' => $edit[$name_prefix . '[first][rows]']]),
-      t('Placeholder: !placeholder', ['!placeholder' => $edit[$name_prefix . '[first][placeholder]']]),
-      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[first][prefix]']]),
-      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[first][suffix]']]),
+      t('Widget: %widget', ['%widget' => 'textarea']),
+      t('Columns: %cols', ['%cols' => $edit[$name_prefix . '[first][cols]']]),
+      t('Rows: %rows', ['%rows' => $edit[$name_prefix . '[first][rows]']]),
+      t('Placeholder: %placeholder', ['%placeholder' => $edit[$name_prefix . '[first][placeholder]']]),
+      t('Prefix: %prefix', ['%prefix' => $edit[$name_prefix . '[first][prefix]']]),
+      t('Suffix: %suffix', ['%suffix' => $edit[$name_prefix . '[first][suffix]']]),
       '<b>Second subfield - integer</b>',
-      t('Widget: !widget', ['!widget' => 'number']),
-      t('Prefix: !prefix', ['!prefix' => $edit[$name_prefix . '[second][prefix]']]),
-      t('Suffix: !suffix', ['!suffix' => $edit[$name_prefix . '[second][suffix]']]),
+      t('Widget: %widget', ['%widget' => 'number']),
+      t('Prefix: %prefix', ['%prefix' => $edit[$name_prefix . '[second][prefix]']]),
+      t('Suffix: %suffix', ['%suffix' => $edit[$name_prefix . '[second][suffix]']]),
     ];
 
     $this->assertIdenticalArray($summary_items, $expected_summary_items, 'Valid summary was found.');

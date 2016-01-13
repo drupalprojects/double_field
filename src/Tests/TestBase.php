@@ -386,7 +386,7 @@ abstract class TestBase extends WebTestBase {
    */
   protected function assertAxes(array $axes) {
     foreach ($axes as $axis) {
-      $this->assertEqual(count($this->xpath($axis)), 1, t('Found valid xpath: !xpath', ['!xpath' => $axis]));
+      $this->assertEqual(count($this->xpath($axis)), 1, t('Found valid xpath: %xpath', ['%xpath' => $axis]));
     }
   }
 

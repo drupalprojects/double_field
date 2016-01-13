@@ -339,9 +339,9 @@ class FormatterTest extends TestBase {
       $this->generalExpectedItems[] = '<b>' . ucfirst($subfield) . ' subfield - text</b>';
       $hidden = $this->generalSettingsEdit["{$name_prefix}[$subfield][hidden]"] ? 'yes' : 'no';
       // @TODO: remove (string).
-      $this->generalExpectedItems[] = (string) t('Hidden: !hidden', ['!hidden' => $hidden]);
-      $this->generalExpectedItems[] = (string) t('Prefix: !prefix', ['!prefix' => $this->generalSettingsEdit["{$name_prefix}[$subfield][prefix]"]]);
-      $this->generalExpectedItems[] = (string) t('Suffix: !suffix', ['!suffix' => $this->generalSettingsEdit["{$name_prefix}[$subfield][suffix]"]]);
+      $this->generalExpectedItems[] = (string) t('Hidden: %hidden', ['%hidden' => $hidden]);
+      $this->generalExpectedItems[] = (string) t('Prefix: %prefix', ['%prefix' => $this->generalSettingsEdit["{$name_prefix}[$subfield][prefix]"]]);
+      $this->generalExpectedItems[] = (string) t('Suffix: %suffix', ['%suffix' => $this->generalSettingsEdit["{$name_prefix}[$subfield][suffix]"]]);
     }
 
     // -- Accordion.
@@ -389,12 +389,12 @@ class FormatterTest extends TestBase {
 
     $expected_items = [];
     $number_column = $edit["{$name_prefix}[number_column]"] ? 'yes' : 'no';
-    $expected_items[] = (string) t('Enable row number column: !number_column', ['!number_column' => $number_column]);
+    $expected_items[] = (string) t('Enable row number column: %number_column', ['%number_column' => $number_column]);
     if ($edit["{$name_prefix}[number_column]"]) {
-      $expected_items[] = (string) t('Number column label: !number_column_label', ['!number_column_label' => $edit["{$name_prefix}[number_column_label]"]]);
+      $expected_items[] = (string) t('Number column label: %number_column_label', ['%number_column_label' => $edit["{$name_prefix}[number_column_label]"]]);
     }
-    $expected_items[] = (string) t('First column label: !first_column_label', ['!first_column_label' => $edit["{$name_prefix}[first_column_label]"]]);
-    $expected_items[] = (string) t('Second column label: !second_column_label', ['!second_column_label' => $edit["{$name_prefix}[second_column_label]"]]);
+    $expected_items[] = (string) t('First column label: %first_column_label', ['%first_column_label' => $edit["{$name_prefix}[first_column_label]"]]);
+    $expected_items[] = (string) t('Second column label: %second_column_label', ['%second_column_label' => $edit["{$name_prefix}[second_column_label]"]]);
     $this->assertSummary($edit, $expected_items);
 
     // -- Details.
@@ -411,7 +411,7 @@ class FormatterTest extends TestBase {
     $edit = ["{$name_prefix}[open]" => (bool) mt_rand(0, 1)];
 
     $open = $edit["{$name_prefix}[open]"] ? 'yes' : 'no';
-    $expected_items = [(string) t('Open: !open', ['!open' => $open])];
+    $expected_items = [(string) t('Open: %open', ['%open' => $open])];
     $this->assertSummary($edit, $expected_items);
 
     // -- HTML list.
@@ -432,7 +432,7 @@ class FormatterTest extends TestBase {
 
     $edit = ["{$name_prefix}[list_type]" => array_rand($list_types)];
 
-    $expected_items = [(string) t('List type: !list_type', ['!list_type' => $edit["{$name_prefix}[list_type]"]])];
+    $expected_items = [(string) t('List type: %list_type', ['%list_type' => $edit["{$name_prefix}[list_type]"]])];
     if ($edit["{$name_prefix}[list_type]"] != 'dl') {
       $expected_items[] = (string) t('Display as inline element');
     }
