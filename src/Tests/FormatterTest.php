@@ -247,6 +247,7 @@ class FormatterTest extends TestBase {
 
     $field_settings['first']['on_label'] = $this->randomMachineName();
     $field_settings['second']['off_label'] = $this->randomMachineName();
+    $field_settings['second']['required'] = FALSE;
     $this->saveFieldSettings($field_settings);
 
     $widget_settings['first']['type'] = 'checkbox';

@@ -297,10 +297,18 @@ class DoubleField extends FieldItemBase {
         $subconstrains[$subfield]['Length']['max'] = Email::EMAIL_MAX_LENGTH;
       }
 
-      // This is applicable to all types.
       if ($settings[$subfield]['required']) {
-        $subconstrains[$subfield]['NotBlank'] = [];
+        // NotBlank validator is not suitable for booleans because it does not
+        // recognize '0' as an empty value.
+        if ($subfield_type == 'boolean') {
+          $subconstrains[$subfield]['NotEqualTo']['value'] = 0;
+          $subconstrains[$subfield]['NotEqualTo']['message'] = t('This value should not be blank.');
+        }
+        else {
+          $subconstrains[$subfield]['NotBlank'] = [];
+        }
       }
+
     }
 
     $constraints[] = $constraint_manager->create('ComplexData', $subconstrains);
@@ -397,8 +405,15 @@ class DoubleField extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
+    $settings = $this->getSettings();
     foreach (['first', 'second'] as $subfield) {
-      if ($this->{$subfield} !== NULL && $this->{$subfield} !== '') {
+      if ($settings['storage'][$subfield]['type'] == 'boolean') {
+        // Booleans can be 1 or 0.
+        if ($this->{$subfield} == 1) {
+          return FALSE;
+        }
+      }
+      elseif ($this->{$subfield} !== NULL && $this->{$subfield} !== '') {
         return FALSE;
       }
     }

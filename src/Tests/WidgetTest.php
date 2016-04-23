@@ -33,6 +33,8 @@ class WidgetTest extends TestBase {
     $storage_settings['storage']['first']['type'] = 'boolean';
     $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
+    $settings['first']['required'] = FALSE;
+    $this->saveFieldSettings($settings);
 
     $widget_settings['first']['type'] = 'checkbox';
     $widget_settings['first']['label'] = $this->randomMachineName();

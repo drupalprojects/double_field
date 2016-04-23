@@ -88,3 +88,11 @@ function double_field_field_storage_config_update(Drupal\Core\Entity\EntityInter
   }
 
 }
+
+/**
+ * Implements hook_validation_constraint_alter().
+ */
+function double_field_validation_constraint_alter(array &$definitions) {
+  // This constraint is required to test empty boolean values.
+  $definitions['NotEqualTo']['class'] = '\Symfony\Component\Validator\Constraints\NotEqualTo';
+}

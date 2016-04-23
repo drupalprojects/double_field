@@ -127,6 +127,10 @@ class FieldTypeTest extends TestBase {
     $this->assertViolations($values, $expected_messages);
 
     // --
+    // Zero value will cause 'No blank' violation.
+    $settings['first']['required'] = FALSE;
+    $this->saveFieldSettings($settings);
+
     $values = [
       mt_rand(0, 1),
       $this->randomString($maxlength)
@@ -324,7 +328,7 @@ class FieldTypeTest extends TestBase {
 
     $values = [
       // Boolean has no field level settings that may cause violations.
-      0,
+      1,
       array_rand($settings['second']['allowed_values'])
     ];
     $this->assertNoViolations($values);
@@ -581,12 +585,23 @@ class FieldTypeTest extends TestBase {
     $storage_settings['storage']['first']['type'] = 'integer';
     $storage_settings['storage']['second']['type'] = 'boolean';
     $this->saveFieldStorageSettings($storage_settings);
+
     $this->assertViolations([NULL, 1], [t('This value should not be blank.')]);
+
+    // Zero should be treated as an empty value.
+    $this->assertNoViolations([0, 1]);
 
     $settings['first']['required'] = FALSE;
     $this->saveFieldSettings($settings);
-    // Zero should not be treated as empty value.
-    $this->assertNoViolations([NULL, 0]);
+    $this->assertNoViolations([NULL, 1]);
+
+    // For boolean field zero is an empty value.
+    $this->saveFieldSettings($settings);
+    $this->assertViolations([123, 0], [t('This value should not be blank.')]);
+
+    $settings['second']['required'] = FALSE;
+    $this->saveFieldSettings($settings);
+    $this->assertNoViolations([123, 0]);
   }
 
 }
