@@ -281,7 +281,7 @@ class DoubleField extends WidgetBase {
           if (in_array($field_settings['storage'][$subfield]['type'], [
             'integer',
             'float',
-            'numeric'
+            'numeric',
           ])) {
 
             if ($field_settings[$subfield]['min']) {

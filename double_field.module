@@ -5,6 +5,8 @@
  * Primary module hooks for Double Field module.
  */
 
+use Drupal\Core\Entity\EntityInterface;
+
 /**
  * Implements hook_theme().
  */
@@ -71,7 +73,7 @@ function template_preprocess_double_field_tabs(&$vars) {
 /**
  * Implements hook_ENTITY_TYPE_update().
  */
-function double_field_field_storage_config_update(Drupal\Core\Entity\EntityInterface $entity) {
+function double_field_field_storage_config_update(EntityInterface $entity) {
 
   /* @var \Drupal\field\Entity\FieldStorageConfig  $entity */
   if ($entity->getType() == 'double_field') {

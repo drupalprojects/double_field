@@ -1,10 +1,8 @@
 <?php
 
-
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
-
 
 /**
  * Plugin implementations for 'double_field' formatter.

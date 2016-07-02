@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
@@ -220,7 +219,7 @@ class DoubleField extends FieldItemBase {
       else {
         $element[$subfield]['min'] = $element[$subfield]['max'] = [
           '#type' => 'value',
-          '#default_value' => ''
+          '#default_value' => '',
         ];
       }
 
@@ -280,7 +279,8 @@ class DoubleField extends FieldItemBase {
       }
 
       // Allowed values take precedence over the range constraints.
-      if (!$settings[$subfield]['list'] && in_array($subfield_type, ['integer', 'float', 'numeric'])) {
+      $numeric_types = ['integer', 'float', 'numeric'];
+      if (!$settings[$subfield]['list'] && in_array($subfield_type, $numeric_types)) {
         if (is_numeric($settings[$subfield]['min'])) {
           $subconstrains[$subfield]['Range']['min'] = $settings[$subfield]['min'];
         }

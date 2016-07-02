@@ -349,7 +349,11 @@ class WidgetTest extends TestBase {
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
     $error_message = t(
       '@field_name cannot be longer than @max_length characters but is currently @actual_length characters long.',
-      ['@field_name' => $this->fieldName, '@max_length' => $maxlength, '@actual_length' => strlen($edit[$this->fieldName . '[0][first]'])]
+      [
+        '@field_name' => $this->fieldName,
+        '@max_length' => $maxlength,
+        '@actual_length' => strlen($edit[$this->fieldName . '[0][first]']),
+      ]
     );
     $this->assertErrorMessage($error_message);
     $this->assertErrorMessage(t('The email address @email is not valid.', ['@email' => 'not@valid@email']));

@@ -3,12 +3,13 @@
 
 namespace Drupal\double_field\Tests;
 
-use Drupal\simpletest\WebTestBase;
 use Drupal\Component\Utility\NestedArray;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\double_field\Plugin\Field\FieldWidget\DoubleField;
 use Drupal\double_field\Plugin\Field\FieldFormatter\Base as BaseFormatter;
+use Drupal\double_field\Plugin\Field\FieldWidget\DoubleField;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\node\Entity\Node;
+use Drupal\simpletest\WebTestBase;
 
 /**
  * Tests the creation of text fields.
@@ -270,7 +271,7 @@ abstract class TestBase extends WebTestBase {
    * Deletes all nodes.
    */
   protected function deleteNodes() {
-    $nodes = \Drupal\node\Entity\Node::loadMultiple();
+    $nodes = Node::loadMultiple();
     foreach ($nodes as $node) {
       // Node::delete() does not work here as expected by some reasons.
       $this->drupalPostForm(sprintf('node/%d/delete', $node->id()), [], t('Delete'));

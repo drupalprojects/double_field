@@ -114,7 +114,7 @@ class FieldTypeTest extends TestBase {
     $values = [
       // The valid boolean value is 0 or 1.
       mt_rand(2, 100),
-      $this->randomString($maxlength + 1)
+      $this->randomString($maxlength + 1),
     ];
     $expected_messages = [
       t('This value should be of the correct primitive type.'),
@@ -129,7 +129,7 @@ class FieldTypeTest extends TestBase {
 
     $values = [
       mt_rand(0, 1),
-      $this->randomString($maxlength)
+      $this->randomString($maxlength),
     ];
     $this->assertNoViolations($values);
 
@@ -149,10 +149,10 @@ class FieldTypeTest extends TestBase {
     ];
     $this->assertViolations($values, $expected_messages);
 
-    // --
+    // ...
     $values = [
       $this->randomString(1000),
-      mt_rand(0, 1000)
+      mt_rand(0, 1000),
     ];
     $this->assertNoViolations($values);
 
@@ -161,12 +161,12 @@ class FieldTypeTest extends TestBase {
     $storage_settings['storage']['second']['type'] = 'numeric';
     $this->saveFieldStorageSettings($storage_settings);
 
-    // --
+    // ...
     $values = [
       // We cannot use random strings here because they may consist
       // only of digits.
       'abc',
-      'abc'
+      'abc',
     ];
     $expected_messages = [
       t('This value should be of the correct primitive type.'),
@@ -185,10 +185,10 @@ class FieldTypeTest extends TestBase {
     $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
-    // --
+    // ...
     $values = [
       'abc',
-      'abc'
+      'abc',
     ];
     $expected_messages = [
       t('This value is not a valid email address.'),
@@ -197,7 +197,7 @@ class FieldTypeTest extends TestBase {
 
     $values = [
       'qwe@rty.ui',
-      'abc'
+      'abc',
     ];
     $this->assertNoViolations($values);
 
@@ -325,7 +325,7 @@ class FieldTypeTest extends TestBase {
     $values = [
       // Boolean has no field level settings that may cause violations.
       1,
-      array_rand($settings['second']['allowed_values'])
+      array_rand($settings['second']['allowed_values']),
     ];
     $this->assertNoViolations($values);
 
@@ -384,7 +384,7 @@ class FieldTypeTest extends TestBase {
     ];
     $this->assertViolations($values, $expected_messages);
 
-    // --
+    // ...
     $settings['first']['list'] = TRUE;
     $settings['first']['allowed_values'] = [
       '-12.379' => 'Aaa',
@@ -525,7 +525,7 @@ class FieldTypeTest extends TestBase {
    */
   public function testAllowedValuesValidation() {
 
-    // --
+    // ...
     $maxlength = 50;
     $storage_settings['storage']['first']['type'] = 'string';
     $storage_settings['storage']['first']['maxlength'] = $maxlength;
@@ -552,7 +552,7 @@ class FieldTypeTest extends TestBase {
     $this->assertNoErrorMessages();
     $this->assertStatusMessage(t('Saved @field_name configuration.', ['@field_name' => $this->fieldName]));
 
-    // --
+    // ..
     $storage_settings['storage']['first']['type'] = 'integer';
     $storage_settings['storage']['second']['type'] = 'numeric';
     $this->saveFieldStorageSettings($storage_settings);

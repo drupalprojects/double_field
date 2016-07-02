@@ -3,7 +3,6 @@
 
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
