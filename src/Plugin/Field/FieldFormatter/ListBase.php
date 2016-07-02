@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\double_field\Plugin\Field\FieldFormatter\ListBase.
- */
 
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 

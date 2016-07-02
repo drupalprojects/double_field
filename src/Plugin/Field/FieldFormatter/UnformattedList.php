@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\double_field\Plugin\Field\FieldFormatter\UnformattedList.
- */
 
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Field\FieldItemInterface;
+
 
 /**
  * Plugin implementations for 'double_field' formatter.

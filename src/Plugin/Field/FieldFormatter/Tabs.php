@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\double_field\Plugin\Field\FieldFormatter\Tabs.
- */
-
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;

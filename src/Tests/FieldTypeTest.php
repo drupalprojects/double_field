@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\double_field\Tests\FieldStorageTest.
- */
 
 namespace Drupal\double_field\Tests;
 
