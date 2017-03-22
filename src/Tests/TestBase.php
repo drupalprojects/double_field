@@ -36,13 +36,6 @@ abstract class TestBase extends WebTestBase {
   protected $contentTypeId;
 
   /**
-   * {@inheritdoc}
-   *
-   * This option breaks tests by some reasons.
-   */
-  protected $strictConfigSchema = FALSE;
-
-  /**
    * A field name used for testing.
    *
    * @var string
