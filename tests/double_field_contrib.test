@@ -52,7 +52,6 @@ class DoubleFieldContribTestCase extends DoubleFieldTestCase {
    */
   public function testDevelGenerateIntegration() {
 
-    $field_settings_page = "admin/structure/types/manage/{$this->type_name}/fields/{$this->field_name}";
     $widget_types = array(
       'checkbox_&_select',
       'textfield_&_textarea',

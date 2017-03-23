@@ -1283,7 +1283,7 @@ function theme_double_field_dialog($vars) {
   drupal_add_library('system', 'ui.dialog');
   drupal_add_js('jQuery(document).ready(function(){jQuery(".double-field-dialog").dialog();});', 'inline');
   $output = '';
-  foreach (array_reverse($vars['element']['#items']) as $delta => $item) {
+  foreach (array_reverse($vars['element']['#items']) as $item) {
     $output .= '<div class="double-field-dialog" title="' . $item['first'] . '">' . $item['second'] . '</div>';
   }
   return $output;
