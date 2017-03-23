@@ -71,9 +71,11 @@ class DoubleFieldContribTestCase extends DoubleFieldTestCase {
       $this->instance['widget']['settings'] = $widget->getSettings();
       field_update_instance($this->instance);
 
-      $input['num_nodes'] = 100;
+      // This should be 50 or less to avoid batch operations.
+      $input['num_nodes'] = 50;
       $input['node_types[page]'] = FALSE;
       $input['node_types[article]'] = FALSE;
+      $input['node_types[' . $this->type_name . ']'] = TRUE;
       $input['kill_content'] = TRUE;
       $this->drupalPost('admin/config/development/generate/content', $input, t('Generate'));
 

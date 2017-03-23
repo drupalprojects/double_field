@@ -24,9 +24,9 @@ class DoubleFieldWidget {
 
     $this->fieldSettings = $field_settings;
 
-    // The order of the elements compared in
-    // which order they were written in the list().
-    list($this->subwidgets['second'], $this->subwidgets['first']) = array_reverse(explode('_&_', $widget_type));
+    $subwidgets = explode('_&_', $widget_type);
+    $this->subwidgets['first'] = $subwidgets[0];
+    $this->subwidgets['second'] = $subwidgets[1];
 
     // Generate widget settings.
     $this->settings['inline'] = (bool) mt_rand(0, 1);
