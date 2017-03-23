@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
@@ -30,14 +29,13 @@ class Details extends Base {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-
     $settings = $this->getSettings();
 
-    $element['open'] = array(
+    $element['open'] = [
       '#type' => 'checkbox',
       '#title' => t('Open'),
       '#default_value' => $settings['open'],
-    );
+    ];
 
     $element += parent::settingsForm($form, $form_state);
 
@@ -57,23 +55,21 @@ class Details extends Base {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-
     $element = [];
     $this->prepareItems($items);
     $settings = $this->getSettings();
 
     foreach ($items as $delta => $item) {
-      $element[$delta] = array(
+      $element[$delta] = [
         '#title' => $settings['first']['prefix'] . $item->first . $settings['first']['suffix'],
         '#value' => $settings['second']['prefix'] . $item->second . $settings['second']['suffix'],
         '#type' => 'details',
         '#open' => $settings['open'],
         '#attributes' => ['class' => ['double-field-details']],
-      );
+      ];
 
     }
     return $element;
-
   }
 
 }

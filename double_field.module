@@ -18,6 +18,7 @@ function double_field_theme() {
     'accordion',
     'tabs',
   ];
+  $items = [];
   foreach ($templates as $template) {
     $items['double_field_' . $template] = ['render element' => 'elements'];
   }
@@ -86,7 +87,6 @@ function double_field_field_storage_config_update(EntityInterface $entity) {
     if ($first_type_is_changed || $second_type_is_changed) {
       // @TODO: Change field widgets and display a notice.
     }
-
   }
 
 }

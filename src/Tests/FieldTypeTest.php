@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Tests;
 
 use Drupal\node\Entity\Node;
@@ -84,7 +83,6 @@ class FieldTypeTest extends TestBase {
     foreach ($expected_messages as $message) {
       $this->error('Expected violation was not found: ' . $message);
     }
-
   }
 
   /**
@@ -200,7 +198,6 @@ class FieldTypeTest extends TestBase {
       'abc',
     ];
     $this->assertNoViolations($values);
-
   }
 
   /**

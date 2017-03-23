@@ -10,7 +10,7 @@
   Drupal.behaviors.doubleFieldTabs = {
     attach: function () {
 
-      jQuery(".double-field-tabs").tabs();
+      $('.double-field-tabs').tabs();
 
     }
   };

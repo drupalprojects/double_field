@@ -1,12 +1,11 @@
 <?php
 
-
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\double_field\Plugin\Field\FieldType\DoubleField as DoubleFieldItem;
 
 /**
@@ -21,13 +20,12 @@ abstract class Base extends FormatterBase {
     $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings[$subfield] = [
-        // Hidden option useful to display data with views module.
+        // Hidden option are useful to display data with Views module.
         'hidden' => FALSE,
         'prefix' => '',
         'suffix' => '',
       ];
     }
-
     return $settings + parent::defaultSettings();
   }
 
@@ -35,14 +33,13 @@ abstract class Base extends FormatterBase {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-
     $settings = $this->getSettings();
     $field_settings = $this->getFieldSettings();
     $types = DoubleFieldItem::subfieldTypes();
+    $element = [];
 
     // General settings.
     foreach (['first', 'second'] as $subfield) {
-
       $type = $field_settings['storage'][$subfield]['type'];
 
       $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
@@ -78,12 +75,12 @@ abstract class Base extends FormatterBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-
     $settings = $this->getSettings();
     $field_settings = $this->getFieldSettings();
 
     $subfield_types = DoubleFieldItem::subfieldTypes();
 
+    $summary = [];
     foreach (['first', 'second'] as $subfield) {
       $subfield_type = $subfield_types[$field_settings['storage'][$subfield]['type']];
 
@@ -96,7 +93,6 @@ abstract class Base extends FormatterBase {
       );
 
       $summary[] = t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? t('yes') : t('no')]);
-
       $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
       $summary[] = t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
     }
@@ -111,7 +107,6 @@ abstract class Base extends FormatterBase {
    *   List of field items.
    */
   protected function prepareItems(FieldItemListInterface &$items) {
-
     $field_settings = $this->getFieldSettings();
     $settings = $this->getSettings();
 
@@ -123,7 +118,7 @@ abstract class Base extends FormatterBase {
         }
         else {
 
-          // Show value pair of allowed values on instead of their key value.
+          // Replace the value with its label if possible.
           if ($field_settings[$subfield]['list']) {
             if (isset($field_settings[$subfield]['allowed_values'][$item->{$subfield}])) {
               $item->{$subfield} = $field_settings[$subfield]['allowed_values'][$item->{$subfield}];
@@ -138,10 +133,10 @@ abstract class Base extends FormatterBase {
           }
 
         }
+
       }
       $items[$delta] = $item;
     }
-
   }
 
 }

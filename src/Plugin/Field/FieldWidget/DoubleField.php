@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Render\FormattableMarkup;
@@ -152,7 +151,6 @@ class DoubleField extends WidgetBase {
     }
 
     return $element;
-
   }
 
   /**
@@ -320,6 +318,7 @@ class DoubleField extends WidgetBase {
    * Returns available subwidgets.
    */
   protected function getSubwidgets($subfield_type, $list) {
+    $subwidgets = [];
 
     if ($list) {
       $subwidgets['select'] = t('Select list');

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
@@ -80,6 +79,7 @@ class HtmlList extends ListBase {
       ];
     }
     else {
+      $list_items = [];
       foreach ($items as $delta => $item) {
 
         $list_items[$delta] = [

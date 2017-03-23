@@ -2,12 +2,12 @@
 
 namespace Drupal\double_field\Plugin\Field\FieldType;
 
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\TypedData\DataDefinition;
-use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Render\Element\Email;
+use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Plugin implementation of the 'double_field' field type.
@@ -27,6 +27,7 @@ class DoubleField extends FieldItemBase {
    */
   public static function defaultStorageSettings() {
 
+    $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings['storage'][$subfield] = [
         'type' => 'string',
@@ -46,6 +47,7 @@ class DoubleField extends FieldItemBase {
 
     $settings = $this->getSettings();
 
+    $element = [];
     foreach (['first', 'second'] as $subfield) {
       $element['storage'][$subfield] = [
         '#type' => 'details',
@@ -113,6 +115,7 @@ class DoubleField extends FieldItemBase {
    */
   public static function defaultFieldSettings() {
 
+    $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings[$subfield] = [
         'min' => '',
@@ -136,6 +139,7 @@ class DoubleField extends FieldItemBase {
     $settings = $this->getSettings();
 
     $types = self::subfieldTypes();
+    $element = [];
     foreach (['first', 'second'] as $subfield) {
 
       $type = $settings['storage'][$subfield]['type'];
@@ -379,6 +383,7 @@ class DoubleField extends FieldItemBase {
     $subfield_types = self::subfieldTypes();
 
     $settings = $field_definition->getSettings();
+    $properties = [];
     foreach (['first', 'second'] as $subfield) {
 
       $subfield_type = $settings['storage'][$subfield]['type'];
@@ -422,7 +427,7 @@ class DoubleField extends FieldItemBase {
    * @param array $element
    *   An associative array containing the properties and children of the
    *   generic form element.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form for the form this element belongs to.
    *
    * @see \Drupal\Core\Render\Element\FormElement::processPattern()
@@ -544,12 +549,12 @@ class DoubleField extends FieldItemBase {
    */
   public static function fieldSettingsToConfigData(array $settings) {
     foreach (['first', 'second'] as $subfield) {
-      $structured_values = array();
+      $structured_values = [];
       foreach ($settings[$subfield]['allowed_values'] as $value => $label) {
-        $structured_values[] = array(
+        $structured_values[] = [
           'value' => $value,
           'label' => $label,
-        );
+        ];
       }
       $settings[$subfield]['allowed_values'] = $structured_values;
     }
@@ -561,7 +566,7 @@ class DoubleField extends FieldItemBase {
    */
   public static function fieldSettingsFromConfigData(array $settings) {
     foreach (['first', 'second'] as $subfield) {
-      $structured_values = array();
+      $structured_values = [];
       foreach ($settings[$subfield]['allowed_values'] as $item) {
         $structured_values[$item['value']] = $item['label'];
       }

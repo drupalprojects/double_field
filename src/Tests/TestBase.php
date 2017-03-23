@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Tests;
 
 use Drupal\Component\Utility\NestedArray;
@@ -87,14 +86,14 @@ abstract class TestBase extends WebTestBase {
   /**
    * Field storage instance.
    *
-   * @var FieldStorageConfig
+   * @var \Drupal\field\FieldStorageConfigInterface
    */
   protected $fieldStorage;
 
   /**
    * Field instance.
    *
-   * @var FieldConfig
+   * @var \Drupal\Core\Field\FieldConfigInterface
    */
   protected $field;
 
@@ -206,6 +205,7 @@ abstract class TestBase extends WebTestBase {
       // Multiple messages are rendered with an HTML list.
       if (isset($wrapper[0]->ul)) {
         foreach ($wrapper[0]->ul->li as $li) {
+          /* @var \SimpleXMLElement $li */
           $messages[] = trim(strip_tags($li->asXML()));
         }
       }
@@ -264,9 +264,10 @@ abstract class TestBase extends WebTestBase {
    * Deletes all nodes.
    */
   protected function deleteNodes() {
+    /* @var \Drupal\node\NodeInterface[] $nodes */
     $nodes = Node::loadMultiple();
     foreach ($nodes as $node) {
-      // Node::delete() does not work here as expected by some reasons.
+      // Node::delete() does not work here as expected by some reason.
       $this->drupalPostForm(sprintf('node/%d/delete', $node->id()), [], t('Delete'));
     }
   }
@@ -344,6 +345,7 @@ abstract class TestBase extends WebTestBase {
    * Returns formatter options.
    */
   protected function getFormatterOptions() {
+    /* @var \Drupal\Core\Entity\Display\EntityDisplayInterface $view_display */
     $view_display = \Drupal::entityTypeManager()
       ->getStorage('entity_view_display')
       ->load("node.{$this->contentTypeId}.default");

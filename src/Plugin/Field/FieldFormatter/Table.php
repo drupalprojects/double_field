@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
@@ -33,32 +32,30 @@ class Table extends Base {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-
     $settings = $this->getSettings();
 
-    $element['number_column'] = array(
+    $element['number_column'] = [
       '#type' => 'checkbox',
       '#title' => t('Enable row number column'),
       '#default_value' => $settings['number_column'],
-      // @TODO: Remove this.
-      '#attributes' => array('id' => 'number_column'),
-    );
-    $element['number_column_label'] = array(
+      '#attributes' => ['id' => 'number_column'],
+    ];
+    $element['number_column_label'] = [
       '#type' => 'textfield',
       '#title' => t('Number column label'),
       '#size' => 30,
       '#default_value' => $settings['number_column_label'],
-      '#states' => array(
-        'visible' => array('#number_column' => array('checked' => TRUE)),
-      ),
-    );
-    foreach (array('first', 'second') as $subfield) {
-      $element[$subfield . '_column_label'] = array(
+      '#states' => [
+        'visible' => ['#number_column' => ['checked' => TRUE]],
+      ],
+    ];
+    foreach (['first', 'second'] as $subfield) {
+      $element[$subfield . '_column_label'] = [
         '#type' => 'textfield',
         '#title' => $subfield == 'first' ? t('First column label') : t('Second column label'),
         '#size' => 30,
         '#default_value' => $settings[$subfield . '_column_label'],
-      );
+      ];
     }
 
     return $element + parent::settingsForm($form, $form_state);
@@ -85,7 +82,6 @@ class Table extends Base {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-
     $settings = $this->getSettings();
     $this->prepareItems($items);
 
@@ -102,7 +98,6 @@ class Table extends Base {
     }
 
     foreach ($items as $delta => $item) {
-
       $row = [];
       if ($settings['number_column']) {
         $row[]['#markup'] = $delta + 1;
@@ -124,11 +119,9 @@ class Table extends Base {
       }
 
       $table[$delta] = $row;
-
     }
 
     return [$table];
-
   }
 
 }

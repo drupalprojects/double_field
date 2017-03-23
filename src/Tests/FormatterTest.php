@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Tests;
 
 /**
@@ -43,6 +42,7 @@ class FormatterTest extends TestBase {
     }
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
 
+    $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings[$subfield] = [
         'prefix' => $this->randomMachineName(),
@@ -266,7 +266,6 @@ class FormatterTest extends TestBase {
       "//div[contains(@class, 'double-field-unformatted-list')]//div[@class='double-field-second']",
     ];
     $this->assertFieldValues($axes);
-
   }
 
   /**
@@ -317,6 +316,8 @@ class FormatterTest extends TestBase {
 
     $name_prefix = "fields[{$this->fieldName}][settings_edit_form][settings]";
 
+    $general_axes = [];
+    $settings = [];
     foreach (['first', 'second'] as $subfield) {
       $settings[$subfield] = [
         'hidden' => (bool) mt_rand(0, 1),

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\double_field\Tests;
 
 /**
@@ -188,6 +187,7 @@ class WidgetTest extends TestBase {
       "//input[@name='{$name_prefix}[inline]' and @type='checkbox']",
     ];
 
+    $general_edit = [];
     foreach (['first', 'second'] as $subfield) {
       $general_axes[] = "//input[@name='{$name_prefix}[{$subfield}][prefix]']";
       $general_axes[] = "//input[@name='{$name_prefix}[{$subfield}][suffix]']";

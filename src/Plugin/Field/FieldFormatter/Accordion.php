@@ -19,7 +19,6 @@ class Accordion extends Base {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-
     $this->prepareItems($items);
 
     $element[0] = [
@@ -30,7 +29,6 @@ class Accordion extends Base {
     ];
 
     return $element;
-
   }
 
 }

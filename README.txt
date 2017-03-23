@@ -11,10 +11,8 @@ INSTALLATION:
 
   1. Copy the module folder to your server.
   2. Enable the module via the modules page.
-  See https://www.drupal.org/node/1897420 for further information
+  See https://www.drupal.org/node/1897420 for further information.
 
-CONFIGURATION:
+LINKS:
 
-  * There are lots of configurable options.
-  * Go to admin/structure/types to add or edit double fields for
-    your content types.
+  Project page: https://www.drupal.org/project/double_field
