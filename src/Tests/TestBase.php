@@ -303,7 +303,7 @@ abstract class TestBase extends WebTestBase {
    */
   protected function saveWidgetSettings(array $settings) {
     /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay $form_display */
-    $form_display = \Drupal::entityManager()
+    $form_display = \Drupal::entityTypeManager()
       ->getStorage('entity_form_display')
       ->load('node.' . $this->contentTypeId . '.default');
 
@@ -324,7 +324,7 @@ abstract class TestBase extends WebTestBase {
   protected function saveFormatterSettings($formatter, array $settings = []) {
 
     /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $view_display */
-    $view_display = \Drupal::entityManager()
+    $view_display = \Drupal::entityTypeManager()
       ->getStorage('entity_view_display')
       ->load("node.{$this->contentTypeId}.default");
 
@@ -344,7 +344,7 @@ abstract class TestBase extends WebTestBase {
    * Returns formatter options.
    */
   protected function getFormatterOptions() {
-    $view_display = \Drupal::entityManager()
+    $view_display = \Drupal::entityTypeManager()
       ->getStorage('entity_view_display')
       ->load("node.{$this->contentTypeId}.default");
     return $view_display->getComponent($this->fieldName);
