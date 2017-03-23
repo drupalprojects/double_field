@@ -80,6 +80,7 @@ class DoubleFieldTestCase extends DrupalWebTestCase {
       array(
         'access administration pages',
         'administer content types',
+        'administer fields',
         'administer nodes',
         'access content overview',
         'administer site configuration',
