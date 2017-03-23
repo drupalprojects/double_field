@@ -13,6 +13,6 @@
       jQuery(".double-field-tabs").tabs();
 
     }
-  }
+  };
 
 })(jQuery);
