@@ -277,6 +277,7 @@ class FieldTypeTest extends TestBase {
     $this->drupalPostForm($this->fieldStorageAdminPath, $edit, t('Save field settings'));
 
     $this->assertStatusMessage(t('Updated field @field_name field settings.', ['@field_name' => $this->fieldName]));
+    $this->assertWarningMessage(t('Since storage type has been changed you need to verify configuration of related widget on manage form display page.'));
 
     $this->drupalGet($this->fieldStorageAdminPath);
 

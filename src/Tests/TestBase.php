@@ -229,7 +229,7 @@ abstract class TestBase extends WebTestBase {
   /**
    * Passes if a given warning message was found on the page.
    */
-  protected function asserWarningMessage($message) {
+  protected function assertWarningMessage($message) {
     $messages = $this->getMessages('warning');
     $this->assertTrue(in_array($message, $messages), 'Warning message was found.');
   }
