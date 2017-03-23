@@ -10,7 +10,7 @@
 /**
  * Implements hook_hook_info().
  *
- * Unfortunately hook_hook_info() doesn't work for field related hooks.
+ * Unfortunately hook_hook_info() does not work for field related hooks.
  * See http://drupal.org/node/977052
  */
 function double_field_hook_info() {
@@ -515,12 +515,10 @@ function double_field_field_widget_settings_form($field, $instance) {
           '#element_validate' => array('double_field_validate_number'),
         );
         $form[$subfield]['checkbox']['off_value'] = array(
-          // '#type' => 'textfield',
           '#type' => 'hidden',
           '#title' => t('Off value'),
           '#default_value' => $settings[$subfield]['checkbox']['off_value'],
           '#subfield_settings' => $field['settings'][$subfield],
-          // '#element_validate' => array('double_field_validate_number'),
         );
         if ($field['settings'][$subfield]['type'] == 'varchar') {
           $form[$subfield]['checkbox']['on_value']['#maxlength'] = $field['settings'][$subfield]['maxlength'];

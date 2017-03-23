@@ -48,7 +48,7 @@ class DoubleFieldContribTestCase extends DoubleFieldTestCase {
   }
 
   /**
-   * Test Devel Generate intergation.
+   * Test Devel generate integration.
    */
   public function testDevelGenerateIntegration() {
 
@@ -123,14 +123,14 @@ class DoubleFieldContribTestCase extends DoubleFieldTestCase {
   }
 
   /**
-   * Test Feeds intergation.
+   * Test Feeds integration.
    */
   public function testFeedsIntegration() {
 
   }
 
   /**
-   * Test Entity API intergation.
+   * Test Entity API integration.
    */
   public function testEntityIntegration() {
 

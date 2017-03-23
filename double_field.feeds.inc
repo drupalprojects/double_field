@@ -36,8 +36,6 @@ function double_field_feeds_set_target(FeedsSource $source, $entity, $target, ar
 
   list($field_name, $subfield) = explode(':', $target . ':value');
 
-  $field = isset($entity->$field_name) ? $entity->$field_name : array($language => array());
-
   // Iterate over all values.
   foreach ($values as $delta => $item) {
     if (!is_array($item) && !is_object($item)) {

@@ -382,7 +382,6 @@ class DoubleFieldFormatter {
     return $validators;
   }
 
-
   /**
    * Return input array for settings form submission.
    */

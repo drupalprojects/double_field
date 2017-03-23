@@ -52,7 +52,7 @@ class DoubleFieldWidget {
           break;
 
         case 'select':
-          $this->settings[$index][$subwidget_type]  = array();
+          $this->settings[$index][$subwidget_type] = array();
           for ($i = 0, $cnt = mt_rand(5, 10); $i < $cnt; $i++) {
             // These values should match global field settings.
             $value = DoubleFieldField::generateValue($this->fieldSettings[$index]);
@@ -103,7 +103,6 @@ class DoubleFieldWidget {
   public function setSettings($settings) {
     $this->settings = $settings;
   }
-
 
   /**
    * Value getter.
@@ -184,7 +183,7 @@ class DoubleFieldWidget {
   }
 
   /**
-   * Create widget fornm validators.
+   * Create widget form validators.
    */
   public function getFormValidators($field_name) {
     $prefix = "//div[@id='edit-$field_name']";
@@ -282,7 +281,7 @@ class DoubleFieldWidget {
   }
 
   /**
-   * Get all suported widget types.
+   * Get all supported widget types.
    */
   public static function getAllWidgetTypes() {
     $subwidgets = array(
