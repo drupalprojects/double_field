@@ -27,10 +27,12 @@ function double_field_rules_property_info() {
     'first' => array(
       'type' => 'text',
       'label' => t('First subfield'),
+      'setter callback' => 'entity_property_verbatim_set',
     ),
     'second' => array(
       'type' => 'text',
       'label' => t('Second subfield'),
+      'setter callback' => 'entity_property_verbatim_set',
     ),
   );
 }
