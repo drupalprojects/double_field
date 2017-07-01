@@ -64,6 +64,7 @@ class FieldTypeTest extends TestBase {
       'second' => $values[1],
     ];
 
+    /** @var \Symfony\Component\Validator\ConstraintViolationInterface[] $violations */
     $violations = $node->{$this->fieldName}->validate();
 
     foreach ($violations as $index => $violation) {

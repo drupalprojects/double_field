@@ -58,7 +58,7 @@ class WidgetTest extends TestBase {
       $this->fieldName . '[0][first]' => (bool) mt_rand(0, 1),
       $this->fieldName . '[0][second]' => $this->randomMachineName(),
     ];
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
 
     $this->assertFieldValues(
       $edit[$this->fieldName . '[0][first]'] ? 'On' : 'Off',
@@ -108,7 +108,7 @@ class WidgetTest extends TestBase {
       $this->fieldName . '[0][second]' => mt_rand($instance_settings['second']['min'], $instance_settings['second']['max']),
     ];
 
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertFieldValues($edit[$this->fieldName . '[0][first]'], $edit[$this->fieldName . '[0][second]']);
 
     $this->deleteNodes();
@@ -154,7 +154,7 @@ class WidgetTest extends TestBase {
       $this->fieldName . '[0][second]' => mt_rand($instance_settings['second']['min'], $instance_settings['second']['max']),
     ];
 
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertFieldValues($edit[$this->fieldName . '[0][first]'], $edit[$this->fieldName . '[0][second]']);
 
     // -- Check prefixes and suffixes.
@@ -346,7 +346,7 @@ class WidgetTest extends TestBase {
       $this->fieldName . '[0][second]' => 'not@valid@email',
     ];
 
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $error_message = t(
       '@field_name cannot be longer than @max_length characters but is currently @actual_length characters long.',
       [
@@ -361,9 +361,9 @@ class WidgetTest extends TestBase {
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
       $this->fieldName . '[0][first]' => $this->randomMachineName($maxlength),
-      $this->fieldName . '[0][second]' => 'test@exampe.com',
+      $this->fieldName . '[0][second]' => 'test@example.com',
     ];
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertNoErrorMessages();
 
     $field_settings['first']['list'] = TRUE;
@@ -379,16 +379,16 @@ class WidgetTest extends TestBase {
       $this->fieldName . '[0][first]' => 'ddd',
     ];
 
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertErrorMessage(t('The value you selected is not a valid choice.'));
     $this->assertErrorMessage(t('This value should not be blank.'));
 
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
       $this->fieldName . '[0][first]' => array_rand($field_settings['first']['allowed_values']),
-      $this->fieldName . '[0][second]' => 'test@exampe.com',
+      $this->fieldName . '[0][second]' => 'test@example.com',
     ];
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertNoErrorMessages();
 
     $this->deleteNodes();
@@ -417,7 +417,7 @@ class WidgetTest extends TestBase {
       $this->fieldName . '[0][first]' => 100,
       $this->fieldName . '[0][second]' => $field_settings['second']['max'] + 1,
     ];
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $error_message = t(
       '@field_name must be lower than or equal to @max.',
       ['@field_name' => $this->fieldName, '@max' => $field_settings['second']['max']]
@@ -430,7 +430,7 @@ class WidgetTest extends TestBase {
       $this->fieldName . '[0][first]' => $field_settings['first']['min'] - 1,
       $this->fieldName . '[0][second]' => mt_rand($field_settings['second']['min'], $field_settings['second']['max']),
     ];
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
 
     // This error comes from primitive type constraint because, textfield form
     // element does not support min and max properties.
@@ -442,7 +442,7 @@ class WidgetTest extends TestBase {
     $this->assertEqual(1, count($this->getMessages('error')), 'There should be only one error message');
 
     $edit[$this->fieldName . '[0][first]'] = mt_rand($field_settings['first']['min'], $field_settings['first']['max']);
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertNoErrorMessages();
   }
 

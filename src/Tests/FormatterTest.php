@@ -40,7 +40,7 @@ class FormatterTest extends TestBase {
         $edit[$this->fieldName . "[$delta][$subfield]"] = $this->values[$delta][$subfield];
       }
     }
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
 
     $settings = [];
     foreach (['first', 'second'] as $subfield) {
@@ -255,7 +255,7 @@ class FormatterTest extends TestBase {
       $this->fieldName . "[0][first]" => TRUE,
       $this->fieldName . "[0][second]" => FALSE,
     ];
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
 
     $this->values[0] = [
       'first' => $field_settings['first']['on_label'],
@@ -296,7 +296,7 @@ class FormatterTest extends TestBase {
       $this->fieldName . "[0][first]" => array_rand($field_settings['first']['allowed_values']),
       $this->fieldName . "[0][second]" => array_rand($field_settings['second']['allowed_values']),
     ];
-    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save and publish'));
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
 
     $this->values[0] = [
       'first' => $field_settings['first']['allowed_values'][$edit[$this->fieldName . "[0][first]"]],
@@ -459,7 +459,7 @@ class FormatterTest extends TestBase {
       else {
         $this->assertTrue(trim($elements[0]) == $this->values[$delta][$subfield], 'Valid value was found.');
         $this->assertTrue((string) $elements[0]->span[0] == $settings[$subfield]['prefix'], 'Prefix was found.');
-        $this->assertTrue((string) $elements[0]->span[1] == $settings[$subfield]['suffix'], 'Sufix was found.');
+        $this->assertTrue((string) $elements[0]->span[1] == $settings[$subfield]['suffix'], 'Suffix was found.');
       }
 
     }
