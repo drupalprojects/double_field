@@ -6,6 +6,7 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\double_field\Plugin\Field\FieldType\DoubleField as DoubleFieldItem;
 
 /**
@@ -50,6 +51,15 @@ abstract class Base extends FormatterBase {
         '#title' => $title,
         '#type' => 'details',
       ];
+
+      if ($type == 'telephone') {
+        $element[$subfield]['link'] = [
+          '#type' => 'checkbox',
+          '#title' => t('Display as link'),
+          '#default_value' => $settings[$subfield]['link'],
+          '#weight' => -10,
+        ];
+      }
       $element[$subfield]['hidden'] = [
         '#type' => 'checkbox',
         '#title' => t('Hidden'),
@@ -133,6 +143,17 @@ abstract class Base extends FormatterBase {
 
           if ($field_settings['storage'][$subfield]['type'] == 'boolean') {
             $item->{$subfield} = $field_settings[$subfield][$item->{$subfield} ? 'on_label' : 'off_label'];
+          }
+
+          if (!empty($settings[$subfield]['link'])) {
+            if ($field_settings['storage'][$subfield]['type'] == 'telephone') {
+              $item->{$subfield} = [
+                '#type' => 'link',
+                '#title' => $item->{$subfield},
+                '#url' => Url::fromUri('tel:' . rawurlencode(preg_replace('/\s+/', '', $item->{$subfield}))),
+                '#options' => ['external' => TRUE],
+              ];
+            }
           }
 
         }

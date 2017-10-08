@@ -31,18 +31,6 @@ abstract class ListBase extends Base {
       '#weight' => -10,
     ];
 
-    $storage_settings = $this->getFieldSetting('storage');
-    foreach (['first', 'second'] as $subfield) {
-      if ($storage_settings[$subfield]['type'] == 'telephone') {
-        $element[$subfield]['link'] = [
-          '#type' => 'checkbox',
-          '#title' => t('Display as link'),
-          '#default_value' => $settings[$subfield]['link'],
-          '#weight' => -10,
-        ];
-      }
-    }
-
     return $element;
   }
 
