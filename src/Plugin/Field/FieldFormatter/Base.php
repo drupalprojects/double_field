@@ -24,6 +24,7 @@ abstract class Base extends FormatterBase {
         'hidden' => FALSE,
         'prefix' => '',
         'suffix' => '',
+        'link' => FALSE,
       ];
     }
     return $settings + parent::defaultSettings();
@@ -82,16 +83,18 @@ abstract class Base extends FormatterBase {
 
     $summary = [];
     foreach (['first', 'second'] as $subfield) {
-      $subfield_type = $subfield_types[$field_settings['storage'][$subfield]['type']];
-
+      $subfield_type = $field_settings['storage'][$subfield]['type'];
       $summary[] = new FormattableMarkup(
         '<b>@subfield - @subfield_type</b>',
         [
           '@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield')),
-          '@subfield_type' => strtolower($subfield_type),
+          '@subfield_type' => strtolower($subfield_types[$subfield_type]),
         ]
       );
 
+      if ($subfield_type == 'telephone') {
+        $summary[] = t('Link: %value', ['%value' => $settings[$subfield]['link'] ? t('yes') : t('no')]);
+      }
       $summary[] = t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? t('yes') : t('no')]);
       $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
       $summary[] = t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);

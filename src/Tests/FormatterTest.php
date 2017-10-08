@@ -230,6 +230,29 @@ class FormatterTest extends TestBase {
 
     $element = $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-second"]');
     $this->assertTrue(isset($element[0]), 'Second item was found.');
+
+    $this->deleteNodes();
+
+    // Test 'link' option.
+    $storage_settings['storage']['first']['type'] = 'email';
+    $storage_settings['storage']['second']['type'] = 'telephone';
+    $this->saveFieldStorageSettings($storage_settings);
+    $settings = [
+      'second' => [
+        'link' => TRUE,
+      ],
+    ];
+    $this->saveFormatterSettings('unformatted_list', $settings);
+    $this->drupalGet($this->displayAdminPath);
+
+    // Create a node for testing.
+    $edit = ['title[0][value]' => $this->randomMachineName()];
+    $edit[$this->fieldName . "[0][first]"] = 'abc@example.com';
+    $edit[$this->fieldName . "[0][second]"] = '123456789';
+
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
+    $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-first" and text()="abc@example.com"]');
+    $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-second"]/a[href="tel:123456789" and text()="123456789"]');
   }
 
   /**

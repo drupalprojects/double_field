@@ -173,6 +173,9 @@ double_field_formatter_subfield_settings:
   type: mapping
   label: Formatter subfield settings
   mapping:
+    link:
+      type: boolean
+      label: Link
     hidden:
       type: boolean
       label: Hidden

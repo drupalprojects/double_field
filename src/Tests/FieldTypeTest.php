@@ -215,6 +215,7 @@ class FieldTypeTest extends TestBase {
       'float',
       'numeric',
       'email',
+      'telephone',
     ];
 
     $expected_maxlength_attributes = [
@@ -262,7 +263,7 @@ class FieldTypeTest extends TestBase {
       $this->assertAttributes($precision_field->attributes(), $expected_precision_attributes);
 
       $scale_states['visible'] = [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']];
-      $expected_scale_attributes['data-drupal-states'] = json_encode($precision_states, JSON_HEX_APOS);
+      $expected_scale_attributes['data-drupal-states'] = json_encode($scale_states, JSON_HEX_APOS);
       $scale_field = $this->xpath("//input[@name='settings[storage][$subfield][scale]']")[0];
       $this->assertAttributes($scale_field->attributes(), $expected_scale_attributes);
     }
@@ -383,7 +384,7 @@ class FieldTypeTest extends TestBase {
     ];
     $this->assertViolations($values, $expected_messages);
 
-    // ...
+    // Test allowed values.
     $settings['first']['list'] = TRUE;
     $settings['first']['allowed_values'] = [
       '-12.379' => 'Aaa',
@@ -409,6 +410,31 @@ class FieldTypeTest extends TestBase {
     ];
     $this->assertViolations($values, $expected_messages);
     $this->assertNoViolations([4565, 7738854]);
+
+    // -- Email and telephone.
+    $storage_settings['storage']['first']['type'] = 'email';
+    $storage_settings['storage']['second']['type'] = 'telephone';
+    foreach (['first', 'second'] as $subfield) {
+      $settings[$subfield]['list'] = FALSE;
+    }
+    $this->saveFieldSettings($settings);
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $values = [
+      'aaa',
+      str_repeat('x', 51),
+    ];
+    $expected_messages = [
+      t('This value is not a valid email address.'),
+      t('This value is too long. It should have 50 characters or less.'),
+    ];
+    $this->assertViolations($values, $expected_messages);
+
+    $values = [
+      'abc@example.com',
+      str_repeat('x', 50),
+    ];
+    $this->assertNoViolations($values);
   }
 
   /**
@@ -419,6 +445,8 @@ class FieldTypeTest extends TestBase {
     $storage_types = [
       'boolean',
       'string',
+      'email',
+      'telephone',
       'text',
       'integer',
       'float',
@@ -462,6 +490,16 @@ class FieldTypeTest extends TestBase {
 
           case 'string':
             $this->assertTrue($summary_type == 'Text', 'Summary type is correct');
+            $this->assertAllowedValues($subfield);
+            break;
+
+          case 'email':
+            $this->assertTrue($summary_type == 'Email', 'Summary type is correct');
+            $this->assertAllowedValues($subfield);
+            break;
+
+          case 'telephone':
+            $this->assertTrue($summary_type == 'Telephone', 'Summary type is correct');
             $this->assertAllowedValues($subfield);
             break;
 

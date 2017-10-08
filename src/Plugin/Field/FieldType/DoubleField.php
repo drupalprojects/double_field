@@ -160,7 +160,15 @@ class DoubleField extends FieldItemBase {
         '#default_value' => $settings[$subfield]['required'],
       ];
 
-      if (in_array($type, ['string', 'integer', 'float', 'numeric', 'email'])) {
+      $list_types = [
+        'string',
+        'integer',
+        'float',
+        'numeric',
+        'email',
+        'telephone',
+      ];
+      if (in_array($type, $list_types)) {
         $element[$subfield]['list'] = [
           '#type' => 'checkbox',
           '#title' => t('Limit allowed values'),
@@ -278,7 +286,7 @@ class DoubleField extends FieldItemBase {
         $subconstrains[$subfield]['AllowedValues'] = $allowed_values;
       }
 
-      if ($subfield_type == 'string') {
+      if ($subfield_type == 'string' || $subfield_type == 'telephone') {
         $subconstrains[$subfield]['Length']['max'] = $settings['storage'][$subfield]['maxlength'];
       }
 
@@ -335,6 +343,7 @@ class DoubleField extends FieldItemBase {
 
       switch ($type) {
         case 'string':
+        case 'telephone':
           $columns[$subfield]['type'] = 'varchar';
           $columns[$subfield]['length'] = $settings['storage'][$subfield]['maxlength'];
           break;
@@ -388,7 +397,7 @@ class DoubleField extends FieldItemBase {
 
       $subfield_type = $settings['storage'][$subfield]['type'];
       // Typed data are slightly different from schema the definition.
-      if ($subfield_type == 'text') {
+      if ($subfield_type == 'text' || $subfield_type == 'telephone') {
         $subfield_type = 'string';
       }
       elseif ($subfield_type == 'numeric') {
@@ -540,6 +549,7 @@ class DoubleField extends FieldItemBase {
       'float' => t('Float'),
       'numeric' => t('Decimal'),
       'email' => t('Email'),
+      'telephone' => t('Telephone'),
     ];
     return $type_options;
   }

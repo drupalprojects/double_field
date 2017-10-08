@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_theme().
@@ -30,8 +31,25 @@ function double_field_theme() {
  */
 function template_preprocess_double_field_item(&$vars) {
   $vars['settings'] = $vars['elements']['#settings'];
-  $vars['item']['first'] = $vars['elements']['#item']->first;
-  $vars['item']['second'] = $vars['elements']['#item']->second;
+  /* @var  \Drupal\Core\Field\FieldItemInterface $item */
+  $item = $vars['elements']['#item'];
+  $storage_settings = $item
+    ->getDataDefinition()
+    ->getSetting('storage');
+  foreach (['first', 'second'] as $subfield) {
+    if (!empty($vars['settings'][$subfield]['link'])) {
+      if ($storage_settings[$subfield]['type'] == 'telephone') {
+        $vars['item'][$subfield] = [
+          '#type' => 'link',
+          '#title' => $item->{$subfield},
+          '#url' => Url::fromUri('tel:' . rawurlencode(preg_replace('/\s+/', '', $item->{$subfield}))),
+          '#options' => ['external' => TRUE],
+        ];
+        continue;
+      }
+    }
+    $vars['item'][$subfield] = $item->{$subfield};
+  }
 }
 
 /**

@@ -157,6 +157,42 @@ class WidgetTest extends TestBase {
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertFieldValues($edit[$this->fieldName . '[0][first]'], $edit[$this->fieldName . '[0][second]']);
 
+    $this->deleteNodes();
+
+    // -- Email and telephone.
+    $storage_settings['storage']['first']['type'] = 'email';
+    $storage_settings['storage']['second']['type'] = 'telephone';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $this->saveFieldSettings([]);
+
+    $widget_settings['first']['type'] = 'email';
+    $widget_settings['first']['size'] = mt_rand(5, 30);
+    $widget_settings['first']['placeholder'] = $this->randomMachineName();
+    $widget_settings['second']['type'] = 'tel';
+    $widget_settings['second']['size'] = mt_rand(5, 30);
+    $widget_settings['second']['placeholder'] = $this->randomMachineName();
+    $this->saveWidgetSettings($widget_settings);
+
+    $this->drupalGet($this->nodeAddPath);
+
+    $email_field = $this->xpath("//input[@name='{$this->fieldName}[0][first]']")[0];
+    $expected_attributes = [
+      'type' => $widget_settings['first']['type'],
+      'value' => '',
+      // @todo Test size and placeholder attributes when they get supported.
+    ];
+    $this->assertAttributes($email_field->attributes(), $expected_attributes);
+
+    $tel_field = $this->xpath("//input[@name='{$this->fieldName}[0][second]']")[0];
+    $expected_attributes = [
+      'type' => $widget_settings['second']['type'],
+      'value' => '',
+      'size' => $widget_settings['second']['size'],
+      'placeholder' => $widget_settings['second']['placeholder'],
+    ];
+    $this->assertAttributes($tel_field->attributes(), $expected_attributes);
+
     // -- Check prefixes and suffixes.
     $widget_settings['first']['prefix'] = $this->randomMachineName();
     $widget_settings['first']['suffix'] = $this->randomMachineName();
@@ -166,12 +202,12 @@ class WidgetTest extends TestBase {
 
     $this->drupalGet($this->nodeAddPath);
 
-    $widget_wrapper = $this->xpath("//div[@id='edit-{$this->fieldName}-0']")[0];
-
     $expected_data[] = $widget_settings['first']['prefix'];
     $expected_data[] = $widget_settings['first']['suffix'];
     $expected_data[] = $widget_settings['second']['prefix'];
     $expected_data[] = $widget_settings['second']['suffix'];
+
+    $widget_wrapper = $this->xpath("//div[@id='edit-{$this->fieldName}-0']")[0];
 
     $this->assertTrue(str_replace("\n", '', $widget_wrapper) == implode($expected_data), 'All prefixes and suffixes were found.');
   }
@@ -321,6 +357,27 @@ class WidgetTest extends TestBase {
     $axes[] = "//summary[text()='First subfield - Float']";
     $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
     $axes[] = "//summary[text()='Second subfield - Decimal']";
+    $this->assertAxes($axes);
+
+    // -- Email and telephone.
+    $storage_settings['storage']['first']['type'] = 'email';
+    $storage_settings['storage']['second']['type'] = 'telephone';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $widget_settings['first']['type'] = 'email';
+    $widget_settings['second']['type'] = 'tel';
+    $this->saveWidgetSettings($widget_settings);
+
+    $this->drupalGet($this->formDisplayAdminPath);
+
+    // Click on the widget settings button to open the widget settings form.
+    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+
+    $axes = $general_axes;
+    $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='email' and @selected]";
+    $axes[] = "//summary[text()='First subfield - Email']";
+    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='tel' and @selected]";
+    $axes[] = "//summary[text()='Second subfield - Telephone']";
     $this->assertAxes($axes);
   }
 

@@ -88,7 +88,10 @@ class DoubleField extends WidgetBase {
         '#default_value' => $settings[$subfield]['size'],
         '#min' => 1,
         '#states' => [
-          'visible' => [$type_selector => ['value' => 'textfield']],
+          'visible' => [
+            [$type_selector => ['value' => 'textfield']],
+            [$type_selector => ['value' => 'tel']],
+          ],
         ],
       ];
 
@@ -100,6 +103,7 @@ class DoubleField extends WidgetBase {
         '#states' => [
           'visible' => [
             [$type_selector => ['value' => 'textfield']],
+            [$type_selector => ['value' => 'tel']],
             [$type_selector => ['value' => 'textarea']],
           ],
         ],
@@ -180,6 +184,7 @@ class DoubleField extends WidgetBase {
       $summary[] = t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
       switch ($settings[$subfield]['type']) {
         case 'textfield':
+        case 'tel':
           $summary[] = t('Size: %size', ['%size' => $settings[$subfield]['size']]);
           $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
           break;
@@ -233,6 +238,7 @@ class DoubleField extends WidgetBase {
       switch ($settings[$subfield]['type']) {
 
         case 'textfield':
+        case 'tel':
           $widget[$subfield]['#maxlength'] = $field_settings['storage'][$subfield]['maxlength'];
           if ($settings[$subfield]['size']) {
             $widget[$subfield]['#size'] = $settings[$subfield]['size'];
@@ -290,6 +296,7 @@ class DoubleField extends WidgetBase {
             }
           }
           break;
+
       }
 
     }
@@ -333,9 +340,11 @@ class DoubleField extends WidgetBase {
 
       case 'string':
       case 'email':
+      case 'telephone':
         $subwidgets['textfield'] = t('Textfield');
         $subwidgets['email'] = t('Email');
         $subwidgets['number'] = t('Number');
+        $subwidgets['tel'] = t('Telephone');
         break;
 
       case 'text':
