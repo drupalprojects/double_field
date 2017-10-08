@@ -19,15 +19,17 @@ class Tabs extends Base {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $settings = $this->getSettings();
-    $this->prepareItems($items);
+    $element = [];
 
-    $element[0] = [
-      '#theme' => 'double_field_tabs',
-      '#items' => $items,
-      '#settings' => $settings,
-      '#attached' => ['library' => ['double_field/tabs']],
-    ];
+    if (count($items) > 0) {
+      $this->prepareItems($items);
+      $element[0] = [
+        '#theme' => 'double_field_tabs',
+        '#items' => $items,
+        '#settings' => $this->getSettings(),
+        '#attached' => ['library' => ['double_field/tabs']],
+      ];
+    }
 
     return $element;
   }

@@ -19,20 +19,24 @@ class UnformattedList extends ListBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $this->prepareItems($items);
+    $element = [];
 
-    $element['#attributes']['class'][] = 'double-field-unformatted-list';
+    if (count($items) > 0) {
+      $this->prepareItems($items);
 
-    $settings = $this->getSettings();
-    foreach ($items as $delta => $item) {
-      if ($settings['inline']) {
-        $item->_attributes = ['class' => ['container-inline']];
+      $element['#attributes']['class'][] = 'double-field-unformatted-list';
+
+      $settings = $this->getSettings();
+      foreach ($items as $delta => $item) {
+        if ($settings['inline']) {
+          $item->_attributes = ['class' => ['container-inline']];
+        }
+        $element[$delta] = [
+          '#settings' => $settings,
+          '#item' => $item,
+          '#theme' => 'double_field_item',
+        ];
       }
-      $element[$delta] = [
-        '#settings' => $settings,
-        '#item' => $item,
-        '#theme' => 'double_field_item',
-      ];
     }
 
     return $element;
