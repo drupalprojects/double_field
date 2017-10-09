@@ -180,7 +180,8 @@ class WidgetTest extends TestBase {
     $expected_attributes = [
       'type' => $widget_settings['first']['type'],
       'value' => '',
-      // @todo Test size and placeholder attributes when they get supported.
+      'size' => $widget_settings['first']['size'],
+      'placeholder' => $widget_settings['first']['placeholder'],
     ];
     $this->assertAttributes($email_field->attributes(), $expected_attributes);
 
