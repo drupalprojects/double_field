@@ -238,6 +238,9 @@ class FormatterTest extends TestBase {
     $storage_settings['storage']['second']['type'] = 'telephone';
     $this->saveFieldStorageSettings($storage_settings);
     $settings = [
+      'first' => [
+        'link' => TRUE,
+      ],
       'second' => [
         'link' => TRUE,
       ],
@@ -251,7 +254,7 @@ class FormatterTest extends TestBase {
     $edit[$this->fieldName . "[0][second]"] = '123456789';
 
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
-    $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-first" and text()="abc@example.com"]');
+    $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-first"]/a[href="mailto:abc@example.com" and text()="abc@example.com"]');
     $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-second"]/a[href="tel:123456789" and text()="123456789"]');
   }
 

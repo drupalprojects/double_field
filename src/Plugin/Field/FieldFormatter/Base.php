@@ -15,6 +15,13 @@ use Drupal\double_field\Plugin\Field\FieldType\DoubleField as DoubleFieldItem;
 abstract class Base extends FormatterBase {
 
   /**
+   * Subfield types that can be rendered as a link.
+   *
+   * @var array
+   */
+  protected static $linkTypes = ['email', 'telephone'];
+
+  /**
    * {@inheritdoc}
    */
   public static function defaultSettings() {
@@ -52,7 +59,7 @@ abstract class Base extends FormatterBase {
         '#type' => 'details',
       ];
 
-      if ($type == 'telephone') {
+      if (in_array($type, static::$linkTypes)) {
         $element[$subfield]['link'] = [
           '#type' => 'checkbox',
           '#title' => t('Display as link'),
@@ -102,7 +109,7 @@ abstract class Base extends FormatterBase {
         ]
       );
 
-      if ($subfield_type == 'telephone') {
+      if (in_array($subfield_type, static::$linkTypes)) {
         $summary[] = t('Link: %value', ['%value' => $settings[$subfield]['link'] ? t('yes') : t('no')]);
       }
       $summary[] = t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? t('yes') : t('no')]);
@@ -146,7 +153,14 @@ abstract class Base extends FormatterBase {
           }
 
           if (!empty($settings[$subfield]['link'])) {
-            if ($field_settings['storage'][$subfield]['type'] == 'telephone') {
+            if ($field_settings['storage'][$subfield]['type'] == 'email') {
+              $item->{$subfield} = [
+                '#type' => 'link',
+                '#title' => $item->{$subfield},
+                '#url' => Url::fromUri('mailto:' . $item->{$subfield}),
+              ];
+            }
+            elseif ($field_settings['storage'][$subfield]['type'] == 'telephone') {
               $item->{$subfield} = [
                 '#type' => 'link',
                 '#title' => $item->{$subfield},

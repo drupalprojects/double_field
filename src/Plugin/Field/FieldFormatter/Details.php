@@ -69,7 +69,6 @@ class Details extends Base {
           '#open' => $settings['open'],
           '#attributes' => ['class' => ['double-field-details']],
         ];
-
       }
     }
 
