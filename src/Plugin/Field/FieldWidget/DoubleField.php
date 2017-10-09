@@ -98,8 +98,7 @@ class DoubleField extends WidgetBase {
 
       $element[$subfield]['placeholder'] = [
         '#type' => 'textfield',
-        '#title' => $this->t('Placeholder attribute'),
-        '#description' => $this->t('Pre-filled value that serves as a hint for the user regarding what to type.'),
+        '#title' => $this->t('Placeholder'),
         '#default_value' => $settings[$subfield]['placeholder'],
         '#states' => [
           'visible' => [
