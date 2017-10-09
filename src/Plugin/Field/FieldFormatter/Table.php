@@ -36,13 +36,13 @@ class Table extends Base {
 
     $element['number_column'] = [
       '#type' => 'checkbox',
-      '#title' => t('Enable row number column'),
+      '#title' => $this->t('Enable row number column'),
       '#default_value' => $settings['number_column'],
       '#attributes' => ['id' => 'number_column'],
     ];
     $element['number_column_label'] = [
       '#type' => 'textfield',
-      '#title' => t('Number column label'),
+      '#title' => $this->t('Number column label'),
       '#size' => 30,
       '#default_value' => $settings['number_column_label'],
       '#states' => [
@@ -52,7 +52,7 @@ class Table extends Base {
     foreach (['first', 'second'] as $subfield) {
       $element[$subfield . '_column_label'] = [
         '#type' => 'textfield',
-        '#title' => $subfield == 'first' ? t('First column label') : t('Second column label'),
+        '#title' => $subfield == 'first' ? $this->t('First column label') : $this->t('Second column label'),
         '#size' => 30,
         '#default_value' => $settings[$subfield . '_column_label'],
       ];
@@ -67,13 +67,13 @@ class Table extends Base {
   public function settingsSummary() {
     $settings = $this->getSettings();
 
-    $summary[] = t('Enable row number column: %number_column', ['%number_column' => $settings['number_column'] ? t('yes') : t('no')]);
+    $summary[] = $this->t('Enable row number column: %number_column', ['%number_column' => $settings['number_column'] ? $this->t('yes') : $this->t('no')]);
     if ($settings['number_column']) {
-      $summary[] = t('Number column label: %number_column_label', ['%number_column_label' => $settings['number_column_label']]);
+      $summary[] = $this->t('Number column label: %number_column_label', ['%number_column_label' => $settings['number_column_label']]);
     }
 
-    $summary[] = t('First column label: %first_column_label', ['%first_column_label' => $settings['first_column_label']]);
-    $summary[] = t('Second column label: %second_column_label', ['%second_column_label' => $settings['second_column_label']]);
+    $summary[] = $this->t('First column label: %first_column_label', ['%first_column_label' => $settings['first_column_label']]);
+    $summary[] = $this->t('Second column label: %second_column_label', ['%second_column_label' => $settings['second_column_label']]);
 
     return array_merge($summary, parent::settingsSummary());
   }

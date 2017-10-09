@@ -26,7 +26,7 @@ abstract class ListBase extends Base {
 
     $element['inline'] = [
       '#type' => 'checkbox',
-      '#title' => t('Display as inline element'),
+      '#title' => $this->t('Display as inline element'),
       '#default_value' => $settings['inline'],
       '#weight' => -10,
     ];
@@ -40,7 +40,7 @@ abstract class ListBase extends Base {
   public function settingsSummary() {
     $summary = [];
     if ($this->getSetting('inline')) {
-      $summary[] = t('Display as inline element');
+      $summary[] = $this->t('Display as inline element');
     }
     return array_merge($summary, parent::settingsSummary());
   }

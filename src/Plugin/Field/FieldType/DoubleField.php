@@ -51,13 +51,13 @@ class DoubleField extends FieldItemBase {
     foreach (['first', 'second'] as $subfield) {
       $element['storage'][$subfield] = [
         '#type' => 'details',
-        '#title' => $subfield == 'first' ? t('First subfield') : t('Second subfield'),
+        '#title' => $subfield == 'first' ? $this->t('First subfield') : $this->t('Second subfield'),
         '#open' => TRUE,
       ];
 
       $element['storage'][$subfield]['type'] = [
         '#type' => 'select',
-        '#title' => t('Field type'),
+        '#title' => $this->t('Field type'),
         '#default_value' => $settings['storage'][$subfield]['type'],
         '#disabled' => $has_data,
         '#required' => TRUE,
@@ -66,8 +66,8 @@ class DoubleField extends FieldItemBase {
 
       $element['storage'][$subfield]['maxlength'] = [
         '#type' => 'number',
-        '#title' => t('Maximum length'),
-        '#description' => t('The maximum length of the subfield in characters.'),
+        '#title' => $this->t('Maximum length'),
+        '#description' => $this->t('The maximum length of the subfield in characters.'),
         '#default_value' => $settings['storage'][$subfield]['maxlength'],
         '#disabled' => $has_data,
         '#required' => TRUE,
@@ -79,8 +79,8 @@ class DoubleField extends FieldItemBase {
 
       $element['storage'][$subfield]['precision'] = [
         '#type' => 'number',
-        '#title' => t('Precision'),
-        '#description' => t('The total number of digits to store in the database, including those to the right of the decimal.'),
+        '#title' => $this->t('Precision'),
+        '#description' => $this->t('The total number of digits to store in the database, including those to the right of the decimal.'),
         '#default_value' => $settings['storage'][$subfield]['precision'],
         '#disabled' => $has_data,
         '#required' => TRUE,
@@ -93,8 +93,8 @@ class DoubleField extends FieldItemBase {
 
       $element['storage'][$subfield]['scale'] = [
         '#type' => 'number',
-        '#title' => t('Scale'),
-        '#description' => t('The number of digits to the right of the decimal.'),
+        '#title' => $this->t('Scale'),
+        '#description' => $this->t('The number of digits to the right of the decimal.'),
         '#default_value' => $settings['storage'][$subfield]['scale'],
         '#disabled' => $has_data,
         '#required' => TRUE,
@@ -144,7 +144,7 @@ class DoubleField extends FieldItemBase {
 
       $type = $settings['storage'][$subfield]['type'];
 
-      $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
+      $title = $subfield == 'first' ? $this->t('First subfield') : $this->t('Second subfield');
       $title .= ' - ' . $types[$type];
 
       $element[$subfield] = [
@@ -156,7 +156,7 @@ class DoubleField extends FieldItemBase {
 
       $element[$subfield]['required'] = [
         '#type' => 'checkbox',
-        '#title' => t('Required'),
+        '#title' => $this->t('Required'),
         '#default_value' => $settings[$subfield]['required'],
       ];
 
@@ -171,17 +171,17 @@ class DoubleField extends FieldItemBase {
       if (in_array($type, $list_types)) {
         $element[$subfield]['list'] = [
           '#type' => 'checkbox',
-          '#title' => t('Limit allowed values'),
+          '#title' => $this->t('Limit allowed values'),
           '#default_value' => $settings[$subfield]['list'],
         ];
 
-        $description[] = t('The possible values this field can contain. Enter one value per line, in the format key|label.');
-        $description[] = t('The label will be used in displayed values and edit forms.');
-        $description[] = t('The label is optional: if a line contains a single item, it will be used as key and label.');
+        $description[] = $this->t('The possible values this field can contain. Enter one value per line, in the format key|label.');
+        $description[] = $this->t('The label will be used in displayed values and edit forms.');
+        $description[] = $this->t('The label is optional: if a line contains a single item, it will be used as key and label.');
 
         $element[$subfield]['allowed_values'] = [
           '#type' => 'textarea',
-          '#title' => t('Allowed values list'),
+          '#title' => $this->t('Allowed values list'),
           '#description' => implode('<br/>', $description),
           '#default_value' => $this->allowedValuesString($settings[$subfield]['allowed_values']),
           '#rows' => 10,
@@ -211,8 +211,8 @@ class DoubleField extends FieldItemBase {
       if (in_array($type, ['integer', 'float', 'numeric'])) {
         $element[$subfield]['min'] = [
           '#type' => 'number',
-          '#title' => t('Minimum'),
-          '#description' => t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
+          '#title' => $this->t('Minimum'),
+          '#description' => $this->t('The minimum value that should be allowed in this field. Leave blank for no minimum.'),
           '#default_value' => isset($settings[$subfield]['min']) ? $settings[$subfield]['min'] : NULL,
           '#states' => [
             'visible' => [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
@@ -220,8 +220,8 @@ class DoubleField extends FieldItemBase {
         ];
         $element[$subfield]['max'] = [
           '#type' => 'number',
-          '#title' => t('Maximum'),
-          '#description' => t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
+          '#title' => $this->t('Maximum'),
+          '#description' => $this->t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
           '#default_value' => isset($settings[$subfield]['max']) ? $settings[$subfield]['max'] : NULL,
           '#states' => [
             'visible' => [":input[name='settings[$subfield][list]']" => ['checked' => FALSE]],
@@ -238,12 +238,12 @@ class DoubleField extends FieldItemBase {
       if ($type == 'boolean') {
         $element[$subfield]['on_label'] = [
           '#type' => 'textfield',
-          '#title' => t('"On" label'),
+          '#title' => $this->t('"On" label'),
           '#default_value' => $settings[$subfield]['on_label'],
         ];
         $element[$subfield]['off_label'] = [
           '#type' => 'textfield',
-          '#title' => t('"Off" label'),
+          '#title' => $this->t('"Off" label'),
           '#default_value' => $settings[$subfield]['off_label'],
         ];
       }
@@ -310,7 +310,7 @@ class DoubleField extends FieldItemBase {
         // recognize '0' as an empty value.
         if ($subfield_type == 'boolean') {
           $subconstrains[$subfield]['NotEqualTo']['value'] = 0;
-          $subconstrains[$subfield]['NotEqualTo']['message'] = t('This value should not be blank.');
+          $subconstrains[$subfield]['NotEqualTo']['message'] = $this->t('This value should not be blank.');
         }
         else {
           $subconstrains[$subfield]['NotBlank'] = [];

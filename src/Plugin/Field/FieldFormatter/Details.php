@@ -33,7 +33,7 @@ class Details extends Base {
 
     $element['open'] = [
       '#type' => 'checkbox',
-      '#title' => t('Open'),
+      '#title' => $this->t('Open'),
       '#default_value' => $settings['open'],
     ];
 
@@ -47,7 +47,7 @@ class Details extends Base {
    */
   public function settingsSummary() {
     $open = $this->getSetting('open');
-    $summary[] = t('Open: %open', ['%open' => $open ? t('yes') : t('no')]);
+    $summary[] = $this->t('Open: %open', ['%open' => $open ? $this->t('yes') : $this->t('no')]);
     return array_merge($summary, parent::settingsSummary());
   }
 

@@ -29,11 +29,11 @@ class HtmlList extends ListBase {
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $element['list_type'] = [
       '#type' => 'radios',
-      '#title' => t('List type'),
+      '#title' => $this->t('List type'),
       '#options' => [
-        'ul' => t('Unordered list'),
-        'ol' => t('Ordered list'),
-        'dl' => t('Definition list'),
+        'ul' => $this->t('Unordered list'),
+        'ol' => $this->t('Ordered list'),
+        'dl' => $this->t('Definition list'),
       ],
       '#default_value' => $this->getSetting('list_type'),
     ];
@@ -54,12 +54,12 @@ class HtmlList extends ListBase {
     // Definition list does not support 'inline' option.
     $list_type = $this->getSetting('list_type');
     if ($list_type == 'dl') {
-      if (($key = array_search(t('Display as inline element'), $parent_summary)) !== FALSE) {
+      if (($key = array_search($this->t('Display as inline element'), $parent_summary)) !== FALSE) {
         unset($parent_summary[$key]);
       }
     }
 
-    $summary[] = t('List type: %list_type', ['%list_type' => $this->getSetting('list_type')]);
+    $summary[] = $this->t('List type: %list_type', ['%list_type' => $this->getSetting('list_type')]);
     return array_merge($summary, $parent_summary);
   }
 

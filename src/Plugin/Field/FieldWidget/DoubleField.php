@@ -56,7 +56,7 @@ class DoubleField extends WidgetBase {
 
     $element['inline'] = [
       '#type' => 'checkbox',
-      '#title' => t('Display as inline element'),
+      '#title' => $this->t('Display as inline element'),
       '#default_value' => $settings['inline'],
     ];
 
@@ -64,7 +64,7 @@ class DoubleField extends WidgetBase {
 
       $type = $field_settings['storage'][$subfield]['type'];
 
-      $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
+      $title = $subfield == 'first' ? $this->t('First subfield') : $this->t('Second subfield');
       $title .= ' - ' . $types[$type];
 
       $element[$subfield] = [
@@ -75,7 +75,7 @@ class DoubleField extends WidgetBase {
 
       $element[$subfield]['type'] = [
         '#type' => 'select',
-        '#title' => t('Widget'),
+        '#title' => $this->t('Widget'),
         '#default_value' => $settings[$subfield]['type'],
         '#required' => TRUE,
         '#options' => $this->getSubwidgets($type, $field_settings[$subfield]['list']),
@@ -84,7 +84,7 @@ class DoubleField extends WidgetBase {
       $type_selector = "select[name='fields[$field_name][settings_edit_form][settings][$subfield][type]'";
       $element[$subfield]['size'] = [
         '#type' => 'number',
-        '#title' => t('Size'),
+        '#title' => $this->t('Size'),
         '#default_value' => $settings[$subfield]['size'],
         '#min' => 1,
         '#states' => [
@@ -97,8 +97,8 @@ class DoubleField extends WidgetBase {
 
       $element[$subfield]['placeholder'] = [
         '#type' => 'textfield',
-        '#title' => t('Placeholder attribute'),
-        '#description' => t('Pre-filled value that serves as a hint for the user regarding what to type.'),
+        '#title' => $this->t('Placeholder attribute'),
+        '#description' => $this->t('Pre-filled value that serves as a hint for the user regarding what to type.'),
         '#default_value' => $settings[$subfield]['placeholder'],
         '#states' => [
           'visible' => [
@@ -111,7 +111,7 @@ class DoubleField extends WidgetBase {
 
       $element[$subfield]['label'] = [
         '#type' => 'textfield',
-        '#title' => t('Label'),
+        '#title' => $this->t('Label'),
         '#default_value' => $settings[$subfield]['label'],
         '#required' => TRUE,
         '#states' => [
@@ -121,10 +121,10 @@ class DoubleField extends WidgetBase {
 
       $element[$subfield]['cols'] = [
         '#type' => 'number',
-        '#title' => t('Columns'),
+        '#title' => $this->t('Columns'),
         '#default_value' => $settings[$subfield]['cols'],
         '#min' => 1,
-        '#description' => t('How many columns wide the textarea should be'),
+        '#description' => $this->t('How many columns wide the textarea should be'),
         '#states' => [
           'visible' => [$type_selector => ['value' => 'textarea']],
         ],
@@ -132,10 +132,10 @@ class DoubleField extends WidgetBase {
 
       $element[$subfield]['rows'] = [
         '#type' => 'number',
-        '#title' => t('Rows'),
+        '#title' => $this->t('Rows'),
         '#default_value' => $settings[$subfield]['rows'],
         '#min' => 1,
-        '#description' => t('How many rows high the textarea should be.'),
+        '#description' => $this->t('How many rows high the textarea should be.'),
         '#states' => [
           'visible' => [$type_selector => ['value' => 'textarea']],
         ],
@@ -143,13 +143,13 @@ class DoubleField extends WidgetBase {
 
       $element[$subfield]['prefix'] = [
         '#type' => 'textfield',
-        '#title' => t('Prefix'),
+        '#title' => $this->t('Prefix'),
         '#default_value' => $settings[$subfield]['prefix'],
       ];
 
       $element[$subfield]['suffix'] = [
         '#type' => 'textfield',
-        '#title' => t('Suffix'),
+        '#title' => $this->t('Suffix'),
         '#default_value' => $settings[$subfield]['suffix'],
       ];
     }
@@ -168,7 +168,7 @@ class DoubleField extends WidgetBase {
 
     $summary = [];
     if ($settings['inline']) {
-      $summary[] = t('Display as inline element');
+      $summary[] = $this->t('Display as inline element');
     }
 
     foreach (['first', 'second'] as $subfield) {
@@ -177,33 +177,33 @@ class DoubleField extends WidgetBase {
       $summary[] = new FormattableMarkup(
         '<b>@subfield - @subfield_type</b>',
         [
-          '@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield')),
+          '@subfield' => ($subfield == 'first' ? $this->t('First subfield') : $this->t('Second subfield')),
           '@subfield_type' => strtolower($subfield_type),
         ]
       );
-      $summary[] = t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
+      $summary[] = $this->t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
       switch ($settings[$subfield]['type']) {
         case 'textfield':
         case 'tel':
-          $summary[] = t('Size: %size', ['%size' => $settings[$subfield]['size']]);
-          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
+          $summary[] = $this->t('Size: %size', ['%size' => $settings[$subfield]['size']]);
+          $summary[] = $this->t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
           break;
 
         case 'checkbox':
-          $summary[] = t('Label: %label', ['%label' => $settings[$subfield]['label']]);
+          $summary[] = $this->t('Label: %label', ['%label' => $settings[$subfield]['label']]);
           break;
 
         case 'select':
           break;
 
         case 'textarea':
-          $summary[] = t('Columns: %cols', ['%cols' => $settings[$subfield]['cols']]);
-          $summary[] = t('Rows: %rows', ['%rows' => $settings[$subfield]['rows']]);
-          $summary[] = t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
+          $summary[] = $this->t('Columns: %cols', ['%cols' => $settings[$subfield]['cols']]);
+          $summary[] = $this->t('Rows: %rows', ['%rows' => $settings[$subfield]['rows']]);
+          $summary[] = $this->t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
           break;
       }
-      $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
-      $summary[] = t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
+      $summary[] = $this->t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
+      $summary[] = $this->t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
     }
 
     return $summary;
@@ -253,7 +253,7 @@ class DoubleField extends WidgetBase {
           break;
 
         case 'select':
-          $label = $field_settings[$subfield]['required'] ? t('- Select a value -') : t('- None -');
+          $label = $field_settings[$subfield]['required'] ? $this->t('- Select a value -') : $this->t('- None -');
           $widget[$subfield]['#options'] = ['' => $label];
           if ($field_settings[$subfield]['list']) {
             $widget[$subfield]['#options'] += $field_settings[$subfield]['allowed_values'];
@@ -261,7 +261,7 @@ class DoubleField extends WidgetBase {
           break;
 
         case 'radios':
-          $label = $field_settings[$subfield]['required'] ? t('- Select a value -') : t('- None -');
+          $label = $field_settings[$subfield]['required'] ? $this->t('- Select a value -') : $this->t('- None -');
           $widget[$subfield]['#options'] = ['' => $label];
           if ($field_settings[$subfield]['list']) {
             $widget[$subfield]['#options'] += $field_settings[$subfield]['allowed_values'];
@@ -328,34 +328,34 @@ class DoubleField extends WidgetBase {
     $subwidgets = [];
 
     if ($list) {
-      $subwidgets['select'] = t('Select list');
-      $subwidgets['radios'] = t('Radio buttons');
+      $subwidgets['select'] = $this->t('Select list');
+      $subwidgets['radios'] = $this->t('Radio buttons');
     }
 
     switch ($subfield_type) {
 
       case 'boolean':
-        $subwidgets['checkbox'] = t('Checkbox');
+        $subwidgets['checkbox'] = $this->t('Checkbox');
         break;
 
       case 'string':
       case 'email':
       case 'telephone':
-        $subwidgets['textfield'] = t('Textfield');
-        $subwidgets['email'] = t('Email');
-        $subwidgets['number'] = t('Number');
-        $subwidgets['tel'] = t('Telephone');
+        $subwidgets['textfield'] = $this->t('Textfield');
+        $subwidgets['email'] = $this->t('Email');
+        $subwidgets['number'] = $this->t('Number');
+        $subwidgets['tel'] = $this->t('Telephone');
         break;
 
       case 'text':
-        $subwidgets['textarea'] = t('Text area');
+        $subwidgets['textarea'] = $this->t('Text area');
         break;
 
       case 'integer':
       case 'float':
       case 'numeric':
-        $subwidgets['number'] = t('Number');
-        $subwidgets['textfield'] = t('Textfield');
+        $subwidgets['number'] = $this->t('Number');
+        $subwidgets['textfield'] = $this->t('Textfield');
         break;
 
     }

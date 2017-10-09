@@ -51,7 +51,7 @@ abstract class Base extends FormatterBase {
     foreach (['first', 'second'] as $subfield) {
       $type = $field_settings['storage'][$subfield]['type'];
 
-      $title = $subfield == 'first' ? t('First subfield') : t('Second subfield');
+      $title = $subfield == 'first' ? $this->t('First subfield') : $this->t('Second subfield');
       $title .= ' - ' . $types[$type];
 
       $element[$subfield] = [
@@ -62,25 +62,25 @@ abstract class Base extends FormatterBase {
       if (in_array($type, static::$linkTypes)) {
         $element[$subfield]['link'] = [
           '#type' => 'checkbox',
-          '#title' => t('Display as link'),
+          '#title' => $this->t('Display as link'),
           '#default_value' => $settings[$subfield]['link'],
           '#weight' => -10,
         ];
       }
       $element[$subfield]['hidden'] = [
         '#type' => 'checkbox',
-        '#title' => t('Hidden'),
+        '#title' => $this->t('Hidden'),
         '#default_value' => $settings[$subfield]['hidden'],
       ];
       $element[$subfield]['prefix'] = [
         '#type' => 'textfield',
-        '#title' => t('Prefix'),
+        '#title' => $this->t('Prefix'),
         '#size' => 30,
         '#default_value' => $settings[$subfield]['prefix'],
       ];
       $element[$subfield]['suffix'] = [
         '#type' => 'textfield',
-        '#title' => t('Suffix'),
+        '#title' => $this->t('Suffix'),
         '#size' => 30,
         '#default_value' => $settings[$subfield]['suffix'],
       ];
@@ -104,17 +104,17 @@ abstract class Base extends FormatterBase {
       $summary[] = new FormattableMarkup(
         '<b>@subfield - @subfield_type</b>',
         [
-          '@subfield' => ($subfield == 'first' ? t('First subfield') : t('Second subfield')),
+          '@subfield' => ($subfield == 'first' ? $this->t('First subfield') : $this->t('Second subfield')),
           '@subfield_type' => strtolower($subfield_types[$subfield_type]),
         ]
       );
 
       if (in_array($subfield_type, static::$linkTypes)) {
-        $summary[] = t('Link: %value', ['%value' => $settings[$subfield]['link'] ? t('yes') : t('no')]);
+        $summary[] = $this->t('Link: %value', ['%value' => $settings[$subfield]['link'] ? $this->t('yes') : $this->t('no')]);
       }
-      $summary[] = t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? t('yes') : t('no')]);
-      $summary[] = t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
-      $summary[] = t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
+      $summary[] = $this->t('Hidden: %value', ['%value' => $settings[$subfield]['hidden'] ? $this->t('yes') : $this->t('no')]);
+      $summary[] = $this->t('Prefix: %prefix', ['%prefix' => $settings[$subfield]['prefix']]);
+      $summary[] = $this->t('Suffix: %suffix', ['%suffix' => $settings[$subfield]['suffix']]);
     }
 
     return $summary;
