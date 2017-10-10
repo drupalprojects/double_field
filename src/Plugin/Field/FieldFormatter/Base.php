@@ -19,7 +19,7 @@ abstract class Base extends FormatterBase {
    *
    * @var array
    */
-  protected static $linkTypes = ['email', 'telephone'];
+  protected static $linkTypes = ['email', 'telephone', 'uri'];
 
   /**
    * {@inheritdoc}
@@ -138,8 +138,13 @@ abstract class Base extends FormatterBase {
         }
         else {
 
+          if ($field_settings['storage'][$subfield]['type'] == 'boolean') {
+            $item->{$subfield} = $field_settings[$subfield][$item->{$subfield} ? 'on_label' : 'off_label'];
+          }
+
           // Replace the value with its label if possible.
           if ($field_settings[$subfield]['list']) {
+            $original_value[$subfield] = $item->{$subfield};
             if (isset($field_settings[$subfield]['allowed_values'][$item->{$subfield}])) {
               $item->{$subfield} = $field_settings[$subfield]['allowed_values'][$item->{$subfield}];
             }
@@ -148,25 +153,35 @@ abstract class Base extends FormatterBase {
             }
           }
 
-          if ($field_settings['storage'][$subfield]['type'] == 'boolean') {
-            $item->{$subfield} = $field_settings[$subfield][$item->{$subfield} ? 'on_label' : 'off_label'];
-          }
-
           if (!empty($settings[$subfield]['link'])) {
-            if ($field_settings['storage'][$subfield]['type'] == 'email') {
-              $item->{$subfield} = [
-                '#type' => 'link',
-                '#title' => $item->{$subfield},
-                '#url' => Url::fromUri('mailto:' . $item->{$subfield}),
-              ];
-            }
-            elseif ($field_settings['storage'][$subfield]['type'] == 'telephone') {
-              $item->{$subfield} = [
-                '#type' => 'link',
-                '#title' => $item->{$subfield},
-                '#url' => Url::fromUri('tel:' . rawurlencode(preg_replace('/\s+/', '', $item->{$subfield}))),
-                '#options' => ['external' => TRUE],
-              ];
+            $value = isset($original_value) ? $original_value[$subfield] : $item->{$subfield};
+            switch ($field_settings['storage'][$subfield]['type']) {
+              case 'email':
+                $item->{$subfield} = [
+                  '#type' => 'link',
+                  '#title' => $item->{$subfield},
+                  '#url' => Url::fromUri('mailto:' . $value),
+                ];
+                break;
+
+              case 'telephone':
+                $item->{$subfield} = [
+                  '#type' => 'link',
+                  '#title' => $item->{$subfield},
+                  '#url' => Url::fromUri('tel:' . rawurlencode(preg_replace('/\s+/', '', $value))),
+                  '#options' => ['external' => TRUE],
+                ];
+                break;
+
+              case 'uri':
+                $item->{$subfield} = [
+                  '#type' => 'link',
+                  '#title' => $item->{$subfield},
+                  '#url' => Url::fromUri($value),
+                  '#options' => ['external' => TRUE],
+                ];
+                break;
+
             }
           }
 

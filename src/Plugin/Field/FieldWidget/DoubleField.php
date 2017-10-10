@@ -92,6 +92,7 @@ class DoubleField extends WidgetBase {
             [$type_selector => ['value' => 'email']],
             [$type_selector => ['value' => 'textfield']],
             [$type_selector => ['value' => 'tel']],
+            [$type_selector => ['value' => 'url']],
           ],
         ],
       ];
@@ -106,6 +107,7 @@ class DoubleField extends WidgetBase {
             [$type_selector => ['value' => 'textarea']],
             [$type_selector => ['value' => 'email']],
             [$type_selector => ['value' => 'tel']],
+            [$type_selector => ['value' => 'url']],
           ],
         ],
       ];
@@ -187,6 +189,7 @@ class DoubleField extends WidgetBase {
         case 'textfield':
         case 'email':
         case 'tel':
+        case 'url':
           $summary[] = $this->t('Size: %size', ['%size' => $settings[$subfield]['size']]);
           $summary[] = $this->t('Placeholder: %placeholder', ['%placeholder' => $settings[$subfield]['placeholder']]);
           break;
@@ -242,6 +245,7 @@ class DoubleField extends WidgetBase {
         case 'textfield':
         case 'email':
         case 'tel':
+        case 'url':
           $widget[$subfield]['#maxlength'] = $field_settings['storage'][$subfield]['maxlength'];
           if ($settings[$subfield]['size']) {
             $widget[$subfield]['#size'] = $settings[$subfield]['size'];
@@ -342,12 +346,25 @@ class DoubleField extends WidgetBase {
         break;
 
       case 'string':
-      case 'email':
-      case 'telephone':
         $subwidgets['textfield'] = $this->t('Textfield');
         $subwidgets['email'] = $this->t('Email');
-        $subwidgets['number'] = $this->t('Number');
         $subwidgets['tel'] = $this->t('Telephone');
+        $subwidgets['url'] = $this->t('Url');
+        break;
+
+      case 'email':
+        $subwidgets['textfield'] = $this->t('Textfield');
+        $subwidgets['email'] = $this->t('Email');
+        break;
+
+      case 'telephone':
+        $subwidgets['textfield'] = $this->t('Textfield');
+        $subwidgets['tel'] = $this->t('Telephone');
+        break;
+
+      case 'uri':
+        $subwidgets['textfield'] = $this->t('Textfield');
+        $subwidgets['url'] = $this->t('Url');
         break;
 
       case 'text':
@@ -357,8 +374,8 @@ class DoubleField extends WidgetBase {
       case 'integer':
       case 'float':
       case 'numeric':
-        $subwidgets['number'] = $this->t('Number');
         $subwidgets['textfield'] = $this->t('Textfield');
+        $subwidgets['number'] = $this->t('Number');
         break;
 
     }

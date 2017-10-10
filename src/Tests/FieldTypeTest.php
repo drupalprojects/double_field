@@ -199,6 +199,27 @@ class FieldTypeTest extends TestBase {
       'abc',
     ];
     $this->assertNoViolations($values);
+
+    // -- Uri.
+    $storage_settings['storage']['first']['type'] = 'uri';
+    $storage_settings['storage']['second']['type'] = 'string';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    // ...
+    $values = [
+      'abc',
+      'abc',
+    ];
+    $expected_messages = [
+      t('This value should be of the correct primitive type.'),
+    ];
+    $this->assertViolations($values, $expected_messages);
+
+    $values = [
+      'http://example.com',
+      'abc',
+    ];
+    $this->assertNoViolations($values);
   }
 
   /**
@@ -216,6 +237,7 @@ class FieldTypeTest extends TestBase {
       'numeric',
       'email',
       'telephone',
+      'uri',
     ];
 
     $expected_maxlength_attributes = [
@@ -435,6 +457,30 @@ class FieldTypeTest extends TestBase {
       str_repeat('x', 50),
     ];
     $this->assertNoViolations($values);
+
+    // -- Uri.
+    $storage_settings['storage']['first']['type'] = 'uri';
+    $storage_settings['storage']['second']['type'] = 'string';
+    foreach (['first', 'second'] as $subfield) {
+      $settings[$subfield]['list'] = FALSE;
+    }
+    $this->saveFieldSettings($settings);
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $values = [
+      'aaa',
+      'bbb',
+    ];
+    $expected_messages = [
+      t('This value should be of the correct primitive type.'),
+    ];
+    $this->assertViolations($values, $expected_messages);
+
+    $values = [
+      'http://example.com',
+      'bbb',
+    ];
+    $this->assertNoViolations($values);
   }
 
   /**
@@ -500,6 +546,11 @@ class FieldTypeTest extends TestBase {
 
           case 'telephone':
             $this->assertTrue($summary_type == 'Telephone', 'Summary type is correct');
+            $this->assertAllowedValues($subfield);
+            break;
+
+          case 'uri':
+            $this->assertTrue($summary_type == 'Url', 'Summary type is correct');
             $this->assertAllowedValues($subfield);
             break;
 

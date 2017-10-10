@@ -167,6 +167,7 @@ class DoubleField extends FieldItemBase {
         'numeric',
         'email',
         'telephone',
+        'uri',
       ];
       if (in_array($type, $list_types)) {
         $element[$subfield]['list'] = [
@@ -378,6 +379,11 @@ class DoubleField extends FieldItemBase {
           $columns[$subfield]['type'] = 'varchar';
           $columns[$subfield]['length'] = Email::EMAIL_MAX_LENGTH;
           break;
+
+        case 'uri':
+          $columns[$subfield]['type'] = 'varchar';
+          $columns[$subfield]['length'] = 2048;
+          break;
       }
     }
 
@@ -550,6 +556,8 @@ class DoubleField extends FieldItemBase {
       'numeric' => t('Decimal'),
       'email' => t('Email'),
       'telephone' => t('Telephone'),
+      // We only allow external links. So this should be URL from the user side.
+      'uri' => t('Url'),
     ];
     return $type_options;
   }

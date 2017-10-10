@@ -24,7 +24,7 @@ class WidgetTest extends TestBase {
    */
   public function testWidgetForm() {
 
-    // -- Boolean and varchar.
+    // -- Boolean and string.
     $storage_settings['storage']['first']['type'] = 'boolean';
     $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
@@ -194,6 +194,29 @@ class WidgetTest extends TestBase {
     ];
     $this->assertAttributes($tel_field->attributes(), $expected_attributes);
 
+    // -- Url.
+    $storage_settings['storage']['first']['type'] = 'uri';
+    $storage_settings['storage']['second']['type'] = 'string';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $this->saveFieldSettings([]);
+
+    $widget_settings['first']['type'] = 'url';
+    $widget_settings['first']['size'] = mt_rand(5, 30);
+    $widget_settings['first']['placeholder'] = $this->randomMachineName();
+    $this->saveWidgetSettings($widget_settings);
+
+    $this->drupalGet($this->nodeAddPath);
+
+    $url_field = $this->xpath("//input[@name='{$this->fieldName}[0][first]']")[0];
+    $expected_attributes = [
+      'type' => $widget_settings['first']['type'],
+      'value' => '',
+      'size' => $widget_settings['first']['size'],
+      'placeholder' => $widget_settings['first']['placeholder'],
+    ];
+    $this->assertAttributes($url_field->attributes(), $expected_attributes);
+
     // -- Check prefixes and suffixes.
     $widget_settings['first']['prefix'] = $this->randomMachineName();
     $widget_settings['first']['suffix'] = $this->randomMachineName();
@@ -232,7 +255,7 @@ class WidgetTest extends TestBase {
       $general_edit["{$name_prefix}[{$subfield}][suffix]"] = $this->randomMachineName();
     }
 
-    // -- Boolean and varchar.
+    // -- Boolean and string.
     $storage_settings['storage']['first']['type'] = 'boolean';
     $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
@@ -379,6 +402,27 @@ class WidgetTest extends TestBase {
     $axes[] = "//summary[text()='First subfield - Email']";
     $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='tel' and @selected]";
     $axes[] = "//summary[text()='Second subfield - Telephone']";
+    $this->assertAxes($axes);
+
+    // -- Url and string.
+    $storage_settings['storage']['first']['type'] = 'uri';
+    $storage_settings['storage']['second']['type'] = 'string';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $widget_settings['first']['type'] = 'url';
+    $widget_settings['second']['type'] = 'textfield';
+    $this->saveWidgetSettings($widget_settings);
+
+    $this->drupalGet($this->formDisplayAdminPath);
+
+    // Click on the widget settings button to open the widget settings form.
+    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+
+    $axes = $general_axes;
+    $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='url' and @selected]";
+    $axes[] = "//summary[text()='First subfield - Url']";
+    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
+    $axes[] = "//summary[text()='Second subfield - Text']";
     $this->assertAxes($axes);
   }
 
