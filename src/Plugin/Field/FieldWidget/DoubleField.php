@@ -269,7 +269,7 @@ class DoubleField extends WidgetBase {
           break;
 
         case 'radios':
-          $label = $field_settings[$subfield]['required'] ? $this->t('- Select a value -') : $this->t('- None -');
+          $label = $field_settings[$subfield]['required'] ? $this->t('N/A') : $this->t('- None -');
           $widget[$subfield]['#options'] = ['' => $label];
           if ($field_settings[$subfield]['list']) {
             $widget[$subfield]['#options'] += $field_settings[$subfield]['allowed_values'];
