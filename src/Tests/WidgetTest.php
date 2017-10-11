@@ -264,10 +264,8 @@ class WidgetTest extends TestBase {
     $widget_settings['second']['type'] = 'textfield';
     $this->saveWidgetSettings($widget_settings);
 
-    $this->drupalGet($this->formDisplayAdminPath);
-
     // Click on the widget settings button to open the widget settings form.
-    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+    $this->drupalPostAjaxForm($this->formDisplayAdminPath, [], $this->fieldName . '_settings_edit');
 
     $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='checkbox']";
@@ -320,8 +318,7 @@ class WidgetTest extends TestBase {
     $widget_settings['second']['type'] = 'number';
     $this->saveWidgetSettings($widget_settings);
 
-    $this->drupalGet($this->formDisplayAdminPath);
-    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+    $this->drupalPostAjaxForm($this->formDisplayAdminPath, [], $this->fieldName . '_settings_edit');
 
     $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='textarea' and @selected]";
@@ -371,10 +368,8 @@ class WidgetTest extends TestBase {
     $widget_settings['second']['type'] = 'textfield';
     $this->saveWidgetSettings($widget_settings);
 
-    $this->drupalGet($this->formDisplayAdminPath);
-
     // Click on the widget settings button to open the widget settings form.
-    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+    $this->drupalPostAjaxForm($this->formDisplayAdminPath, [], $this->fieldName . '_settings_edit');
 
     $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='number' and @selected]";
@@ -392,10 +387,8 @@ class WidgetTest extends TestBase {
     $widget_settings['second']['type'] = 'tel';
     $this->saveWidgetSettings($widget_settings);
 
-    $this->drupalGet($this->formDisplayAdminPath);
-
     // Click on the widget settings button to open the widget settings form.
-    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+    $this->drupalPostAjaxForm($this->formDisplayAdminPath, [], $this->fieldName . '_settings_edit');
 
     $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='email' and @selected]";
@@ -424,6 +417,48 @@ class WidgetTest extends TestBase {
     $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
     $axes[] = "//summary[text()='Second subfield - Text']";
     $this->assertAxes($axes);
+  }
+
+  /**
+   * Test callback.
+   */
+  protected function testWidgetTypeFallback() {
+    $storage_settings['storage']['first']['type'] = 'string';
+    $storage_settings['storage']['second']['type'] = 'string';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $field_settings['first']['list'] = TRUE;
+    $this->saveFieldSettings($field_settings);
+
+    $widget_settings['first']['type'] = 'select';
+    $widget_settings['second']['type'] = 'textfield';
+    $this->saveWidgetSettings($widget_settings);
+
+    $storage_settings['storage']['first']['type'] = 'text';
+    $storage_settings['storage']['second']['type'] = 'text';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $this->drupalGet($this->formDisplayAdminPath);
+
+    $summary = $this->xpath("//tr[@id='$this->fieldName']//div[@class='field-plugin-summary']")[0]->asXML();
+    $summary = strip_tags($summary, '<br>');
+    $summary_items = explode('<br/>', $summary);
+
+    $this->assertEqual('Widget: textarea', $summary_items[1]);
+    $this->assertEqual('Widget: textarea', $summary_items[8]);
+
+    $this->drupalPostAjaxForm(NULL, [], $this->fieldName . '_settings_edit');
+
+    $name_prefix = "fields[{$this->fieldName}][settings_edit_form][settings]";
+
+    $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='textarea' and @selected]";
+    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textarea' and @selected]";
+    $this->assertAxes($axes);
+
+    $this->drupalGet($this->nodeAddPath);
+
+    $this->assertEqual(count($this->xpath("//textarea[@name='{$this->fieldName}[0][first]']")), 1);
+    $this->assertEqual(count($this->xpath("//textarea[@name='{$this->fieldName}[0][second]']")), 1);
   }
 
   /**

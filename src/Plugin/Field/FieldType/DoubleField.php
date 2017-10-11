@@ -160,16 +160,7 @@ class DoubleField extends FieldItemBase {
         '#default_value' => $settings[$subfield]['required'],
       ];
 
-      $list_types = [
-        'string',
-        'integer',
-        'float',
-        'numeric',
-        'email',
-        'telephone',
-        'uri',
-      ];
-      if (in_array($type, $list_types)) {
+      if (static::isListAllowed($type)) {
         $element[$subfield]['list'] = [
           '#type' => 'checkbox',
           '#title' => $this->t('Limit allowed values'),
@@ -282,7 +273,8 @@ class DoubleField extends FieldItemBase {
 
       $subfield_type = $settings['storage'][$subfield]['type'];
 
-      if (!in_array($subfield_type, ['boolean', 'text']) && $settings[$subfield]['list'] && $settings[$subfield]['allowed_values']) {
+      $is_list = $settings[$subfield]['list'] && static::isListAllowed($subfield_type);
+      if ($is_list && $settings[$subfield]['allowed_values']) {
         $allowed_values = array_keys($settings[$subfield]['allowed_values']);
         $subconstrains[$subfield]['AllowedValues'] = $allowed_values;
       }
@@ -592,6 +584,22 @@ class DoubleField extends FieldItemBase {
 
     }
     return $settings;
+  }
+
+  /**
+   * Checks if list option is allowed for a given sub-field type.
+   */
+  public static function isListAllowed($subfield_type) {
+    $list_types = [
+      'string',
+      'integer',
+      'float',
+      'numeric',
+      'email',
+      'telephone',
+      'uri',
+    ];
+    return in_array($subfield_type, $list_types);
   }
 
 }

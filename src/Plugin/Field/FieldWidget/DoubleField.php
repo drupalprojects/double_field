@@ -89,8 +89,8 @@ class DoubleField extends WidgetBase {
         '#min' => 1,
         '#states' => [
           'visible' => [
-            [$type_selector => ['value' => 'email']],
             [$type_selector => ['value' => 'textfield']],
+            [$type_selector => ['value' => 'email']],
             [$type_selector => ['value' => 'tel']],
             [$type_selector => ['value' => 'url']],
           ],
@@ -184,6 +184,7 @@ class DoubleField extends WidgetBase {
           '@subfield_type' => strtolower($subfield_type),
         ]
       );
+
       $summary[] = $this->t('Widget: %type', ['%type' => $settings[$subfield]['type']]);
       switch ($settings[$subfield]['type']) {
         case 'textfield':
@@ -353,18 +354,18 @@ class DoubleField extends WidgetBase {
         break;
 
       case 'email':
-        $subwidgets['textfield'] = $this->t('Textfield');
         $subwidgets['email'] = $this->t('Email');
+        $subwidgets['textfield'] = $this->t('Textfield');
         break;
 
       case 'telephone':
-        $subwidgets['textfield'] = $this->t('Textfield');
         $subwidgets['tel'] = $this->t('Telephone');
+        $subwidgets['textfield'] = $this->t('Textfield');
         break;
 
       case 'uri':
-        $subwidgets['textfield'] = $this->t('Textfield');
         $subwidgets['url'] = $this->t('Url');
+        $subwidgets['textfield'] = $this->t('Textfield');
         break;
 
       case 'text':
@@ -374,8 +375,8 @@ class DoubleField extends WidgetBase {
       case 'integer':
       case 'float':
       case 'numeric':
-        $subwidgets['textfield'] = $this->t('Textfield');
         $subwidgets['number'] = $this->t('Number');
+        $subwidgets['textfield'] = $this->t('Textfield');
         break;
 
     }
@@ -388,6 +389,40 @@ class DoubleField extends WidgetBase {
    */
   public function errorElement(array $element, ConstraintViolationInterface $violation, array $form, FormStateInterface $form_state) {
     return isset($violation->arrayPropertyPath[0]) ? $element[$violation->arrayPropertyPath[0]] : FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getFieldSettings() {
+    $field_settings = parent::getFieldSettings();
+
+    foreach (['first', 'second'] as $subfield) {
+      $subfield_type = $field_settings['storage'][$subfield]['type'];
+      if ($field_settings[$subfield]['list'] && !DoubleFieldItem::isListAllowed($subfield_type)) {
+        $field_settings[$subfield]['list'] = FALSE;
+      }
+    }
+
+    return $field_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSettings() {
+    $settings = parent::getSettings();
+    $field_settings = $this->getFieldSettings();
+
+    foreach (['first', 'second'] as $subfield) {
+      $subfield_type = $field_settings['storage'][$subfield]['type'];
+      $widget_types = $this->getSubwidgets($subfield_type, $field_settings[$subfield]['list']);
+      if (!array_key_exists($settings[$subfield]['type'], $widget_types)) {
+        $settings[$subfield]['type'] = key($widget_types);
+      }
+    }
+
+    return $settings;
   }
 
 }
