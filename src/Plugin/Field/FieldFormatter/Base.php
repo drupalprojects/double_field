@@ -147,9 +147,15 @@ abstract class Base extends FormatterBase {
    * {@inheritdoc}
    */
   public function view(FieldItemListInterface $items, $langcode = NULL) {
-    // A field may appear multiple times in a single view. Since items are
-    // passed by reference we need to ensure they are processed only once.
-    return parent::view(clone $items, $langcode);
+    $elements = [];
+    if (count($items) > 0) {
+      // A field may appear multiple times in a single view. Since items are
+      // passed by reference we need to ensure they are processed only once.
+      $items = clone $items;
+      $this->prepareItems($items);
+      $elements = parent::view($items, $langcode);
+    }
+    return $elements;
   }
 
   /**

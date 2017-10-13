@@ -57,19 +57,16 @@ class Details extends Base {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $element = [];
 
-    if (count($items) > 0) {
-      $this->prepareItems($items);
-      $settings = $this->getSettings();
+    $settings = $this->getSettings();
 
-      foreach ($items as $delta => $item) {
-        $element[$delta] = [
-          '#title' => $settings['first']['prefix'] . $item->first . $settings['first']['suffix'],
-          '#value' => $settings['second']['prefix'] . $item->second . $settings['second']['suffix'],
-          '#type' => 'details',
-          '#open' => $settings['open'],
-          '#attributes' => ['class' => ['double-field-details']],
-        ];
-      }
+    foreach ($items as $delta => $item) {
+      $element[$delta] = [
+        '#title' => $settings['first']['prefix'] . $item->first . $settings['first']['suffix'],
+        '#value' => $settings['second']['prefix'] . $item->second . $settings['second']['suffix'],
+        '#type' => 'details',
+        '#open' => $settings['open'],
+        '#attributes' => ['class' => ['double-field-details']],
+      ];
     }
 
     return $element;

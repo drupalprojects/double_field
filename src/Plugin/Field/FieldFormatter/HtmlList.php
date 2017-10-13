@@ -67,42 +67,37 @@ class HtmlList extends ListBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $element = [];
 
-    if (count($items) > 0) {
-      $this->prepareItems($items);
+    $settings = $this->getSettings();
 
-      $settings = $this->getSettings();
-
-      if ($settings['list_type'] == 'dl') {
-        $element[0] = [
-          '#theme' => 'double_field_definition_list',
-          '#items' => $items,
-          '#settings' => $settings,
-        ];
-      }
-      else {
-        $list_items = [];
-        foreach ($items as $delta => $item) {
-
-          $list_items[$delta] = [
-            '#settings' => $settings,
-            '#item' => $item,
-            '#theme' => 'double_field_item',
-          ];
-          if ($settings['inline']) {
-            $list_items[$delta]['#wrapper_attributes']['class'] = 'container-inline';
-          }
-        }
-        $element[0] = [
-          '#theme' => 'item_list',
-          '#list_type' => $settings['list_type'],
-          '#items' => $list_items,
-        ];
-      }
-
-      $element[0]['#attributes']['class'][] = 'double-field-list';
+    if ($settings['list_type'] == 'dl') {
+      $element[0] = [
+        '#theme' => 'double_field_definition_list',
+        '#items' => $items,
+        '#settings' => $settings,
+      ];
     }
+    else {
+      $list_items = [];
+      foreach ($items as $delta => $item) {
+
+        $list_items[$delta] = [
+          '#settings' => $settings,
+          '#item' => $item,
+          '#theme' => 'double_field_item',
+        ];
+        if ($settings['inline']) {
+          $list_items[$delta]['#wrapper_attributes']['class'] = 'container-inline';
+        }
+      }
+      $element[0] = [
+        '#theme' => 'item_list',
+        '#list_type' => $settings['list_type'],
+        '#items' => $list_items,
+      ];
+    }
+
+    $element[0]['#attributes']['class'][] = 'double-field-list';
 
     return $element;
   }

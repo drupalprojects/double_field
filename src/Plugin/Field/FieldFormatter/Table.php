@@ -82,50 +82,46 @@ class Table extends Base {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $element = [];
 
-    if (count($items) > 0) {
-      $this->prepareItems($items);
-      $settings = $this->getSettings();
+    $settings = $this->getSettings();
 
-      $table = ['#type' => 'table'];
-      $table['#attributes']['class'][] = 'double-field-table';
+    $table = ['#type' => 'table'];
+    $table['#attributes']['class'][] = 'double-field-table';
 
-      if ($settings['first_column_label'] || $settings['second_column_label']) {
-        if ($settings['number_column']) {
-          $header[] = $settings['number_column_label'];
-        }
-        $header[] = $settings['first_column_label'];
-        $header[] = $settings['second_column_label'];
-        $table['#header'] = $header;
+    if ($settings['first_column_label'] || $settings['second_column_label']) {
+      if ($settings['number_column']) {
+        $header[] = $settings['number_column_label'];
       }
-
-      foreach ($items as $delta => $item) {
-        $row = [];
-        if ($settings['number_column']) {
-          $row[]['#markup'] = $delta + 1;
-        }
-
-        foreach (['first', 'second'] as $subfield) {
-
-          if ($settings[$subfield]['hidden']) {
-            $row[]['#markup'] = '';
-          }
-          else {
-            $row[] = [
-              '#theme' => 'double_field_subfield',
-              '#settings' => $settings,
-              '#subfield' => $item->{$subfield},
-              '#index' => $subfield,
-            ];
-          }
-        }
-
-        $table[$delta] = $row;
-      }
-
-      $element[0] = $table;
+      $header[] = $settings['first_column_label'];
+      $header[] = $settings['second_column_label'];
+      $table['#header'] = $header;
     }
+
+    foreach ($items as $delta => $item) {
+      $row = [];
+      if ($settings['number_column']) {
+        $row[]['#markup'] = $delta + 1;
+      }
+
+      foreach (['first', 'second'] as $subfield) {
+
+        if ($settings[$subfield]['hidden']) {
+          $row[]['#markup'] = '';
+        }
+        else {
+          $row[] = [
+            '#theme' => 'double_field_subfield',
+            '#settings' => $settings,
+            '#subfield' => $item->{$subfield},
+            '#index' => $subfield,
+          ];
+        }
+      }
+
+      $table[$delta] = $row;
+    }
+
+    $element[0] = $table;
 
     return $element;
   }

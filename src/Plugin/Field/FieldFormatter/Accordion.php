@@ -19,17 +19,13 @@ class Accordion extends Base {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $element = [];
 
-    if (count($items) > 0) {
-      $this->prepareItems($items);
-      $element[0] = [
-        '#theme' => 'double_field_accordion',
-        '#items' => $items,
-        '#settings' => $this->getSettings(),
-        '#attached' => ['library' => ['double_field/accordion']],
-      ];
-    }
+    $element[0] = [
+      '#theme' => 'double_field_accordion',
+      '#items' => $items,
+      '#settings' => $this->getSettings(),
+      '#attached' => ['library' => ['double_field/accordion']],
+    ];
 
     return $element;
   }
