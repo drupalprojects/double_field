@@ -144,12 +144,22 @@ abstract class Base extends FormatterBase {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function view(FieldItemListInterface $items, $langcode = NULL) {
+    // A field may appear multiple times in a single view. Since items are
+    // passed by reference we need to ensure they are processed only once.
+    return parent::view(clone $items, $langcode);
+  }
+
+  /**
    * Prepare field items.
    *
    * @param \Drupal\Core\Field\FieldItemListInterface $items
    *   List of field items.
    */
-  protected function prepareItems(FieldItemListInterface &$items) {
+  protected function prepareItems(FieldItemListInterface $items) {
+
     $field_settings = $this->getFieldSettings();
     $settings = $this->getSettings();
 
