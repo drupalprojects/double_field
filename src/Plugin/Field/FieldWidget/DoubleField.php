@@ -3,6 +3,7 @@
 namespace Drupal\double_field\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -305,6 +306,24 @@ class DoubleField extends WidgetBase {
           }
           break;
 
+        case 'datetime':
+          if ($widget[$subfield]['#default_value']) {
+            $storage_format = $field_settings['storage'][$subfield]['datetime_type'] == 'datetime'
+              ? DoubleFieldItem::DATETIME_DATETIME_STORAGE_FORMAT
+              : DoubleFieldItem::DATETIME_DATE_STORAGE_FORMAT;
+
+            $widget[$subfield]['#default_value'] = DrupalDateTime::createFromFormat(
+              $storage_format,
+              $widget[$subfield]['#default_value'],
+              DoubleFieldItem::DATETIME_STORAGE_TIMEZONE
+            );
+          }
+          if ($field_settings['storage'][$subfield]['datetime_type'] == 'date') {
+            $widget[$subfield]['#date_time_element'] = 'none';
+            $widget[$subfield]['#date_time_format'] = '';
+          }
+          break;
+
       }
 
     }
@@ -317,11 +336,21 @@ class DoubleField extends WidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     $settings = $this->getSettings();
+    $storage_settings = $this->getFieldSetting('storage');
 
     foreach ($values as $delta => $value) {
       foreach (['first', 'second'] as $subfield) {
         if ($settings[$subfield]['type'] == 'select' && $value[$subfield] === '') {
           $values[$delta][$subfield] = NULL;
+        }
+        elseif ($value[$subfield] instanceof DrupalDateTime) {
+          $date = $value[$subfield];
+
+          $storage_format = $storage_settings[$subfield]['datetime_type'] == 'datetime'
+            ? DoubleFieldItem::DATETIME_DATETIME_STORAGE_FORMAT
+            : DoubleFieldItem::DATETIME_DATE_STORAGE_FORMAT;
+
+          $values[$delta][$subfield] = $date->format($storage_format);
         }
       }
     }
@@ -377,6 +406,10 @@ class DoubleField extends WidgetBase {
       case 'numeric':
         $subwidgets['number'] = $this->t('Number');
         $subwidgets['textfield'] = $this->t('Textfield');
+        break;
+
+      case 'datetime_iso8601':
+        $subwidgets['datetime'] = $this->t('Date');
         break;
 
     }

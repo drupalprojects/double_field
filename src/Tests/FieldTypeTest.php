@@ -179,9 +179,9 @@ class FieldTypeTest extends TestBase {
     ];
     $this->assertNoViolations($values);
 
-    // -- Email.
+    // -- Email and URI.
     $storage_settings['storage']['first']['type'] = 'email';
-    $storage_settings['storage']['second']['type'] = 'string';
+    $storage_settings['storage']['second']['type'] = 'uri';
     $this->saveFieldStorageSettings($storage_settings);
 
     // ...
@@ -191,17 +191,18 @@ class FieldTypeTest extends TestBase {
     ];
     $expected_messages = [
       t('This value is not a valid email address.'),
+      t('This value should be of the correct primitive type.'),
     ];
     $this->assertViolations($values, $expected_messages);
 
     $values = [
       'qwe@rty.ui',
-      'abc',
+      'http://example.com',
     ];
     $this->assertNoViolations($values);
 
-    // -- Uri.
-    $storage_settings['storage']['first']['type'] = 'uri';
+    // -- Datetime.
+    $storage_settings['storage']['first']['type'] = 'datetime_iso8601';
     $storage_settings['storage']['second']['type'] = 'string';
     $this->saveFieldStorageSettings($storage_settings);
 
@@ -216,7 +217,7 @@ class FieldTypeTest extends TestBase {
     $this->assertViolations($values, $expected_messages);
 
     $values = [
-      'http://example.com',
+      '2017-10-10T01:00:00',
       'abc',
     ];
     $this->assertNoViolations($values);
@@ -237,6 +238,7 @@ class FieldTypeTest extends TestBase {
       'numeric',
       'email',
       'telephone',
+      'datetime_iso8601',
       'uri',
     ];
 
@@ -319,6 +321,13 @@ class FieldTypeTest extends TestBase {
 
     $second_scale = $this->xpath('//input[@name="settings[storage][second][scale]"]')[0];
     $this->assertTrue($second_scale->attributes()['value'] == 5, 'Second scale value is valid.');
+
+    // Check date type options.
+    $datetime_xpath = '//input[@value="datetime"]/following-sibling::label[text()="Date and time"]';
+    $date_xpath = '//input[@value="date"]/following-sibling::label[text()="Date only"]';
+
+    $result = $this->xpath(sprintf('//fieldset/legend[span[text()="Date type"]]/following-sibling::div[%s and %s]', $datetime_xpath, $date_xpath));
+    $this->assertEqual(2, count($result), 'Date type options were found.');
   }
 
   /**
@@ -397,8 +406,8 @@ class FieldTypeTest extends TestBase {
     $this->saveFieldSettings($settings);
 
     $values = [
-      $min_limit - mt_rand(0, 100),
-      $max_limit + mt_rand(0, 100),
+      $min_limit - mt_rand(1, 100),
+      $max_limit + mt_rand(1, 100),
     ];
     $expected_messages = [
       t('This value should be @min_limit or more.', ['@min_limit' => $min_limit]),
@@ -458,9 +467,9 @@ class FieldTypeTest extends TestBase {
     ];
     $this->assertNoViolations($values);
 
-    // -- Uri.
+    // -- Uri and date.
     $storage_settings['storage']['first']['type'] = 'uri';
-    $storage_settings['storage']['second']['type'] = 'string';
+    $storage_settings['storage']['second']['type'] = 'datetime_iso8601';
     foreach (['first', 'second'] as $subfield) {
       $settings[$subfield]['list'] = FALSE;
     }
@@ -473,12 +482,13 @@ class FieldTypeTest extends TestBase {
     ];
     $expected_messages = [
       t('This value should be of the correct primitive type.'),
+      t('This value should be of the correct primitive type.'),
     ];
     $this->assertViolations($values, $expected_messages);
 
     $values = [
       'http://example.com',
-      'bbb',
+      '2016-10-11T01:12:14',
     ];
     $this->assertNoViolations($values);
   }
@@ -491,9 +501,11 @@ class FieldTypeTest extends TestBase {
     $storage_types = [
       'boolean',
       'string',
+      'text',
       'email',
       'telephone',
-      'text',
+      'uri',
+      'datetime_iso8601',
       'integer',
       'float',
       'numeric',
@@ -574,6 +586,11 @@ class FieldTypeTest extends TestBase {
           case 'numeric':
             $this->assertTrue($summary_type == 'Decimal', 'Summary type is correct');
             $this->assertRangeFields($subfield);
+            $this->assertAllowedValues($subfield);
+            break;
+
+          case 'datetime_iso8601':
+            $this->assertTrue($summary_type == 'Date', 'Summary type is correct');
             $this->assertAllowedValues($subfield);
             break;
 

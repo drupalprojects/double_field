@@ -22,6 +22,10 @@ use Drupal\Core\TypedData\DataDefinition;
  */
 class DoubleField extends FieldItemBase {
 
+  const DATETIME_STORAGE_TIMEZONE = 'UTC';
+  const DATETIME_DATETIME_STORAGE_FORMAT = 'Y-m-d\TH:i:s';
+  const DATETIME_DATE_STORAGE_FORMAT = 'Y-m-d';
+
   /**
    * {@inheritdoc}
    */
@@ -34,6 +38,7 @@ class DoubleField extends FieldItemBase {
         'maxlength' => 255,
         'precision' => 10,
         'scale' => 2,
+        'datetime_type' => 'datetime',
       ];
     }
 
@@ -102,6 +107,21 @@ class DoubleField extends FieldItemBase {
         '#max' => 10,
         '#states' => [
           'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'numeric']],
+        ],
+      ];
+
+      $element['storage'][$subfield]['datetime_type'] = [
+        '#type' => 'radios',
+        '#title' => t('Date type'),
+        '#description' => t('Choose the type of date to create.'),
+        '#default_value' => $settings['storage'][$subfield]['datetime_type'],
+        '#disabled' => $has_data,
+        '#options' => [
+          'datetime' => $this->t('Date and time'),
+          'date' => $this->t('Date only'),
+        ],
+        '#states' => [
+          'visible' => [":input[name='settings[storage][$subfield][type]']" => ['value' => 'datetime_iso8601']],
         ],
       ];
 
@@ -376,6 +396,11 @@ class DoubleField extends FieldItemBase {
           $columns[$subfield]['type'] = 'varchar';
           $columns[$subfield]['length'] = 2048;
           break;
+
+        case 'datetime_iso8601':
+          $columns[$subfield]['type'] = 'varchar';
+          $columns[$subfield]['length'] = 20;
+          break;
       }
     }
 
@@ -548,6 +573,7 @@ class DoubleField extends FieldItemBase {
       'numeric' => t('Decimal'),
       'email' => t('Email'),
       'telephone' => t('Telephone'),
+      'datetime_iso8601' => t('Date'),
       // We only allow external links. So this should be URL from the user side.
       'uri' => t('Url'),
     ];
@@ -598,6 +624,7 @@ class DoubleField extends FieldItemBase {
       'email',
       'telephone',
       'uri',
+      'datetime_iso8601',
     ];
     return in_array($subfield_type, $list_types);
   }

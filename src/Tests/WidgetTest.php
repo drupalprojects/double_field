@@ -194,9 +194,9 @@ class WidgetTest extends TestBase {
     ];
     $this->assertAttributes($tel_field->attributes(), $expected_attributes);
 
-    // -- Url.
+    // -- Url and Date.
     $storage_settings['storage']['first']['type'] = 'uri';
-    $storage_settings['storage']['second']['type'] = 'string';
+    $storage_settings['storage']['second']['type'] = 'datetime_iso8601';
     $this->saveFieldStorageSettings($storage_settings);
 
     $this->saveFieldSettings([]);
@@ -204,6 +204,7 @@ class WidgetTest extends TestBase {
     $widget_settings['first']['type'] = 'url';
     $widget_settings['first']['size'] = mt_rand(5, 30);
     $widget_settings['first']['placeholder'] = $this->randomMachineName();
+    $widget_settings['second']['type'] = 'datetime';
     $this->saveWidgetSettings($widget_settings);
 
     $this->drupalGet($this->nodeAddPath);
@@ -216,6 +217,20 @@ class WidgetTest extends TestBase {
       'placeholder' => $widget_settings['first']['placeholder'],
     ];
     $this->assertAttributes($url_field->attributes(), $expected_attributes);
+
+    $date_field = $this->xpath("//input[@name='{$this->fieldName}[0][second][date]']")[0];
+    $expected_attributes = [
+      'type' => 'date',
+      'value' => '',
+    ];
+    $this->assertAttributes($date_field->attributes(), $expected_attributes);
+
+    $time_field = $this->xpath("//input[@name='{$this->fieldName}[0][second][time]']")[0];
+    $expected_attributes = [
+      'type' => 'time',
+      'value' => '',
+    ];
+    $this->assertAttributes($time_field->attributes(), $expected_attributes);
 
     // -- Check prefixes and suffixes.
     $widget_settings['first']['prefix'] = $this->randomMachineName();
@@ -397,13 +412,13 @@ class WidgetTest extends TestBase {
     $axes[] = "//summary[text()='Second subfield - Telephone']";
     $this->assertAxes($axes);
 
-    // -- Url and string.
+    // -- Url and date.
     $storage_settings['storage']['first']['type'] = 'uri';
-    $storage_settings['storage']['second']['type'] = 'string';
+    $storage_settings['storage']['second']['type'] = 'datetime_iso8601';
     $this->saveFieldStorageSettings($storage_settings);
 
     $widget_settings['first']['type'] = 'url';
-    $widget_settings['second']['type'] = 'textfield';
+    $widget_settings['second']['type'] = 'datetime';
     $this->saveWidgetSettings($widget_settings);
 
     $this->drupalGet($this->formDisplayAdminPath);
@@ -414,8 +429,8 @@ class WidgetTest extends TestBase {
     $axes = $general_axes;
     $axes[] = "//select[@name='{$name_prefix}[first][type]']/option[@value='url' and @selected]";
     $axes[] = "//summary[text()='First subfield - Url']";
-    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='textfield' and @selected]";
-    $axes[] = "//summary[text()='Second subfield - Text']";
+    $axes[] = "//select[@name='{$name_prefix}[second][type]']/option[@value='datetime' and @selected]";
+    $axes[] = "//summary[text()='Second subfield - Date']";
     $this->assertAxes($axes);
   }
 
@@ -547,8 +562,6 @@ class WidgetTest extends TestBase {
     $widget_settings['second']['type'] = 'number';
     $this->saveWidgetSettings($widget_settings);
 
-    $this->drupalGet($this->nodeAddPath);
-
     $edit = [
       'title[0][value]' => $this->randomMachineName(),
       $this->fieldName . '[0][first]' => 100,
@@ -579,6 +592,38 @@ class WidgetTest extends TestBase {
     $this->assertEqual(1, count($this->getMessages('error')), 'There should be only one error message');
 
     $edit[$this->fieldName . '[0][first]'] = mt_rand($field_settings['first']['min'], $field_settings['first']['max']);
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
+    $this->assertNoErrorMessages();
+    $this->deleteNodes();
+
+    // Date.
+    $storage_settings['storage']['first']['type'] = 'datetime_iso8601';
+    $storage_settings['storage']['second']['type'] = 'datetime_iso8601';
+    $storage_settings['storage']['second']['datetime_type'] = 'date';
+    $this->saveFieldStorageSettings($storage_settings);
+
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first][date]' => 'aaa',
+      $this->fieldName . '[0][first][time]' => 'bbb',
+      // This is date only subfield.
+      $this->fieldName . '[0][second][date]' => 'ccc',
+    ];
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
+    $errors = $this->xpath('//div[@role="alert"]//li[@class="messages__item"]');
+    $message = strip_tags($errors[0]->asXML());
+    $pattern = '/^The  date is invalid. Please enter a date in the format \d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d.$/';
+    $this->assertTrue(preg_match($pattern, $message), 'First date subfield was found.');
+    $message = strip_tags($errors[1]->asXML());
+    $pattern = '/^The  date is invalid. Please enter a date in the format \d\d\d\d-\d\d-\d\d.$/';
+    $this->assertTrue(preg_match($pattern, $message), 'Second date subfield was found.');
+
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(),
+      $this->fieldName . '[0][first][date]' => '2017-10-11',
+      $this->fieldName . '[0][first][time]' => '11:10:35',
+      $this->fieldName . '[0][second][date]' => '2017-10-11',
+    ];
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
     $this->assertNoErrorMessages();
   }

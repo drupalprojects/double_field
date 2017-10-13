@@ -147,12 +147,14 @@ abstract class TestBase extends WebTestBase {
         'maxlength' => 50,
         'precision' => 10,
         'scale' => 2,
+        'datetime_type' => 'datetime',
       ],
       'second' => [
         'type' => 'string',
         'maxlength' => 50,
         'precision' => 10,
         'scale' => 2,
+        'datetime_type' => 'datetime',
       ],
     ];
 

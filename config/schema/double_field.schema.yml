@@ -28,6 +28,9 @@ double_field_storage_subfield_settings:
     scale:
       type: integer
       label: Scale
+    datetime_type:
+      type: string
+      label: Date type
 
 # Instance schema.
 field.field_settings.double_field:
@@ -173,6 +176,9 @@ double_field_formatter_subfield_settings:
   type: mapping
   label: Formatter subfield settings
   mapping:
+    format_type:
+      type: string
+      label: Format type
     link:
       type: boolean
       label: Link

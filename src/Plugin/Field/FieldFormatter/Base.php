@@ -3,6 +3,8 @@
 namespace Drupal\double_field\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -33,6 +35,7 @@ abstract class Base extends FormatterBase {
         'prefix' => '',
         'suffix' => '',
         'link' => FALSE,
+        'format_type' => 'medium',
       ];
     }
     return $settings + parent::defaultSettings();
@@ -65,6 +68,24 @@ abstract class Base extends FormatterBase {
           '#title' => $this->t('Display as link'),
           '#default_value' => $settings[$subfield]['link'],
           '#weight' => -10,
+        ];
+      }
+
+      if ($type == 'datetime_iso8601') {
+        $format_types = DateFormat::loadMultiple();
+        $date_formatter = \Drupal::service('date.formatter');
+        $time = new DrupalDateTime();
+        $options = [];
+        foreach ($format_types as $type => $type_info) {
+          $format = $date_formatter->format($time->getTimestamp(), $type);
+          $options[$type] = $type_info->label() . ' (' . $format . ')';
+        }
+        $element[$subfield]['format_type'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Date format'),
+          '#description' => $this->t('Choose a format for displaying the date.'),
+          '#options' => $options,
+          '#default_value' => $settings[$subfield]['format_type'],
         ];
       }
       $element[$subfield]['hidden'] = [
@@ -108,7 +129,9 @@ abstract class Base extends FormatterBase {
           '@subfield_type' => strtolower($subfield_types[$subfield_type]),
         ]
       );
-
+      if ($subfield_type == 'datetime_iso8601') {
+        $summary[] = $this->t('Date format: %format', ['%format' => $settings[$subfield]['format_type']]);
+      }
       if (in_array($subfield_type, static::$linkTypes)) {
         $summary[] = $this->t('Link: %value', ['%value' => $settings[$subfield]['link'] ? $this->t('yes') : $this->t('no')]);
       }
@@ -138,8 +161,35 @@ abstract class Base extends FormatterBase {
         }
         else {
 
-          if ($field_settings['storage'][$subfield]['type'] == 'boolean') {
+          $type = $field_settings['storage'][$subfield]['type'];
+
+          if ($type == 'boolean') {
             $item->{$subfield} = $field_settings[$subfield][$item->{$subfield} ? 'on_label' : 'off_label'];
+          }
+
+          if ($type == 'datetime_iso8601' && $item->{$subfield} && !$field_settings[$subfield]['list']) {
+            $storage_format = $field_settings['storage'][$subfield]['datetime_type'] == 'datetime'
+              ? DoubleFieldItem::DATETIME_DATETIME_STORAGE_FORMAT
+              : DoubleFieldItem::DATETIME_DATE_STORAGE_FORMAT;
+
+            $date = DrupalDateTime::createFromFormat($storage_format, $item->{$subfield});
+            $date_formatter = \Drupal::service('date.formatter');
+            $timestamp = $date->getTimestamp();
+            $formatted_date = $date_formatter->format($timestamp, $settings[$subfield]['format_type']);
+            $iso_date = $date_formatter->format($timestamp, 'custom', 'Y-m-d\TH:i:s') . 'Z';
+            $item->{$subfield} = [
+              '#theme' => 'time',
+              '#text' => $formatted_date,
+              '#html' => FALSE,
+              '#attributes' => [
+                'datetime' => $iso_date,
+              ],
+              '#cache' => [
+                'contexts' => [
+                  'timezone',
+                ],
+              ],
+            ];
           }
 
           // Replace the value with its label if possible.
@@ -155,7 +205,7 @@ abstract class Base extends FormatterBase {
 
           if (!empty($settings[$subfield]['link'])) {
             $value = isset($original_value) ? $original_value[$subfield] : $item->{$subfield};
-            switch ($field_settings['storage'][$subfield]['type']) {
+            switch ($type) {
               case 'email':
                 $item->{$subfield} = [
                   '#type' => 'link',

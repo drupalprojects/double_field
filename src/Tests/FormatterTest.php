@@ -246,7 +246,6 @@ class FormatterTest extends TestBase {
       ],
     ];
     $this->saveFormatterSettings('unformatted_list', $settings);
-    $this->drupalGet($this->displayAdminPath);
 
     // Create a node for testing.
     $edit = ['title[0][value]' => $this->randomMachineName()];
@@ -254,8 +253,39 @@ class FormatterTest extends TestBase {
     $edit[$this->fieldName . "[0][second]"] = '123456789';
 
     $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
-    $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-first"]/a[href="mailto:abc@example.com" and text()="abc@example.com"]');
-    $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-second"]/a[href="tel:123456789" and text()="123456789"]');
+    $axes = [];
+    $axes[] = '(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-first"]/a[@href="mailto:abc@example.com" and text()="abc@example.com"]';
+    $axes[] = '(//div[contains(@class, "double-field-unformatted-list")]/div)[1]/div[@class="double-field-second"]/a[@href="tel:123456789" and text()="123456789"]';
+    $this->assertAxes($axes);
+    $this->deleteNodes();
+
+    // Test 'date format' option.
+    $storage_settings['storage']['first']['type'] = 'datetime_iso8601';
+    $storage_settings['storage']['second']['type'] = 'datetime_iso8601';
+    $storage_settings['storage']['second']['datetime_type'] = 'date';
+    $this->saveFieldStorageSettings($storage_settings);
+    $settings = [
+      'first' => [
+        'format_type' => 'short',
+      ],
+      'second' => [
+        'format_type' => 'long',
+      ],
+    ];
+    $this->saveFormatterSettings('unformatted_list', $settings);
+    $this->drupalGet($this->nodeAddPath);
+
+    $edit = ['title[0][value]' => $this->randomMachineName()];
+    $edit[$this->fieldName . "[0][first][date]"] = '2017-10-11';
+    $edit[$this->fieldName . "[0][first][time]"] = '01:15:59';
+    $edit[$this->fieldName . "[0][second][date]"] = '2011-12-11';
+    $this->drupalPostForm($this->nodeAddPath, $edit, t('Save'));
+    $dates = $this->xpath('(//div[contains(@class, "double-field-unformatted-list")]/div)[1]//time');
+    $iso_pattern = '#^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$#';
+    $this->assertTrue(preg_match($iso_pattern, $dates[0]->attributes()['datetime']));
+    $this->assertTrue(preg_match('#^\d{2}/\d{2}/\d{4} - \d{2}:\d{2}$#', $dates[0]));
+    $this->assertTrue(preg_match($iso_pattern, $dates[1]->attributes()['datetime']));
+    $this->assertTrue(preg_match('#^[A-Z][a-z]+, [A-Z][a-z]+ \d{2}, \d{4} - \d{2}:\d{2}$#', $dates[1]));
   }
 
   /**
