@@ -426,7 +426,7 @@ class DoubleField extends WidgetBase {
    * {@inheritdoc}
    */
   public function errorElement(array $element, ConstraintViolationInterface $violation, array $form, FormStateInterface $form_state) {
-    return isset($violation->arrayPropertyPath[0]) ? $element[$violation->arrayPropertyPath[0]] : FALSE;
+    return isset($violation->arrayPropertyPath[0]) ? $element[$violation->arrayPropertyPath[0]] : $element;
   }
 
   /**
