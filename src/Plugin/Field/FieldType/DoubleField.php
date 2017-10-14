@@ -3,11 +3,13 @@
 namespace Drupal\double_field\Plugin\Field\FieldType;
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Email;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\Component\Utility\Random;
 
 /**
  * Plugin implementation of the 'double_field' field type.
@@ -627,6 +629,117 @@ class DoubleField extends FieldItemBase {
       'datetime_iso8601',
     ];
     return in_array($subfield_type, $list_types);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $settings = $field_definition->getSettings();
+
+    $data = [];
+    foreach (['first', 'second'] as $subfield) {
+
+      // If allowed values are limited pick one of them from field settings.
+      if ($settings[$subfield]['list']) {
+        $data[$subfield] = array_rand($settings[$subfield]['allowed_values']);
+        continue;
+      }
+
+      switch ($settings['storage'][$subfield]['type']) {
+
+        // @see \Drupal\Core\Field\Plugin\Field\FieldType\BooleanItem::generateSampleValue()
+        case 'boolean':
+          $data[$subfield] = (bool) mt_rand(0, 1);
+          break;
+
+        // @see \Drupal\datetime\Plugin\Field\FieldType\DateTimeItem::generateSampleValue()
+        case 'datetime_iso8601':
+          $date_type = $settings['storage'][$subfield]['datetime_type'];
+          $timestamp = \Drupal::time()->getRequestTime() - mt_rand(0, 86400 * 365);
+          $storage_format = $date_type == 'date'
+            ? self::DATETIME_DATE_STORAGE_FORMAT
+            : self::DATETIME_DATETIME_STORAGE_FORMAT;
+          $data[$subfield] = gmdate($storage_format, $timestamp);
+          break;
+
+        // @see \Drupal\Core\Field\Plugin\Field\FieldType\StringItem::generateSampleValue()
+        case 'string':
+          $data[$subfield] = (new Random())->word(mt_rand(1, $settings['storage'][$subfield]['maxlength']));
+          break;
+
+        // @see \Drupal\text\Plugin\Field\FieldType\TextItemBase::generateSampleValue()
+        case 'text':
+          $data[$subfield] = (new Random())->paragraphs(5);
+          break;
+
+        // @see \Drupal\Core\Field\Plugin\Field\FieldType\IntegerItem::generateSampleValue()
+        case 'integer':
+          $min = is_numeric($settings[$subfield]['min']) ? $settings[$subfield]['min'] : -1000;
+          $max = is_numeric($settings[$subfield]['max']) ? $settings[$subfield]['max'] : 1000;
+          $data[$subfield] = mt_rand($min, $max);
+          break;
+
+        // @see \Drupal\Core\Field\Plugin\Field\FieldType\FloatItem::generateSampleValue()
+        case 'float':
+          $settings = $field_definition->getSettings();
+          $precision = rand(10, 32);
+          $scale = rand(1, 5);
+          $max = is_numeric($settings[$subfield]['min']) ? $settings[$subfield]['min'] : pow(10, ($precision - $scale)) - 1;
+          $min = is_numeric($settings[$subfield]['max']) ? $settings[$subfield]['max'] : -pow(10, ($precision - $scale)) + 1;
+          $random_decimal = $min + mt_rand() / mt_getrandmax() * ($max - $min);
+          $data[$subfield] = floor($random_decimal * pow(10, $scale)) / pow(10, $scale);
+          break;
+
+        // @see \Drupal\Core\Field\Plugin\Field\FieldType\DecimalItem::generateSampleValue()
+        case 'numeric':
+          $precision = $settings['storage'][$subfield]['precision'] ?: 10;
+          $scale = $settings['storage'][$subfield]['scale'] ?: 2;
+          $min = is_numeric($settings[$subfield]['min']) ? $settings[$subfield]['min'] : -pow(10, ($precision - $scale)) + 1;
+          $max = is_numeric($settings[$subfield]['max']) ? $settings[$subfield]['max'] : pow(10, ($precision - $scale)) - 1;
+
+          $set_decimal_digits = function ($decimal) {
+            $digits = 0;
+            while ($decimal - round($decimal)) {
+              $decimal *= 10;
+              $digits++;
+            }
+            return $digits;
+          };
+
+          $decimal_digits = $set_decimal_digits($max);
+          $decimal_digits = max($set_decimal_digits($min), $decimal_digits);
+          $scale = rand($decimal_digits, $scale);
+          $random_decimal = $min + mt_rand() / mt_getrandmax() * ($max - $min);
+          $data[$subfield] = floor($random_decimal * pow(10, $scale)) / pow(10, $scale);
+          break;
+
+        // @see \Drupal\Core\Field\Plugin\Field\FieldType\EmailItem::generateSampleValue()
+        case 'email':
+          $data[$subfield] = strtolower((new Random())->name()) . '@example.com';
+          break;
+
+        // @q \Drupal\telephone\Plugin\Field\FieldType\TelephoneItem::generateSampleValue()
+        case 'telephone':
+          $data[$subfield] = mt_rand(pow(10, 8), pow(10, 9) - 1);
+          break;
+
+        // @see \Drupal\link\Plugin\Field\FieldType\LinkItem::generateSampleValue()
+        case 'uri':
+          $random = new Random();
+          $tlds = ['com', 'net', 'gov', 'org', 'edu', 'biz', 'info'];
+          $domain_length = mt_rand(7, 15);
+          $protocol = mt_rand(0, 1) ? 'https' : 'http';
+          $www = mt_rand(0, 1) ? 'www' : '';
+          $domain = $random->word($domain_length);
+          $tld = $tlds[mt_rand(0, (count($tlds) - 1))];
+          $data[$subfield] = "$protocol://$www.$domain.$tld";
+          break;
+
+      }
+    }
+
+    return $data;
   }
 
 }
