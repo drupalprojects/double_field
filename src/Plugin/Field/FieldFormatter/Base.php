@@ -215,8 +215,8 @@ abstract class Base extends FormatterBase {
           }
 
           // Replace the value with its label if possible.
+          $original_value[$subfield] = $item->{$subfield};
           if ($field_settings[$subfield]['list']) {
-            $original_value[$subfield] = $item->{$subfield};
             if (isset($field_settings[$subfield]['allowed_values'][$item->{$subfield}])) {
               $item->{$subfield} = $field_settings[$subfield]['allowed_values'][$item->{$subfield}];
             }
