@@ -60,9 +60,25 @@ class Details extends Base {
     $settings = $this->getSettings();
 
     foreach ($items as $delta => $item) {
+
+      $values = [];
+      foreach (['first', 'second'] as $subfield) {
+        $values[$subfield] = $item->{$subfield};
+        // Copy the property to a variable because of its magic nature.
+        $value = $item->{$subfield};
+        // The value can be a render array if link option is enabled.
+        if (is_array($value)) {
+          $values[$subfield]['#prefix'] = $settings[$subfield]['prefix'];
+          $values[$subfield]['#suffix'] = $settings[$subfield]['suffix'];
+        }
+        else {
+          $values[$subfield] = $settings[$subfield]['prefix'] . $value . $settings[$subfield]['suffix'];
+        }
+      }
+
       $element[$delta] = [
-        '#title' => $settings['first']['prefix'] . $item->first . $settings['first']['suffix'],
-        '#value' => $settings['second']['prefix'] . $item->second . $settings['second']['suffix'],
+        '#title' => $values['first'],
+        '#value' => $values['second'],
         '#type' => 'details',
         '#open' => $settings['open'],
         '#attributes' => ['class' => ['double-field-details']],
