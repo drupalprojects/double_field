@@ -38,9 +38,7 @@ function template_preprocess_double_field_item(&$vars) {
  * Prepares variables for double-field-item template.
  */
 function template_preprocess_double_field_subfield(&$vars) {
-
   $elements = &$vars['elements'];
-
   $vars['index'] = $index = $elements['#index'];
   $vars['prefix'] = $elements['#settings'][$index]['prefix'];
   $vars['value'] = $elements['#subfield'];

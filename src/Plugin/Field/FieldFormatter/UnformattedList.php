@@ -26,7 +26,7 @@ class UnformattedList extends ListBase {
     $settings = $this->getSettings();
     foreach ($items as $delta => $item) {
       if ($settings['inline']) {
-        $item->_attributes = ['class' => ['container-inline']];
+        $item->_attributes += ['class' => ['container-inline']];
       }
       $element[$delta] = [
         '#settings' => $settings,
