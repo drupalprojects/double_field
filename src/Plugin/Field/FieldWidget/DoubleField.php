@@ -7,6 +7,7 @@ use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element\Email;
 use Drupal\double_field\Plugin\Field\FieldType\DoubleField as DoubleFieldItem;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
@@ -242,13 +243,24 @@ class DoubleField extends WidgetBase {
         '#subfield_settings' => $settings[$subfield],
       ];
 
+      $storage_type = $field_settings['storage'][$subfield]['type'];
+
       switch ($settings[$subfield]['type']) {
 
         case 'textfield':
         case 'email':
         case 'tel':
         case 'url':
-          $widget[$subfield]['#maxlength'] = $field_settings['storage'][$subfield]['maxlength'];
+          // Find out appropriate max length fot the element.
+          $max_length_map = [
+            'string' => $field_settings['storage'][$subfield]['maxlength'],
+            'telephone' => $field_settings['storage'][$subfield]['maxlength'],
+            'email' => Email::EMAIL_MAX_LENGTH,
+            'uri' => 2048,
+          ];
+          if (isset($max_length_map[$storage_type])) {
+            $widget[$subfield]['#maxlength'] = $max_length_map[$storage_type];
+          }
           if ($settings[$subfield]['size']) {
             $widget[$subfield]['#size'] = $settings[$subfield]['size'];
           }
@@ -290,13 +302,7 @@ class DoubleField extends WidgetBase {
           break;
 
         case 'number':
-
-          if (in_array($field_settings['storage'][$subfield]['type'], [
-            'integer',
-            'float',
-            'numeric',
-          ])) {
-
+          if (in_array($storage_type, ['integer', 'float', 'numeric'])) {
             if ($field_settings[$subfield]['min']) {
               $widget[$subfield]['#min'] = $field_settings[$subfield]['min'];
             }
@@ -311,7 +317,6 @@ class DoubleField extends WidgetBase {
             $storage_format = $field_settings['storage'][$subfield]['datetime_type'] == 'datetime'
               ? DoubleFieldItem::DATETIME_DATETIME_STORAGE_FORMAT
               : DoubleFieldItem::DATETIME_DATE_STORAGE_FORMAT;
-
             $widget[$subfield]['#default_value'] = DrupalDateTime::createFromFormat(
               $storage_format,
               $widget[$subfield]['#default_value'],

@@ -62,14 +62,13 @@ abstract class Base extends FormatterBase {
         '#type' => 'details',
       ];
 
-      if (in_array($type, static::$linkTypes)) {
-        $element[$subfield]['link'] = [
-          '#type' => 'checkbox',
-          '#title' => $this->t('Display as link'),
-          '#default_value' => $settings[$subfield]['link'],
-          '#weight' => -10,
-        ];
-      }
+      $element[$subfield]['link'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Display as link'),
+        '#default_value' => $settings[$subfield]['link'],
+        '#weight' => -10,
+        '#access' => in_array($type, static::$linkTypes),
+      ];
 
       if ($type == 'datetime_iso8601') {
         $format_types = DateFormat::loadMultiple();
@@ -88,6 +87,13 @@ abstract class Base extends FormatterBase {
           '#default_value' => $settings[$subfield]['format_type'],
         ];
       }
+      else {
+        $element[$subfield]['format_type'] = [
+          '#type' => 'value',
+          '#default_value' => $settings[$subfield]['format_type'],
+        ];
+      }
+
       $element[$subfield]['hidden'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Hidden'),
