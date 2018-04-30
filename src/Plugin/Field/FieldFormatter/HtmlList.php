@@ -88,6 +88,9 @@ class HtmlList extends ListBase {
         ];
         if ($settings['inline']) {
           $list_items[$delta]['#wrapper_attributes'] = [];
+          if (!isset($item->_attributes)) {
+            $item->_attributes = [];
+          }
           $list_items[$delta]['#wrapper_attributes'] += $item->_attributes;
           $list_items[$delta]['#wrapper_attributes']['class'][] = 'container-inline';
         }
