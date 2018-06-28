@@ -719,7 +719,7 @@ class DoubleField extends FieldItemBase {
           $data[$subfield] = strtolower((new Random())->name()) . '@example.com';
           break;
 
-        // @q \Drupal\telephone\Plugin\Field\FieldType\TelephoneItem::generateSampleValue()
+        // @see \Drupal\telephone\Plugin\Field\FieldType\TelephoneItem::generateSampleValue()
         case 'telephone':
           $data[$subfield] = mt_rand(pow(10, 8), pow(10, 9) - 1);
           break;
